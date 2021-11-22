@@ -73,18 +73,11 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       .setFamily("ordinal")
     val model = algo.fit(trainingDataset)
 
-    val trainingMetrics = model.getMetrics(trainingDataset)
-    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
-    val validationMetrics = model.getMetrics(validationDataset)
-    val validationMetricsObject = model.getMetricsObject(validationDataset)
-    val expectedTrainingMetrics = model.getTrainingMetrics()
-    val expectedValidationMetrics = model.getValidationMetrics()
-
-    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.00001)
-    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
-    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance = 0.00001)
   }
 
   test("test calculation of ordinal gam metric objects on arbitrary dataset") {
@@ -97,17 +90,10 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       .setFamily("ordinal")
     val model = algo.fit(trainingDataset)
 
-    val trainingMetrics = model.getMetrics(trainingDataset)
-    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
-    val validationMetrics = model.getMetrics(validationDataset)
-    val validationMetricsObject = model.getMetricsObject(validationDataset)
-    val expectedTrainingMetrics = model.getTrainingMetrics()
-    val expectedValidationMetrics = model.getValidationMetrics()
-
-    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.00001)
-    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
-    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance = 0.00001)
   }
 }

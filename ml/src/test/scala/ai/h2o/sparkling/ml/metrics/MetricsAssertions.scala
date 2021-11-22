@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.ml.metrics
 
+import ai.h2o.sparkling.ml.models.H2OMOJOModel
+import org.apache.spark.sql.DataFrame
 import org.scalatest.Matchers
 
 object MetricsAssertions extends Matchers {
@@ -60,5 +62,25 @@ object MetricsAssertions extends Matchers {
         expected(key) shouldBe actual(key)
       }
     }
+  }
+
+  def assertEssentialMetrics(
+      model: H2OMOJOModel,
+      trainingDataset: DataFrame,
+      validationDataset: DataFrame,
+      trainingMetricsTolerance: Double = 0.0,
+      validationMetricsTolerance: Double = 0.0): Unit = {
+    val trainingMetrics = model.getMetrics(trainingDataset)
+    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
+    val validationMetrics = model.getMetrics(validationDataset)
+    val validationMetricsObject = model.getMetricsObject(validationDataset)
+    val expectedTrainingMetrics = model.getTrainingMetrics()
+    val expectedValidationMetrics = model.getValidationMetrics()
+
+    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = trainingMetricsTolerance)
+    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics, tolerance = validationMetricsTolerance)
+    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
   }
 }

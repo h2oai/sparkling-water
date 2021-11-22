@@ -71,18 +71,11 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
       .setLabelCol("AGE")
     val model = algo.fit(trainingDataset)
 
-    val trainingMetrics = model.getMetrics(trainingDataset)
-    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
-    val validationMetrics = model.getMetrics(validationDataset)
-    val validationMetricsObject = model.getMetricsObject(validationDataset)
-    val expectedTrainingMetrics = model.getTrainingMetrics()
-    val expectedValidationMetrics = model.getValidationMetrics()
-
-    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.0001)
-    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
-    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance = 0.00001)
   }
 
   test("test regression glm metric objects") {
@@ -107,18 +100,11 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
       .setLabelCol("AGE")
     val model = algo.fit(trainingDataset)
 
-    val trainingMetrics = model.getMetrics(trainingDataset)
-    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
-    val validationMetrics = model.getMetrics(validationDataset)
-    val validationMetricsObject = model.getMetricsObject(validationDataset)
-    val expectedTrainingMetrics = model.getTrainingMetrics()
-    val expectedValidationMetrics = model.getValidationMetrics()
-
-    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.00001)
-    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
-    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance = 0.00001)
   }
 
   test("test calculation of regression gam metric objects on arbitrary dataset") {
@@ -130,17 +116,10 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
       .setLabelCol("AGE")
     val model = algo.fit(trainingDataset)
 
-    val trainingMetrics = model.getMetrics(trainingDataset)
-    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
-    val validationMetrics = model.getMetrics(validationDataset)
-    val validationMetricsObject = model.getMetricsObject(validationDataset)
-    val expectedTrainingMetrics = model.getTrainingMetrics()
-    val expectedValidationMetrics = model.getValidationMetrics()
-
-    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.00001)
-    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
-    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance = 0.00001)
   }
 }

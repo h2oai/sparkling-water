@@ -17,7 +17,8 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import ai.h2o.sparkling.ml.features.{H2OAutoEncoder, H2OPCA}
+import ai.h2o.sparkling.ml.algos.H2OIsolationForest
+import ai.h2o.sparkling.ml.features.H2OAutoEncoder
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
@@ -25,25 +26,22 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class DimReductionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class AnomalyDetectionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
-  private lazy val dataset = spark.read
-    .option("header", "true")
+  private lazy val trainingDataset = spark.read
     .option("inferSchema", "true")
-    .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
-  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2), seed = 42)
+    .csv(TestUtils.locate("smalldata/anomaly/ecg_discord_train.csv"))
 
-  test("test calculation of pca metric objects on arbitrary dataset") {
-    val algorithm = new H2OPCA()
-      .setSeed(1)
-      .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-      .setOutputCol("Output")
-      .setValidationDataFrame(validationDataset)
-      .setImputeMissing(true)
-      .setPcaMethod("Power")
-      .setK(3)
+  private lazy val validationDataset = spark.read
+    .option("inferSchema", "true")
+    .csv(TestUtils.locate("smalldata/anomaly/ecg_discord_test.csv"))
+
+  test("test calculation of isolation forest metric objects on arbitrary dataset") {
+    val algorithm = new H2OIsolationForest()
+      .setSeed(42)
+//      .setValidationDataFrame(validationDataset)
 
     val model = algorithm.fit(trainingDataset)
 

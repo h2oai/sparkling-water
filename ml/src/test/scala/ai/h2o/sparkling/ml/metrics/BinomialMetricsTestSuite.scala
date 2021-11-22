@@ -89,18 +89,11 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       .setLabelCol("class")
     val model = algo.fit(trainingDataset)
 
-    val trainingMetrics = model.getMetrics(trainingDataset)
-    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
-    val validationMetrics = model.getMetrics(validationDataset)
-    val validationMetricsObject = model.getMetricsObject(validationDataset)
-    val expectedTrainingMetrics = model.getTrainingMetrics()
-    val expectedValidationMetrics = model.getValidationMetrics()
-
-    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.0001)
-    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
-    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance = 0.0001)
   }
 
   test("test binomial glm metric objects") {
@@ -128,18 +121,11 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       .setLabelCol("class")
     val model = algo.fit(trainingDataset)
 
-    val trainingMetrics = model.getMetrics(trainingDataset)
-    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
-    val validationMetrics = model.getMetrics(validationDataset)
-    val validationMetricsObject = model.getMetricsObject(validationDataset)
-    val expectedTrainingMetrics = model.getTrainingMetrics()
-    val expectedValidationMetrics = model.getValidationMetrics()
-
-    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.0001)
-    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
-    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance = 0.0001)
   }
 
   test("test calculation of binomial gam metric objects on arbitrary dataset") {
@@ -152,17 +138,11 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       .setLabelCol("class")
     val model = algo.fit(trainingDataset)
 
-    val trainingMetrics = model.getMetrics(trainingDataset)
-    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
-    val validationMetrics = model.getMetrics(validationDataset)
-    val validationMetricsObject = model.getMetricsObject(validationDataset)
-    val expectedTrainingMetrics = model.getTrainingMetrics()
-    val expectedValidationMetrics = model.getValidationMetrics()
-
-    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.0001)
-    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics, tolerance = 0.00000001)
-    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance = 0.0001,
+      validationMetricsTolerance = 0.00000001)
   }
 }
