@@ -34,13 +34,13 @@ trait KmeansMetricCalculation {
 
   override private[sparkling] def extractActualValues(
       rowData: RowData,
-      wrapper: EasyPredictModelWrapper): Array[Float] = {
+      wrapper: EasyPredictModelWrapper): Array[Double] = {
     val model = wrapper.m.asInstanceOf[KMeansMojoModel]
     val rawData = new Array[Double](wrapper.m.nfeatures())
     wrapper.fillRawData(rowData, rawData)
     if (model._standardize) {
       GenModel.Kmeans_preprocessData(rawData, model._means, model._mults, model._modes)
     }
-    rawData.map(_.toFloat)
+    rawData
   }
 }

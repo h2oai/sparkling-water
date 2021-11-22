@@ -122,12 +122,10 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OAlgorithmMOJOM
     }
   }
 
-  override private[sparkling] def extractActualValues(row: RowData, wrapper: EasyPredictModelWrapper): Array[Float] = {
+  override private[sparkling] def extractActualValues(row: RowData, wrapper: EasyPredictModelWrapper): Array[Double] = {
     val responseColumn = wrapper.m._responseColumn
     val encodedActualValue = wrapper.extractRawDataValue(row, responseColumn)
-    val result = new Array[Float](1)
-    result(0) = encodedActualValue.toFloat
-    result
+    Array[Double](encodedActualValue)
   }
 }
 

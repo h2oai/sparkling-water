@@ -32,9 +32,9 @@ trait PCAMetricCalculation {
 
   override private[sparkling] def extractActualValues(
       rowData: RowData,
-      wrapper: EasyPredictModelWrapper): Array[Float] = {
+      wrapper: EasyPredictModelWrapper): Array[Double] = {
     val rawData = new Array[Double](wrapper.m.nfeatures())
-    wrapper.fillRawData(rowData, rawData).map(_.toFloat)
+    wrapper.fillRawData(rowData, rawData)
   }
 }
 

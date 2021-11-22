@@ -107,7 +107,7 @@ trait MetricCalculation {
     throw new UnsupportedOperationException("This method is supposed to be overriten byt children classes.")
   }
 
-  private[sparkling] def extractActualValues(rowData: RowData, wrapper: EasyPredictModelWrapper): Array[Float] = {
+  private[sparkling] def extractActualValues(rowData: RowData, wrapper: EasyPredictModelWrapper): Array[Double] = {
     throw new UnsupportedOperationException("This method is supposed to be overriten byt children classes.")
   }
 
