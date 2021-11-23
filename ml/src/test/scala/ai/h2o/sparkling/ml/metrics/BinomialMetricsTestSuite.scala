@@ -179,7 +179,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       .setLabelCol("CAPSULE")
     val model = algorithm.fit(trainingDataset)
 
-    // H2O runtime caclulates metrics with GLM additions, but SW calculates just generic binomial metrics
+    // H2O runtime calculates metrics with GLM additions, but SW calculates just generic binomial metrics
     assertMetrics(model, trainingDataset, validationDataset, 0.00001, 0.00000001, skipExtraMetrics = true)
   }
 

@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import ai.h2o.sparkling.ml.algos.{H2OGAM, H2OGBM, H2OGLM}
+import ai.h2o.sparkling.ml.algos._
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -34,6 +34,7 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/iris/iris_wheader.csv"))
+    .repartition(20)
 
   private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
 
@@ -59,13 +60,15 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       trainingDataset: DataFrame,
       validationDataset: DataFrame,
       trainingMetricsTolerance: Double = 0.0,
-      validationMetricsTolerance: Double = 0.0): Unit = {
+      validationMetricsTolerance: Double = 0.0,
+      skipExtraMetrics:Boolean = false): Unit = {
     MetricsAssertions.assertEssentialMetrics(
       model,
       trainingDataset,
       validationDataset,
       trainingMetricsTolerance,
-      validationMetricsTolerance)
+      validationMetricsTolerance,
+      skipExtraMetrics)
 
     val trainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OMultinomialMetrics]
     val expectedTrainingMetricObject = model.getTrainingMetricsObject().asInstanceOf[H2OMultinomialMetrics]
@@ -125,19 +128,6 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
     assertMetrics[H2OMultinomialMetrics](loadedModel)
   }
 
-  test("test calculation of multinomial metric objects on arbitrary dataset") {
-    val algo = new H2OGBM()
-      .setValidationDataFrame(validationDataset)
-      .setSeed(1)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
-      .setColumnsToCategorical("class")
-      .setAucType("MACRO_OVR")
-      .setLabelCol("class")
-    val model = algo.fit(trainingDataset)
-
-    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.0001)
-  }
-
   test("test multinomial glm metric objects") {
     val algo = new H2OGLM()
       .setSplitRatio(0.8)
@@ -153,8 +143,38 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
     assertMetrics[H2OMultinomialGLMMetrics](loadedModel)
   }
 
-  test("test calculation of multinomial glm metric objects on arbitrary dataset") {
-    val algo = new H2OGLM()
+  {
+    val algorithmsAndTolerances: Seq[(H2OSupervisedAlgorithm[_], Double, Double)] = Seq(
+      (new H2ODeepLearning(), 0.00001, 0.00000001),
+      (new H2OXGBoost(), 0.00001, 0.00000001),
+      (new H2OGBM(), 0.00001, 0.00000001),
+      (new H2OGLM(), 0.00001, 0.00000001))
+
+    for ((algorithm, trainingMetricsTolerance, validationMetricsTolerance) <- algorithmsAndTolerances) {
+      val algorithmName = algorithm.getClass.getSimpleName
+
+      test(s"test calculation of multinomial $algorithmName metrics on arbitrary dataset") {
+        val algo = new H2OGBM()
+          .setValidationDataFrame(validationDataset)
+          .setSeed(1)
+          .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+          .setColumnsToCategorical("class")
+          .setAucType("MACRO_OVR")
+          .setLabelCol("class")
+        val model = algo.fit(trainingDataset)
+
+        assertMetrics(
+          model,
+          trainingDataset,
+          validationDataset,
+          trainingMetricsTolerance,
+          validationMetricsTolerance)
+      }
+    }
+  }
+
+  test("test calculation of multinomial H2ODRF metrics on arbitrary dataset") {
+    val algo = new H2ODRF()
       .setValidationDataFrame(validationDataset)
       .setSeed(1)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
@@ -163,24 +183,74 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       .setLabelCol("class")
     val model = algo.fit(trainingDataset)
 
-    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.0001)
+    val validationMetricsTolerance = 0.00000001
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      Double.PositiveInfinity,
+      validationMetricsTolerance)
+
+    val validationMetricObject = model.getMetricsObject(validationDataset).asInstanceOf[H2OMultinomialMetrics]
+    val expectedValidationMetricObject = model.getValidationMetricsObject().asInstanceOf[H2OMultinomialMetrics]
+    TestUtils.assertDataFramesAreEqual(
+      validationMetricObject.getMultinomialAUCTable(),
+      expectedValidationMetricObject.getMultinomialAUCTable(),
+      "Type",
+      validationMetricsTolerance)
+    TestUtils.assertDataFramesAreEqual(
+      validationMetricObject.getMultinomialPRAUCTable(),
+      expectedValidationMetricObject.getMultinomialPRAUCTable(),
+      "Type",
+      validationMetricsTolerance)
+    TestUtils.assertDataFramesAreIdentical(
+      validationMetricObject.getConfusionMatrix(),
+      expectedValidationMetricObject.getConfusionMatrix())
+    TestUtils.assertDataFramesAreEqual(
+      validationMetricObject.getHitRatioTable(),
+      expectedValidationMetricObject.getHitRatioTable(),
+      "K",
+      validationMetricsTolerance)
   }
 
-  test("test calculation of multinomial gam metric objects on arbitrary dataset") {
-    val algo = new H2OGAM()
+  test("test calculation of multinomial H2ORuleFit metrics on arbitrary dataset") {
+    val algo = new H2ORuleFit()
       .setValidationDataFrame(validationDataset)
+      .setSeed(1)
+      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+      .setColumnsToCategorical("class")
+      .setAucType("MACRO_OVR")
+      .setLabelCol("class")
+    val model = algo.fit(trainingDataset)
+
+    // H2O runtime calculates metrics with GLM additions, but SW calculates just generic binomial metrics
+    assertMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance = 0.00001,
+      validationMetricsTolerance = 0.00000001,
+      skipExtraMetrics = true)
+  }
+
+  test("test calculation of multinomial H2OGAM metrics on arbitrary dataset") {
+    // Significant differences are made when number of partitions is a higher number
+    val gamTrainingDataset = trainingDataset.repartition(1)
+    val gamValidationDataset = validationDataset.repartition(1)
+    val algo = new H2OGAM()
+      .setValidationDataFrame(gamValidationDataset)
       .setSeed(1)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len")
       .setGamCols(Array("petal_len"))
       .setColumnsToCategorical("class")
       .setAucType("MACRO_OVR")
       .setLabelCol("class")
-    val model = algo.fit(trainingDataset)
+    val model = algo.fit(gamTrainingDataset)
 
     assertMetrics(
       model,
-      trainingDataset,
-      validationDataset,
+      gamTrainingDataset,
+      gamValidationDataset,
       trainingMetricsTolerance = 0.0001,
       validationMetricsTolerance = 0.00000001)
   }
