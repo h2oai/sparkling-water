@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import ai.h2o.sparkling.ml.algos.{H2OGAM, H2OGBM, H2OGLM}
+import ai.h2o.sparkling.ml.algos._
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -36,10 +36,9 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
   private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
-    .csv(TestUtils.locate("smalldata/iris/iris_wheader.csv"))
-    // iris dataset has 3 classes, filter out one class
-    // to do binomial classification
-    .filter('class =!= "Iris-virginica")
+    .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    .withColumn("CAPSULE", 'CAPSULE.cast(StringType))
+    .repartition(20)
 
   private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
 
@@ -69,13 +68,15 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       trainingDataset: DataFrame,
       validationDataset: DataFrame,
       trainingMetricsTolerance: Double = 0.0,
-      validationMetricsTolerance: Double = 0.0): Unit = {
+      validationMetricsTolerance: Double = 0.0,
+      skipExtraMetrics: Boolean = false): Unit = {
     MetricsAssertions.assertEssentialMetrics(
       model,
       trainingDataset,
       validationDataset,
       trainingMetricsTolerance,
-      validationMetricsTolerance)
+      validationMetricsTolerance,
+      skipExtraMetrics)
 
     val trainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OBinomialMetrics]
     val expectedTrainingMetricObject = model.getTrainingMetricsObject().asInstanceOf[H2OBinomialMetrics]
@@ -118,9 +119,8 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setFeaturesCols("sepal_len", "sepal_wid")
-      .setColumnsToCategorical("class")
-      .setLabelCol("class")
+      .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("CAPSULE")
 
     val model = algo.fit(dataset)
     assertMetrics[H2OBinomialMetrics](model)
@@ -130,25 +130,12 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     assertMetrics[H2OBinomialMetrics](loadedModel)
   }
 
-  test("test calculation of binomial metric objects on arbitrary dataset") {
-    val algo = new H2OGBM()
-      .setValidationDataFrame(validationDataset)
-      .setSeed(1)
-      .setFeaturesCols("sepal_len", "sepal_wid")
-      .setColumnsToCategorical("class")
-      .setLabelCol("class")
-    val model = algo.fit(trainingDataset)
-
-    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.0001)
-  }
-
   test("test binomial glm metric objects") {
     val algo = new H2OGLM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setFeaturesCols("sepal_len", "sepal_wid")
-      .setColumnsToCategorical("class")
-      .setLabelCol("class")
+      .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("CAPSULE")
 
     val model = algo.fit(dataset)
     assertMetrics[H2OBinomialGLMMetrics](model)
@@ -158,33 +145,89 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     assertMetrics[H2OBinomialGLMMetrics](loadedModel)
   }
 
-  test("test calculation of binomial glm metric objects on arbitrary dataset") {
-    val algo = new H2OGLM()
-      .setValidationDataFrame(validationDataset)
-      .setSeed(1)
-      .setFeaturesCols("sepal_len", "sepal_wid")
-      .setColumnsToCategorical("class")
-      .setLabelCol("class")
-    val model = algo.fit(trainingDataset)
+  {
+    val algorithmsAndTolerances: Seq[(H2OSupervisedAlgorithm[_], Double, Double)] = Seq(
+      (new H2ODeepLearning(), 0.00001, 0.00000001),
+      (new H2OXGBoost(), 0.00005, 0.00000001),
+      (new H2OGBM(), 0.00001, 0.00000001),
+      (new H2OGLM(), 0.00001, 0.00000001))
 
-    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.0001)
+    for ((algorithm, trainingMetricsTolerance, validationMetricsTolerance) <- algorithmsAndTolerances) {
+      val algorithmName = algorithm.getClass.getSimpleName
+
+      test(s"test calculation of binomial $algorithmName metric on arbitrary dataset") {
+        algorithm
+          .setValidationDataFrame(validationDataset)
+          .set(algorithm.getParam("seed"), 1L)
+          .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+          .setLabelCol("CAPSULE")
+        val model = algorithm.fit(trainingDataset)
+
+        assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance, validationMetricsTolerance)
+      }
+    }
   }
 
-  test("test calculation of binomial gam metric objects on arbitrary dataset") {
-    val algo = new H2OGAM()
+  test(s"test calculation of binomial H2ORuleFit metric on arbitrary dataset") {
+    val algorithm = new H2ORuleFit()
+    algorithm
       .setValidationDataFrame(validationDataset)
-      .setSeed(1)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len")
-      .setGamCols(Array("petal_len"))
-      .setColumnsToCategorical("class")
-      .setLabelCol("class")
-    val model = algo.fit(trainingDataset)
+      .setSeed(1L)
+      .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("CAPSULE")
+    val model = algorithm.fit(trainingDataset)
 
-    assertMetrics(
-      model,
-      trainingDataset,
-      validationDataset,
-      trainingMetricsTolerance = 0.0001,
-      validationMetricsTolerance = 0.00000001)
+    // H2O runtime caclulates metrics with GLM additions, but SW calculates just generic binomial metrics
+    assertMetrics(model, trainingDataset, validationDataset, 0.00001, 0.00000001, skipExtraMetrics = true)
+  }
+
+  test(s"test calculation of binomial validation H2ODRF metric on arbitrary dataset") {
+    val algorithm = new H2ODRF()
+    algorithm
+      .setValidationDataFrame(validationDataset)
+      .set(algorithm.getParam("seed"), 1L)
+      .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("CAPSULE")
+    val model = algorithm.fit(trainingDataset)
+
+    val validationMetricsTolerance = 0.0000001
+    MetricsAssertions.assertEssentialMetrics(model, trainingDataset, validationDataset, 1, validationMetricsTolerance)
+    println("Training metrics: " + model.getMetrics(trainingDataset))
+    // It seems that H2O-3 calculates training metrics for H2O-3 incorrectly
+    println("Expected training metrics: " + model.getTrainingMetrics())
+    println("Validation metrics: " + model.getMetrics(validationDataset))
+    println("Expected validation metrics: " + model.getValidationMetrics())
+    val validationMetricObject = model.getMetricsObject(validationDataset).asInstanceOf[H2OBinomialMetrics]
+    val expectedValidationMetricObject = model.getValidationMetricsObject().asInstanceOf[H2OBinomialMetrics]
+    TestUtils.assertDataFramesAreIdentical(
+      validationMetricObject.getConfusionMatrix(),
+      expectedValidationMetricObject.getConfusionMatrix())
+    TestUtils.assertDataFramesAreEqual(
+      validationMetricObject.getThresholdsAndMetricScores(),
+      expectedValidationMetricObject.getThresholdsAndMetricScores(),
+      "idx",
+      validationMetricsTolerance)
+    TestUtils.assertDataFramesAreEqual(
+      validationMetricObject.getMaxCriteriaAndMetricScores(),
+      expectedValidationMetricObject.getMaxCriteriaAndMetricScores(),
+      "Metric",
+      validationMetricsTolerance)
+    validationMetricObject.getGainsLiftTable() shouldBe (null) // Gains-lift table is not supported yet.
+  }
+
+  test(s"test calculation of binomial H2OGAM metric on arbitrary dataset") {
+    // Significant differences are made when number of partitions is a higher number
+    val gamTrainingDataset = trainingDataset.repartition(1)
+    val gamValidationDataset = validationDataset.repartition(1)
+    val algorithm = new H2OGAM()
+    algorithm
+      .setValidationDataFrame(validationDataset)
+      .setSeed(1L)
+      .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
+      .setGamCols(Array("PSA"))
+      .setLabelCol("CAPSULE")
+    val model = algorithm.fit(gamTrainingDataset)
+
+    assertMetrics(model, gamTrainingDataset, gamValidationDataset, 0.00001, 0.00000001)
   }
 }

@@ -72,7 +72,7 @@ trait MetricCalculation {
         }
         Iterator.single(metricBuilder)
       }
-      .reduce((f, s) => { f.reduce(s.asInstanceOf); f })
+      .reduce((f, s) => { f.reduce(s); f })
 
     val metrics = filledMetricsBuilder.makeModelMetrics()
     val schema = metricsToSchema(metrics)

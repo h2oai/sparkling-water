@@ -47,13 +47,16 @@ object MetricsAssertions extends Matchers {
       expected: Map[String, Double],
       actual: Map[String, Double],
       ignored: Set[String] = Set("ScoringTime"),
-      tolerance: Double = 0.0): Unit = {
+      tolerance: Double = 0.0,
+      skipExtraMetrics: Boolean = false): Unit = {
     val expectedKeys = expected.keySet
     val actualKeys = actual.keySet
 
-    expectedKeys shouldEqual actualKeys
+    if (!skipExtraMetrics) {
+      expectedKeys shouldEqual actualKeys
+    }
 
-    for (key <- expectedKeys.diff(ignored)) {
+    for (key <- actualKeys.diff(ignored)) {
       if (expected(key).isNaN && actual(key).isNaN) {
         // Values are equal
       } else if (tolerance > 0.0) {
@@ -69,7 +72,8 @@ object MetricsAssertions extends Matchers {
       trainingDataset: DataFrame,
       validationDataset: DataFrame,
       trainingMetricsTolerance: Double = 0.0,
-      validationMetricsTolerance: Double = 0.0): Unit = {
+      validationMetricsTolerance: Double = 0.0,
+      skipExtraMetrics: Boolean = false): Unit = {
     val trainingMetrics = model.getMetrics(trainingDataset)
     val trainingMetricsObject = model.getMetricsObject(trainingDataset)
     val validationMetrics = model.getMetrics(validationDataset)
@@ -77,8 +81,16 @@ object MetricsAssertions extends Matchers {
     val expectedTrainingMetrics = model.getTrainingMetrics()
     val expectedValidationMetrics = model.getValidationMetrics()
 
-    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = trainingMetricsTolerance)
-    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics, tolerance = validationMetricsTolerance)
+    MetricsAssertions.assertEqual(
+      expectedTrainingMetrics,
+      trainingMetrics,
+      tolerance = trainingMetricsTolerance,
+      skipExtraMetrics = skipExtraMetrics)
+    MetricsAssertions.assertEqual(
+      expectedValidationMetrics,
+      validationMetrics,
+      tolerance = validationMetricsTolerance,
+      skipExtraMetrics = skipExtraMetrics)
     val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
     MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
     MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
