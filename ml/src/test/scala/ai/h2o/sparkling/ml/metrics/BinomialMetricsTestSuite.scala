@@ -157,7 +157,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     for ((algorithm, trainingMetricsTolerance, validationMetricsTolerance) <- algorithmsAndTolerances) {
       val algorithmName = algorithm.getClass.getSimpleName
 
-      test(s"test calculation of binomial $algorithmName metric on arbitrary dataset") {
+      test(s"test calculation of binomial $algorithmName metrics on arbitrary dataset") {
         algorithm
           .setValidationDataFrame(validationDataset)
           .set(algorithm.getParam("seed"), 1L)
@@ -170,7 +170,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     }
   }
 
-  test(s"test calculation of binomial H2ORuleFit metric on arbitrary dataset") {
+  test(s"test calculation of binomial H2ORuleFit metrics on arbitrary dataset") {
     val algorithm = new H2ORuleFit()
     algorithm
       .setValidationDataFrame(validationDataset)
@@ -183,7 +183,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     assertMetrics(model, trainingDataset, validationDataset, 0.00001, 0.00000001, skipExtraMetrics = true)
   }
 
-  test(s"test calculation of binomial validation H2ODRF metric on arbitrary dataset") {
+  test(s"test calculation of binomial validation H2ODRF metrics on arbitrary dataset") {
     val algorithm = new H2ODRF()
     algorithm
       .setValidationDataFrame(validationDataset)
@@ -217,7 +217,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     validationMetricObject.getGainsLiftTable() shouldBe (null) // Gains-lift table is not supported yet.
   }
 
-  test(s"test calculation of binomial H2OGAM metric on arbitrary dataset") {
+  test(s"test calculation of binomial H2OGAM metrics on arbitrary dataset") {
     // Significant differences are made when number of partitions is a higher number
     val gamTrainingDataset = trainingDataset.repartition(1)
     val gamValidationDataset = validationDataset.repartition(1)

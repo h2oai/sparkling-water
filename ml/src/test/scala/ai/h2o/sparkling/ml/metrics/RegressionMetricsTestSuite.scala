@@ -18,9 +18,11 @@
 package ai.h2o.sparkling.ml.metrics
 
 import ai.h2o.sparkling.ml.algos
+import ai.h2o.sparkling.ml.algos._
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.StringType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -30,10 +32,15 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
+  import spark.implicits._
+
   private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    .withColumn("RACE", 'RACE.cast(StringType))
+    .withColumn("DCAPS", 'DCAPS.cast(StringType))
+    .repartition(20)
 
   private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
 
@@ -63,21 +70,6 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
     assertMetrics[H2ORegressionMetrics](loadedModel)
   }
 
-  test("test calculation of regression metric objects on arbitrary dataset") {
-    val algo = new algos.H2OGBM()
-      .setValidationDataFrame(validationDataset)
-      .setSeed(1)
-      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-      .setLabelCol("AGE")
-    val model = algo.fit(trainingDataset)
-
-    MetricsAssertions.assertEssentialMetrics(
-      model,
-      trainingDataset,
-      validationDataset,
-      trainingMetricsTolerance = 0.00001)
-  }
-
   test("test regression glm metric objects") {
     val algo = new algos.H2OGLM()
       .setSplitRatio(0.8)
@@ -92,34 +84,50 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
     assertMetrics[H2ORegressionGLMMetrics](loadedModel)
   }
 
-  test("test calculation of regression glm metric objects on arbitrary dataset") {
-    val algo = new algos.H2OGLM()
-      .setValidationDataFrame(validationDataset)
-      .setSeed(1)
-      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-      .setLabelCol("AGE")
-    val model = algo.fit(trainingDataset)
+  {
+    val algorithmsAndTolerances: Seq[(H2OSupervisedAlgorithm[_], Double, Double, Boolean)] = Seq(
+      (new H2ODeepLearning(), 0.00001, 0.00000001, false),
+      (new H2OXGBoost(), 0.00001, 0.00000001, false),
+      (new H2OGBM(), 0.00005, 0.00000001, false),
+      (new H2OGLM(), 0.00001, 0.00000001, false),
+      (new H2ODRF(), Double.PositiveInfinity, 0.00000001, false), // ignore comparision on the training dataset
+      (new H2ORuleFit(), 0.00001, 0.00000001, true)) // H2O runtime produces additional GLM metrics
 
-    MetricsAssertions.assertEssentialMetrics(
-      model,
-      trainingDataset,
-      validationDataset,
-      trainingMetricsTolerance = 0.00001)
+    for((algorithm, trainingMetricsTolerance, validationMetricsTolerance, skipExtraMetrics) <- algorithmsAndTolerances) {
+      val algorithmName = algorithm.getClass.getSimpleName
+
+      test(s"test calculation of regression $algorithmName metrics on arbitrary dataset") {
+        algorithm
+          .setValidationDataFrame(validationDataset)
+          .set(algorithm.getParam("seed"), 1L)
+          .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
+          .setLabelCol("AGE")
+        val model = algorithm.fit(trainingDataset)
+
+        MetricsAssertions.assertEssentialMetrics(
+          model,
+          trainingDataset,
+          validationDataset,
+          trainingMetricsTolerance,
+          validationMetricsTolerance,
+          skipExtraMetrics)
+      }
+    }
   }
 
-  test("test calculation of regression gam metric objects on arbitrary dataset") {
-    val algo = new algos.H2OGAM()
+  test(s"test calculation of regression H2OGAM metrics on arbitrary dataset") {
+    // Significant differences are made when number of partitions is a higher number
+    val gamTrainingDataset = trainingDataset.repartition(1)
+    val gamValidationDataset = validationDataset.repartition(1)
+    val algorithm = new H2OGAM()
+    algorithm
       .setValidationDataFrame(validationDataset)
-      .setSeed(1)
-      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
+      .setSeed(1L)
       .setGamCols(Array(Array("PSA")))
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
       .setLabelCol("AGE")
-    val model = algo.fit(trainingDataset)
+    val model = algorithm.fit(gamTrainingDataset)
 
-    MetricsAssertions.assertEssentialMetrics(
-      model,
-      trainingDataset,
-      validationDataset,
-      trainingMetricsTolerance = 0.00001)
+    MetricsAssertions.assertEssentialMetrics(model, gamTrainingDataset, gamValidationDataset, 0.00001, 0.00000001)
   }
 }
