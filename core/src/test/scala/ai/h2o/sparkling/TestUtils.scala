@@ -104,7 +104,7 @@ object TestUtils extends Matchers {
       expected: DataFrame,
       produced: DataFrame,
       identityColumn: String,
-      tolerances: Map[String, Double]): Unit = {
+      tolerances: Map[String, Double] = Map.empty): Unit = {
     expected.schema shouldEqual produced.schema
     val intersection = expected.as("expected").join(produced.as("produced"), identityColumn)
     intersection.count() shouldEqual expected.count()
