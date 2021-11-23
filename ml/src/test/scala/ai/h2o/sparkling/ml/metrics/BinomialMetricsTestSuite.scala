@@ -20,7 +20,7 @@ package ai.h2o.sparkling.ml.metrics
 import ai.h2o.sparkling.ml.algos.{H2OGAM, H2OGBM, H2OGLM}
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -64,6 +64,56 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     binomialObject.getThresholdsAndMetricScores().columns.length > 0
   }
 
+  private def assertMetrics(
+      model: H2OMOJOModel,
+      trainingDataset: DataFrame,
+      validationDataset: DataFrame,
+      trainingMetricsTolerance: Double = 0.0,
+      validationMetricsTolerance: Double = 0.0): Unit = {
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance,
+      validationMetricsTolerance)
+
+    val trainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OBinomialMetrics]
+    val expectedTrainingMetricObject = model.getTrainingMetricsObject().asInstanceOf[H2OBinomialMetrics]
+
+    TestUtils.assertDataFramesAreIdentical(
+      trainingMetricObject.getConfusionMatrix(),
+      expectedTrainingMetricObject.getConfusionMatrix())
+    TestUtils.assertDataFramesAreEqual(
+      trainingMetricObject.getThresholdsAndMetricScores(),
+      expectedTrainingMetricObject.getThresholdsAndMetricScores(),
+      "idx",
+      trainingMetricsTolerance)
+    TestUtils.assertDataFramesAreEqual(
+      trainingMetricObject.getMaxCriteriaAndMetricScores(),
+      expectedTrainingMetricObject.getMaxCriteriaAndMetricScores(),
+      "Metric",
+      trainingMetricsTolerance)
+    trainingMetricObject.getGainsLiftTable() shouldBe (null) // Gains-lift table is not supported yet.
+
+    val validationMetricObject = model.getMetricsObject(validationDataset).asInstanceOf[H2OBinomialMetrics]
+    val expectedValidationMetricObject = model.getValidationMetricsObject().asInstanceOf[H2OBinomialMetrics]
+
+    TestUtils.assertDataFramesAreIdentical(
+      validationMetricObject.getConfusionMatrix(),
+      expectedValidationMetricObject.getConfusionMatrix())
+    TestUtils.assertDataFramesAreEqual(
+      validationMetricObject.getThresholdsAndMetricScores(),
+      expectedValidationMetricObject.getThresholdsAndMetricScores(),
+      "idx",
+      validationMetricsTolerance)
+    TestUtils.assertDataFramesAreEqual(
+      validationMetricObject.getMaxCriteriaAndMetricScores(),
+      expectedValidationMetricObject.getMaxCriteriaAndMetricScores(),
+      "Metric",
+      validationMetricsTolerance)
+    validationMetricObject.getGainsLiftTable() shouldBe (null) // Gains-lift table is not supported yet.
+  }
+
   test("test binomial metric objects") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
@@ -89,7 +139,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       .setLabelCol("class")
     val model = algo.fit(trainingDataset)
 
-    MetricsAssertions.assertEssentialMetrics(
+    assertMetrics(
       model,
       trainingDataset,
       validationDataset,
@@ -121,7 +171,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       .setLabelCol("class")
     val model = algo.fit(trainingDataset)
 
-    MetricsAssertions.assertEssentialMetrics(
+    assertMetrics(
       model,
       trainingDataset,
       validationDataset,
@@ -138,7 +188,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       .setLabelCol("class")
     val model = algo.fit(trainingDataset)
 
-    MetricsAssertions.assertEssentialMetrics(
+    assertMetrics(
       model,
       trainingDataset,
       validationDataset,

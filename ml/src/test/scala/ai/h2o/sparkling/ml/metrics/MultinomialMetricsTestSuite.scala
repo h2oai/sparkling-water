@@ -67,16 +67,18 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       trainingMetricsTolerance,
       validationMetricsTolerance)
 
-    val trainingMetricObject = model.getTrainingMetricsObject().asInstanceOf[H2OMultinomialMetrics]
-    val expectedTrainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OMultinomialMetrics]
+    val trainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OMultinomialMetrics]
+    val expectedTrainingMetricObject = model.getTrainingMetricsObject().asInstanceOf[H2OMultinomialMetrics]
     TestUtils.assertDataFramesAreEqual(
       trainingMetricObject.getMultinomialAUCTable(),
       expectedTrainingMetricObject.getMultinomialAUCTable(),
-      "Type")
+      "Type",
+      trainingMetricsTolerance)
     TestUtils.assertDataFramesAreEqual(
       trainingMetricObject.getMultinomialPRAUCTable(),
       expectedTrainingMetricObject.getMultinomialPRAUCTable(),
-      "Type")
+      "Type",
+      trainingMetricsTolerance)
     TestUtils.assertDataFramesAreIdentical(
       trainingMetricObject.getConfusionMatrix(),
       expectedTrainingMetricObject.getConfusionMatrix())
@@ -84,18 +86,20 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       trainingMetricObject.getHitRatioTable(),
       expectedTrainingMetricObject.getHitRatioTable(),
       "K",
-      Map("Hit Ratio" -> trainingMetricsTolerance))
+      trainingMetricsTolerance)
 
-    val validationMetricObject = model.getValidationMetricsObject().asInstanceOf[H2OMultinomialMetrics]
-    val expectedValidationMetricObject = model.getMetricsObject(validationDataset).asInstanceOf[H2OMultinomialMetrics]
+    val validationMetricObject = model.getMetricsObject(validationDataset).asInstanceOf[H2OMultinomialMetrics]
+    val expectedValidationMetricObject = model.getValidationMetricsObject().asInstanceOf[H2OMultinomialMetrics]
     TestUtils.assertDataFramesAreEqual(
       validationMetricObject.getMultinomialAUCTable(),
       expectedValidationMetricObject.getMultinomialAUCTable(),
-      "Type")
+      "Type",
+      validationMetricsTolerance)
     TestUtils.assertDataFramesAreEqual(
       validationMetricObject.getMultinomialPRAUCTable(),
       expectedValidationMetricObject.getMultinomialPRAUCTable(),
-      "Type")
+      "Type",
+      validationMetricsTolerance)
     TestUtils.assertDataFramesAreIdentical(
       validationMetricObject.getConfusionMatrix(),
       expectedValidationMetricObject.getConfusionMatrix())
@@ -103,7 +107,7 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       validationMetricObject.getHitRatioTable(),
       expectedValidationMetricObject.getHitRatioTable(),
       "K",
-      Map("Hit Ratio" -> validationMetricsTolerance))
+      validationMetricsTolerance)
   }
 
   test("test multinomial metric objects") {

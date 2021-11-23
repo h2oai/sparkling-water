@@ -110,8 +110,8 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       trainingMetricsTolerance,
       validationMetricsTolerance)
 
-    val trainingMetricObject = model.getTrainingMetricsObject().asInstanceOf[H2OOrdinalGLMMetrics]
-    val expectedTrainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OOrdinalGLMMetrics]
+    val trainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OOrdinalGLMMetrics]
+    val expectedTrainingMetricObject = model.getTrainingMetricsObject().asInstanceOf[H2OOrdinalGLMMetrics]
     TestUtils.assertDataFramesAreIdentical(
       trainingMetricObject.getConfusionMatrix(),
       expectedTrainingMetricObject.getConfusionMatrix())
@@ -119,10 +119,10 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       trainingMetricObject.getHitRatioTable(),
       expectedTrainingMetricObject.getHitRatioTable(),
       "K",
-      Map("Hit Ratio" -> trainingMetricsTolerance))
+      trainingMetricsTolerance)
 
-    val validationMetricObject = model.getValidationMetricsObject().asInstanceOf[H2OOrdinalGLMMetrics]
-    val expectedValidationMetricObject = model.getMetricsObject(validationDataset).asInstanceOf[H2OOrdinalGLMMetrics]
+    val validationMetricObject = model.getMetricsObject(validationDataset).asInstanceOf[H2OOrdinalGLMMetrics]
+    val expectedValidationMetricObject = model.getValidationMetricsObject().asInstanceOf[H2OOrdinalGLMMetrics]
     TestUtils.assertDataFramesAreIdentical(
       validationMetricObject.getConfusionMatrix(),
       expectedValidationMetricObject.getConfusionMatrix())
@@ -130,6 +130,6 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       validationMetricObject.getHitRatioTable(),
       expectedValidationMetricObject.getHitRatioTable(),
       "K",
-      Map("Hit Ratio" -> validationMetricsTolerance))
+      validationMetricsTolerance)
   }
 }

@@ -104,6 +104,19 @@ object TestUtils extends Matchers {
       expected: DataFrame,
       produced: DataFrame,
       identityColumn: String,
+      tolerance: Double): Unit = {
+    val tolerances =  expected.schema.fields
+      .filterNot(_.name == identityColumn)
+      .filter(_.dataType.isInstanceOf[NumericType])
+      .map(_.name -> tolerance)
+      .toMap
+    assertDataFramesAreEqual(expected, produced, identityColumn, tolerances)
+  }
+
+  def assertDataFramesAreEqual(
+      expected: DataFrame,
+      produced: DataFrame,
+      identityColumn: String,
       tolerances: Map[String, Double] = Map.empty): Unit = {
     expected.schema shouldEqual produced.schema
     val intersection = expected.as("expected").join(produced.as("produced"), identityColumn)
@@ -126,7 +139,9 @@ object TestUtils extends Matchers {
       .filter(col("isEqual") === lit(false))
       .select(col(s"expected.$identityColumn") as "id")
     val differentIds = differentRowsDF.collect().map(_.get(0))
-    assert(differentIds.length == 0, s"The rows if ids [${differentIds.mkString(", ")}] are not equal.")
+    assert(
+      differentIds.length == 0,
+      s"The rows of ids($identityColumn) [${differentIds.mkString(", ")}] are not equal.")
   }
 
   def assertDatasetBasicProperties[T <: Product](
