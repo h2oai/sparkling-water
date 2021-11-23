@@ -61,7 +61,7 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       validationDataset: DataFrame,
       trainingMetricsTolerance: Double = 0.0,
       validationMetricsTolerance: Double = 0.0,
-      skipExtraMetrics:Boolean = false): Unit = {
+      skipExtraMetrics: Boolean = false): Unit = {
     MetricsAssertions.assertEssentialMetrics(
       model,
       trainingDataset,
@@ -163,12 +163,7 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
           .setLabelCol("class")
         val model = algo.fit(trainingDataset)
 
-        assertMetrics(
-          model,
-          trainingDataset,
-          validationDataset,
-          trainingMetricsTolerance,
-          validationMetricsTolerance)
+        assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance, validationMetricsTolerance)
       }
     }
   }

@@ -93,7 +93,7 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
       (new H2ODRF(), Double.PositiveInfinity, 0.00000001, false), // ignore comparision on the training dataset
       (new H2ORuleFit(), 0.00001, 0.00000001, true)) // H2O runtime produces additional GLM metrics
 
-    for((algorithm, trainingMetricsTolerance, validationMetricsTolerance, skipExtraMetrics) <- algorithmsAndTolerances) {
+    for ((algorithm, trainingMetricsTolerance, validationMetricsTolerance, skipExtraMetrics) <- algorithmsAndTolerances) {
       val algorithmName = algorithm.getClass.getSimpleName
 
       test(s"test calculation of regression $algorithmName metrics on arbitrary dataset") {

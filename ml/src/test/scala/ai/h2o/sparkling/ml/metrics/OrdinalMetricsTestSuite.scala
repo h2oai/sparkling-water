@@ -34,6 +34,7 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/insurance.csv"))
+    .repartition(20)
 
   private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
 
@@ -47,46 +48,6 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
   private def assertMetrics(metricsObject: H2OMetrics, metrics: Map[String, Double]): Unit = {
     metricsObject.isInstanceOf[H2OOrdinalGLMMetrics] should be(true)
     MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
-  }
-
-  test("test ordinal glm metric objects") {
-    val algo = new H2OGLM()
-      .setSplitRatio(0.8)
-      .setFeaturesCols("District", "Group", "Claims")
-      .setLabelCol("Age")
-      .setSeed(1)
-      .setFamily("ordinal")
-    val model = algo.fit(dataset)
-    assertMetrics[H2OOrdinalMetrics](model)
-
-    model.write.overwrite().save("ml/build/glm_ordinal_model_metrics")
-    val loadedModel = H2OGLMMOJOModel.load("ml/build/glm_ordinal_model_metrics")
-    assertMetrics[H2OOrdinalGLMMetrics](loadedModel)
-  }
-
-  test("test calculation of ordinal glm metric objects on arbitrary dataset") {
-    val algo = new H2OGLM()
-      .setValidationDataFrame(validationDataset)
-      .setFeaturesCols("District", "Group", "Claims")
-      .setLabelCol("Age")
-      .setSeed(1)
-      .setFamily("ordinal")
-    val model = algo.fit(trainingDataset)
-
-    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.00001)
-  }
-
-  test("test calculation of ordinal gam metric objects on arbitrary dataset") {
-    val algo = new H2OGAM()
-      .setValidationDataFrame(validationDataset)
-      .setFeaturesCols("District", "Group")
-      .setGamCols(Array("Claims"))
-      .setLabelCol("Age")
-      .setSeed(1)
-      .setFamily("ordinal")
-    val model = algo.fit(trainingDataset)
-
-    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.00001)
   }
 
   private def assertMetrics(
@@ -123,5 +84,57 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       expectedValidationMetricObject.getHitRatioTable(),
       "K",
       validationMetricsTolerance)
+  }
+
+  test("test ordinal glm metric objects") {
+    val algo = new H2OGLM()
+      .setSplitRatio(0.8)
+      .setFeaturesCols("District", "Group", "Claims")
+      .setLabelCol("Age")
+      .setSeed(1)
+      .setFamily("ordinal")
+    val model = algo.fit(dataset)
+    assertMetrics[H2OOrdinalMetrics](model)
+
+    model.write.overwrite().save("ml/build/glm_ordinal_model_metrics")
+    val loadedModel = H2OGLMMOJOModel.load("ml/build/glm_ordinal_model_metrics")
+    assertMetrics[H2OOrdinalGLMMetrics](loadedModel)
+  }
+
+  test("test calculation of ordinal glm metric objects on arbitrary dataset") {
+    val algo = new H2OGLM()
+      .setValidationDataFrame(validationDataset)
+      .setFeaturesCols("District", "Group", "Claims")
+      .setLabelCol("Age")
+      .setSeed(1)
+      .setFamily("ordinal")
+    val model = algo.fit(trainingDataset)
+
+    assertMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance = 0.00001,
+      validationMetricsTolerance = 0.00000001)
+  }
+
+  test("test calculation of ordinal gam metric objects on arbitrary dataset") {
+    val gamTrainingDataset = trainingDataset.repartition(1)
+    val gamValidationDataset = validationDataset.repartition(1)
+    val algo = new H2OGAM()
+      .setValidationDataFrame(gamValidationDataset)
+      .setFeaturesCols("District", "Group")
+      .setGamCols(Array("Claims"))
+      .setLabelCol("Age")
+      .setSeed(1)
+      .setFamily("ordinal")
+    val model = algo.fit(gamTrainingDataset)
+
+    assertMetrics(
+      model,
+      gamTrainingDataset,
+      gamValidationDataset,
+      trainingMetricsTolerance = 0.00001,
+      validationMetricsTolerance = 0.00000001)
   }
 }
