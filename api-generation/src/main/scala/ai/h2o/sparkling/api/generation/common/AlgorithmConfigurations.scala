@@ -183,7 +183,13 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
         kmeansMOJOParents,
         Some("H2OClusteringMetrics")),
       ("H2OCoxPH", classOf[CoxPHParameters], supervised, none, none, Some("H2ORegressionCoxPHMetrics")),
-      ("H2OIsolationForest", classOf[IFParameters], treeUnsupervised, none, isoforMOJOParents, Some("H2OAnomalyMetrics")))
+      (
+        "H2OIsolationForest",
+        classOf[IFParameters],
+        treeUnsupervised,
+        none,
+        isoforMOJOParents,
+        Some("H2OAnomalyMetrics")))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents, extraMOJOParents, metricsClass) <- algorithms)
       yield AlgorithmSubstitutionContext(

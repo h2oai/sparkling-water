@@ -47,11 +47,7 @@ class ClusteringMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
 
     val model = algorithm.fit(trainingDataset)
 
-    assertMetrics(
-      model,
-      trainingDataset,
-      validationDataset,
-      trainingMetricsTolerance = 0.00001)
+    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.00001)
   }
 
   private def assertMetrics(

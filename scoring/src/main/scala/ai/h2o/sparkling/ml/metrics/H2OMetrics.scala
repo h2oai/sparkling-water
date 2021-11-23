@@ -59,7 +59,7 @@ object H2OMetrics {
       case H2OModelCategory.Binomial => new H2OBinomialMetrics()
       case H2OModelCategory.Multinomial if Set("glm", "gam").contains(algoName) => new H2OMultinomialGLMMetrics()
       case H2OModelCategory.Multinomial => new H2OMultinomialMetrics()
-      case H2OModelCategory.Ordinal if Set("glm", "gam").contains(algoName)=> new H2OOrdinalGLMMetrics()
+      case H2OModelCategory.Ordinal if Set("glm", "gam").contains(algoName) => new H2OOrdinalGLMMetrics()
       case H2OModelCategory.Ordinal => new H2OOrdinalMetrics()
       case H2OModelCategory.Regression if Set("glm", "gam").contains(algoName) => new H2ORegressionGLMMetrics()
       case H2OModelCategory.Regression => new H2ORegressionMetrics()

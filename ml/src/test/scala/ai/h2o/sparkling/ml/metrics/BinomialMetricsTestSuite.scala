@@ -139,11 +139,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       .setLabelCol("class")
     val model = algo.fit(trainingDataset)
 
-    assertMetrics(
-      model,
-      trainingDataset,
-      validationDataset,
-      trainingMetricsTolerance = 0.0001)
+    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.0001)
   }
 
   test("test binomial glm metric objects") {
@@ -171,11 +167,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       .setLabelCol("class")
     val model = algo.fit(trainingDataset)
 
-    assertMetrics(
-      model,
-      trainingDataset,
-      validationDataset,
-      trainingMetricsTolerance = 0.0001)
+    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.0001)
   }
 
   test("test calculation of binomial gam metric objects on arbitrary dataset") {

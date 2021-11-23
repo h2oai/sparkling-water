@@ -73,11 +73,7 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       .setFamily("ordinal")
     val model = algo.fit(trainingDataset)
 
-    assertMetrics(
-      model,
-      trainingDataset,
-      validationDataset,
-      trainingMetricsTolerance = 0.00001)
+    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.00001)
   }
 
   test("test calculation of ordinal gam metric objects on arbitrary dataset") {
@@ -90,11 +86,7 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       .setFamily("ordinal")
     val model = algo.fit(trainingDataset)
 
-    assertMetrics(
-      model,
-      trainingDataset,
-      validationDataset,
-      trainingMetricsTolerance = 0.00001)
+    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.00001)
   }
 
   private def assertMetrics(

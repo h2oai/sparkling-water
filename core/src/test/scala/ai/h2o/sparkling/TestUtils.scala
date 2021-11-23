@@ -105,7 +105,7 @@ object TestUtils extends Matchers {
       produced: DataFrame,
       identityColumn: String,
       tolerance: Double): Unit = {
-    val tolerances =  expected.schema.fields
+    val tolerances = expected.schema.fields
       .filterNot(_.name == identityColumn)
       .filter(_.dataType.isInstanceOf[NumericType])
       .map(_.name -> tolerance)
@@ -122,7 +122,7 @@ object TestUtils extends Matchers {
     val intersection = expected.as("expected").join(produced.as("produced"), identityColumn)
     intersection.count() shouldEqual expected.count()
     intersection.count() shouldEqual produced.count()
-    val isEqualExpression = expected.columns.foldLeft(lit(true)){
+    val isEqualExpression = expected.columns.foldLeft(lit(true)) {
       case (partialExpression, columnName) =>
         val columnComparision = if (tolerances.contains(columnName)) {
           val difference = abs(col(s"expected.$columnName") - col(s"produced.$columnName"))

@@ -135,11 +135,7 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       .setLabelCol("class")
     val model = algo.fit(trainingDataset)
 
-    assertMetrics(
-      model,
-      trainingDataset,
-      validationDataset,
-      trainingMetricsTolerance = 0.0001)
+    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.0001)
   }
 
   test("test multinomial glm metric objects") {
@@ -167,11 +163,7 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       .setLabelCol("class")
     val model = algo.fit(trainingDataset)
 
-    assertMetrics(
-      model,
-      trainingDataset,
-      validationDataset,
-      trainingMetricsTolerance = 0.0001)
+    assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance = 0.0001)
   }
 
   test("test calculation of multinomial gam metric objects on arbitrary dataset") {
