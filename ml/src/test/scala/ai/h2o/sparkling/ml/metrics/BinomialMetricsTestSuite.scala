@@ -38,6 +38,8 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     .withColumn("CAPSULE", 'CAPSULE.cast(StringType))
+    .withColumn("RACE", 'RACE.cast(StringType))
+    .withColumn("DCAPS", 'DCAPS.cast(StringType))
     .repartition(20)
 
   private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
