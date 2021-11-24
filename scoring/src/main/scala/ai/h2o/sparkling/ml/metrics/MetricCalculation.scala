@@ -27,6 +27,8 @@ import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.spark.sql.DataFrame
 import water.api.{Schema, SchemaServer}
 import water.api.schemas3._
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.types.DoubleType
 
 trait MetricCalculation {
   self: H2OMOJOModel =>
@@ -57,8 +59,9 @@ trait MetricCalculation {
 
   private[sparkling] def getMetricGson(dataFrame: DataFrame): JsonObject = {
     validateDataFrameForMetricCalculation(dataFrame)
+    val (preparedDF, offsetColOption, weightColOption) = prepareDataFrameForMetricCalculation(dataFrame)
 
-    val filledMetricsBuilder = dataFrame.rdd
+    val filledMetricsBuilder = preparedDF.rdd
       .mapPartitions[IndependentMetricBuilder[_]] { rows =>
         val wrapper = loadEasyPredictModelWrapper()
         val model = wrapper.m
@@ -66,9 +69,17 @@ trait MetricCalculation {
         while (rows.hasNext) {
           val row = rows.next()
           val rowData = RowConverter.toH2ORowData(row)
-          val prediction = wrapper.preamble(model.getModelCategory, rowData) // TODO: offset
+          val offset = offsetColOption match {
+            case Some(offsetCol) => row.getDouble(row.fieldIndex(offsetCol))
+            case None => 0.0D
+          }
+          val weight = weightColOption match {
+            case Some(weightCol) => row.getDouble(row.fieldIndex(weightCol))
+            case None => 1.0D
+          }
+          val prediction = wrapper.preamble(model.getModelCategory, rowData, offset)
           val actualValues = extractActualValues(rowData, wrapper)
-          metricBuilder.perRow(prediction, actualValues) // TODO: offset, weight
+          metricBuilder.perRow(prediction, actualValues, weight, offset)
         }
         Iterator.single(metricBuilder)
       }
@@ -113,6 +124,25 @@ trait MetricCalculation {
 
   private[sparkling] def validateDataFrameForMetricCalculation(dataFrame: DataFrame): Unit = {
     // TODO
+  }
+
+  private[sparkling] def prepareDataFrameForMetricCalculation(dataFrame: DataFrame): (DataFrame, Option[String], Option[String]) = {
+    val (offsetColCastedDF, offsetColOption) =
+    if (hasParam("offsetCol") && getOrDefault(getParam("offsetCol")) != null) {
+      val offsetCol = getOrDefault(getParam("offsetCol")).toString
+      (dataFrame.withColumn(offsetCol, col(offsetCol).cast(DoubleType)), Some(offsetCol))
+
+    } else {
+      (dataFrame, None)
+    }
+
+    val weightColTuple = if (hasParam("weightCol") && getOrDefault(getParam("weightCol")) != null) {
+      val weightCol = getOrDefault(getParam("weightCol")).toString
+      (offsetColCastedDF.withColumn(weightCol, col(weightCol).cast(DoubleType)), offsetColOption, Some(weightCol))
+    } else {
+      (offsetColCastedDF, offsetColOption, None)
+    }
+    weightColTuple
   }
 
 }

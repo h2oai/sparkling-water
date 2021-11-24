@@ -21,9 +21,11 @@ import ai.h2o.sparkling.ml.models.H2OGLMMOJOModel
 import com.google.gson.{GsonBuilder, JsonObject}
 import hex.ModelMetrics.IndependentMetricBuilder
 import hex.MultinomialAucType
+import hex.genmodel.MojoModel
 import hex.genmodel.easy.EasyPredictModelWrapper
 import hex.glm.{GLMModel, IndependentGLMMetricBuilder}
 import hex.glm.GLMModel.GLMWeightsFun
+
 import collection.JavaConverters._
 
 trait GLMMetricCalculation {

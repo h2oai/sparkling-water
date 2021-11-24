@@ -85,23 +85,62 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
   }
 
   {
-    val algorithmsAndTolerances: Seq[(H2OSupervisedAlgorithm[_], Double, Double, Boolean)] = Seq(
-      (new H2ODeepLearning(), 0.00001, 0.00000001, false),
-      (new H2OXGBoost(), 0.00001, 0.00000001, false),
-      (new H2OGBM(), 0.00005, 0.00000001, false),
-      (new H2OGLM(), 0.00001, 0.00000001, false),
-      (new H2ODRF(), Double.PositiveInfinity, 0.00000001, false), // ignore comparision on the training dataset
-      (new H2ORuleFit(), 0.00001, 0.00000001, true)) // H2O runtime produces additional GLM metrics
+    val algorithmsAndTolerances: Seq[(() => H2OSupervisedAlgorithm[_], Double, Double, Boolean)] = Seq(
+      (() => new H2ODeepLearning(), 0.00001, 0.00000001, false),
+      (() => new H2OXGBoost(), 0.00001, 0.00000001, false),
+      (() => new H2OGBM(), 0.00005, 0.00000001, false),
+      (() => new H2OGLM(), 0.00001, 0.00000001, false),
+      (() => new H2ODRF(), Double.PositiveInfinity, 0.00000001, false), // ignore comparision on the training dataset
+      (() => new H2ORuleFit(), 0.00001, 0.00000001, true)) // H2O runtime produces additional GLM metrics
 
-    for ((algorithm, trainingMetricsTolerance, validationMetricsTolerance, skipExtraMetrics) <- algorithmsAndTolerances) {
-      val algorithmName = algorithm.getClass.getSimpleName
+    for ((algorithmGetter, trainingMetricsTolerance, validationMetricsTolerance, skipExtraMetrics) <- algorithmsAndTolerances) {
+      val algorithmName = algorithmGetter().getClass.getSimpleName
 
       test(s"test calculation of regression $algorithmName metrics on arbitrary dataset") {
+        val algorithm = algorithmGetter()
         algorithm
           .setValidationDataFrame(validationDataset)
           .set(algorithm.getParam("seed"), 1L)
           .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
           .setLabelCol("AGE")
+        val model = algorithm.fit(trainingDataset)
+
+        MetricsAssertions.assertEssentialMetrics(
+          model,
+          trainingDataset,
+          validationDataset,
+          trainingMetricsTolerance,
+          validationMetricsTolerance,
+          skipExtraMetrics)
+      }
+
+      test(s"test calculation of regression $algorithmName metrics with offset column set on arbitrary dataset ") {
+        val algorithm = algorithmGetter()
+        algorithm
+          .setValidationDataFrame(validationDataset)
+          .set(algorithm.getParam("seed"), 1L)
+          .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
+          .setLabelCol("AGE")
+          .setOffsetCol("ID")
+        val model = algorithm.fit(trainingDataset)
+
+        MetricsAssertions.assertEssentialMetrics(
+          model,
+          trainingDataset,
+          validationDataset,
+          trainingMetricsTolerance,
+          validationMetricsTolerance,
+          skipExtraMetrics)
+      }
+
+      test(s"test calculation of regression $algorithmName metrics with weight column set on arbitrary dataset ") {
+        val algorithm = algorithmGetter()
+        algorithm
+          .setValidationDataFrame(validationDataset)
+          .set(algorithm.getParam("seed"), 1L)
+          .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
+          .setLabelCol("AGE")
+          .setWeightCol("ID")
         val model = algorithm.fit(trainingDataset)
 
         MetricsAssertions.assertEssentialMetrics(
