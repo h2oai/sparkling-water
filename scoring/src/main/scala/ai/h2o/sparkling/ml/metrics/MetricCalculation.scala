@@ -71,11 +71,11 @@ trait MetricCalculation {
           val rowData = RowConverter.toH2ORowData(row)
           val offset = offsetColOption match {
             case Some(offsetCol) => row.getDouble(row.fieldIndex(offsetCol))
-            case None => 0.0D
+            case None => 0.0d
           }
           val weight = weightColOption match {
             case Some(weightCol) => row.getDouble(row.fieldIndex(weightCol))
-            case None => 1.0D
+            case None => 1.0d
           }
           val prediction = wrapper.preamble(model.getModelCategory, rowData, offset)
           val actualValues = extractActualValues(rowData, wrapper)
@@ -126,15 +126,16 @@ trait MetricCalculation {
     // TODO
   }
 
-  private[sparkling] def prepareDataFrameForMetricCalculation(dataFrame: DataFrame): (DataFrame, Option[String], Option[String]) = {
+  private[sparkling] def prepareDataFrameForMetricCalculation(
+      dataFrame: DataFrame): (DataFrame, Option[String], Option[String]) = {
     val (offsetColCastedDF, offsetColOption) =
-    if (hasParam("offsetCol") && getOrDefault(getParam("offsetCol")) != null) {
-      val offsetCol = getOrDefault(getParam("offsetCol")).toString
-      (dataFrame.withColumn(offsetCol, col(offsetCol).cast(DoubleType)), Some(offsetCol))
+      if (hasParam("offsetCol") && getOrDefault(getParam("offsetCol")) != null) {
+        val offsetCol = getOrDefault(getParam("offsetCol")).toString
+        (dataFrame.withColumn(offsetCol, col(offsetCol).cast(DoubleType)), Some(offsetCol))
 
-    } else {
-      (dataFrame, None)
-    }
+      } else {
+        (dataFrame, None)
+      }
 
     val weightColTuple = if (hasParam("weightCol") && getOrDefault(getParam("weightCol")) != null) {
       val weightCol = getOrDefault(getParam("weightCol")).toString
