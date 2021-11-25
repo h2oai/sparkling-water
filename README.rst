@@ -156,16 +156,16 @@ Sparkling Water 3.36.0.1-1 (Winter 2021/2022)
 - [`SW-2629 <https://h2oai.atlassian.net/browse/SW-2629>`__] Rewrite ``H2OWord2Vec`` to be Sparkling Water feature estimator
 - [`SW-2633 <https://h2oai.atlassian.net/browse/SW-2633>`__] Add support for Apache Spark 3.2
 - [`SW-2646 <https://h2oai.atlassian.net/browse/SW-2646>`__] Add capability to ``H2OMOJOModel`` to calculate model metrics on arbitrary dataset
-- [`SW-2634 <https://h2oai.atlassian.net/browse/SW-2634>`__][`SW-2635 <https://h2oai.atlassian.net/browse/SW-2635>`__] Better interaction with a user during model training (report progress, show warnings from H2O backend)
+- [`SW-2634 <https://h2oai.atlassian.net/browse/SW-2634>`__][`SW-2635 <https://h2oai.atlassian.net/browse/SW-2635>`__][`SW-2637 <https://h2oai.atlassian.net/browse/SW-2637>`__] Better interaction with a user during model training (report progress, show warnings from H2O backend)
 - Improvements of Sparkling Water conversion functions with the respect to training time of H2O algorithms
 - Add tutorials for the lesser known algorithms (``RuleFit``, ``GAM``, ...)
 
 Sparkling Water 3.38.0.1-1 (Summer 2022)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- Add compatibility tests with different versions of AWS EMR
-- Redesign of K8s tests
 - Expose `UpliftTrees` and ``ExtendedIsolationForest`` in Sparkling Water
 - Parity of parameters between the ``asH2OFrame`` function and the function ``h2o.H2OFrame`` in H2O-3
+- Add compatibility tests with different versions of AWS EMR
+- Redesign of K8s tests
 
 FAQ
 ---
