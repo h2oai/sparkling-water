@@ -122,7 +122,6 @@ trait MetricCalculation {
     throw new UnsupportedOperationException("This method is supposed to be overriten byt children classes.")
   }
 
-
   private[sparkling] def validateAndPrepareDataFrameForMetricCalculation(
       dataFrame: DataFrame): (DataFrame, Option[String], Option[String]) = {
     val flatDataFrame = DatasetShape.getDatasetShape(dataFrame.schema) match {
@@ -133,15 +132,17 @@ trait MetricCalculation {
 
     if (hasParam("labelCol")) {
       val labelCol = getOrDefault(getParam("labelCol")).toString
-      if(labelCol != null && !flatDataFrame.columns.contains(labelCol)) {
-        throw new IllegalArgumentException(s"DataFrame passed as a parameter does not contain label column '$labelCol'.")
+      if (labelCol != null && !flatDataFrame.columns.contains(labelCol)) {
+        throw new IllegalArgumentException(
+          s"DataFrame passed as a parameter does not contain label column '$labelCol'.")
       }
     }
     val (offsetColCastedDF, offsetColOption) =
       if (hasParam("offsetCol") && getOrDefault(getParam("offsetCol")) != null) {
         val offsetCol = getOrDefault(getParam("offsetCol")).toString
         if (!flatDataFrame.columns.contains(offsetCol)) {
-          throw new IllegalArgumentException(s"DataFrame passed as a parameter does not contain offset column '$offsetCol'.")
+          throw new IllegalArgumentException(
+            s"DataFrame passed as a parameter does not contain offset column '$offsetCol'.")
         }
         (flatDataFrame.withColumn(offsetCol, col(offsetCol).cast(DoubleType)), Some(offsetCol))
       } else {
@@ -151,7 +152,8 @@ trait MetricCalculation {
     val weightColTuple = if (hasParam("weightCol") && getOrDefault(getParam("weightCol")) != null) {
       val weightCol = getOrDefault(getParam("weightCol")).toString
       if (!flatDataFrame.columns.contains(weightCol)) {
-        throw new IllegalArgumentException(s"DataFrame passed as a parameter does not contain weight column '$weightCol'.")
+        throw new IllegalArgumentException(
+          s"DataFrame passed as a parameter does not contain weight column '$weightCol'.")
       }
       (offsetColCastedDF.withColumn(weightCol, col(weightCol).cast(DoubleType)), offsetColOption, Some(weightCol))
     } else {

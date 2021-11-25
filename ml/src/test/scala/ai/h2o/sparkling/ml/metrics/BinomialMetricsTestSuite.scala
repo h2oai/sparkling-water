@@ -221,12 +221,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
           .setOffsetCol("ID")
         val model = algorithm.fit(trainingDataset)
 
-        assertMetrics(
-          model,
-          trainingDataset,
-          validationDataset,
-          trainingMetricsTolerance,
-          validationMetricsTolerance)
+        assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance, validationMetricsTolerance)
       }
     }
   }
