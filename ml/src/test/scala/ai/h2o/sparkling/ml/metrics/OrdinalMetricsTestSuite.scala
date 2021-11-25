@@ -20,6 +20,7 @@ package ai.h2o.sparkling.ml.metrics
 import ai.h2o.sparkling.ml.algos.{H2OGAM, H2OGLM}
 import ai.h2o.sparkling.ml.models.{H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import org.apache.spark.sql.functions.monotonically_increasing_id
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -34,6 +35,7 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/insurance.csv"))
+    .withColumn("ID", monotonically_increasing_id)
     .repartition(20)
 
   private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
@@ -101,7 +103,7 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
     assertMetrics[H2OOrdinalGLMMetrics](loadedModel)
   }
 
-  test("test calculation of ordinal glm metric objects on arbitrary dataset") {
+  test("test calculation of ordinal H2OGLM metrics on arbitrary dataset") {
     val algo = new H2OGLM()
       .setValidationDataFrame(validationDataset)
       .setFeaturesCols("District", "Group", "Claims")
@@ -118,9 +120,28 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       validationMetricsTolerance = 0.00000001)
   }
 
-  test("test calculation of ordinal gam metric objects on arbitrary dataset") {
-    val gamTrainingDataset = trainingDataset.repartition(1)
-    val gamValidationDataset = validationDataset.repartition(1)
+  test("test calculation of ordinal H2OGLM metrics with weightCol set on arbitrary dataset") {
+    val algo = new H2OGLM()
+      .setValidationDataFrame(validationDataset)
+      .setFeaturesCols("District", "Group", "Claims")
+      .setLabelCol("Age")
+      .setSeed(1)
+      .setFamily("ordinal")
+      .setWeightCol("ID")
+    val model = algo.fit(trainingDataset)
+
+    assertMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance = 0.00001,
+      validationMetricsTolerance = 0.00000001)
+  }
+
+  def gamTrainingDataset = trainingDataset.repartition(1)
+  def gamValidationDataset = validationDataset.repartition(1)
+
+  test("test calculation of ordinal H2OGAM metrics on arbitrary dataset") {
     val algo = new H2OGAM()
       .setValidationDataFrame(gamValidationDataset)
       .setFeaturesCols("District", "Group")
@@ -128,6 +149,25 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       .setLabelCol("Age")
       .setSeed(1)
       .setFamily("ordinal")
+    val model = algo.fit(gamTrainingDataset)
+
+    assertMetrics(
+      model,
+      gamTrainingDataset,
+      gamValidationDataset,
+      trainingMetricsTolerance = 0.00001,
+      validationMetricsTolerance = 0.00000001)
+  }
+
+  test("test calculation of ordinal H2OGAM metrics with weightCol set on arbitrary dataset") {
+    val algo = new H2OGAM()
+      .setValidationDataFrame(gamValidationDataset)
+      .setFeaturesCols("District", "Group")
+      .setGamCols(Array("Claims"))
+      .setLabelCol("Age")
+      .setSeed(1)
+      .setFamily("ordinal")
+      .setWeightCol("ID")
     val model = algo.fit(gamTrainingDataset)
 
     assertMetrics(
