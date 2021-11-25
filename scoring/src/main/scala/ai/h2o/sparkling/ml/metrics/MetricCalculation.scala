@@ -19,6 +19,7 @@ package ai.h2o.sparkling.ml.metrics
 
 import ai.h2o.sparkling.ml.internals.H2OModelCategory
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, RowConverter}
+import ai.h2o.sparkling.ml.utils.{DatasetShape, SchemaUtils}
 import com.google.gson.{GsonBuilder, JsonObject}
 import hex._
 import hex.ModelMetrics.IndependentMetricBuilder
@@ -58,8 +59,7 @@ trait MetricCalculation {
   }
 
   private[sparkling] def getMetricGson(dataFrame: DataFrame): JsonObject = {
-    validateDataFrameForMetricCalculation(dataFrame)
-    val (preparedDF, offsetColOption, weightColOption) = prepareDataFrameForMetricCalculation(dataFrame)
+    val (preparedDF, offsetColOption, weightColOption) = validateAndPrepareDataFrameForMetricCalculation(dataFrame)
 
     val filledMetricsBuilder = preparedDF.rdd
       .mapPartitions[IndependentMetricBuilder[_]] { rows =>
@@ -122,23 +122,37 @@ trait MetricCalculation {
     throw new UnsupportedOperationException("This method is supposed to be overriten byt children classes.")
   }
 
-  private[sparkling] def validateDataFrameForMetricCalculation(dataFrame: DataFrame): Unit = {
-    // TODO
-  }
 
-  private[sparkling] def prepareDataFrameForMetricCalculation(
+  private[sparkling] def validateAndPrepareDataFrameForMetricCalculation(
       dataFrame: DataFrame): (DataFrame, Option[String], Option[String]) = {
+    val flatDataFrame = DatasetShape.getDatasetShape(dataFrame.schema) match {
+      case DatasetShape.Flat => dataFrame
+      case DatasetShape.StructsOnly | DatasetShape.Nested =>
+        SchemaUtils.appendFlattenedStructsToDataFrame(dataFrame, RowConverter.temporaryColumnPrefix)
+    }
+
+    if (hasParam("labelCol")) {
+      val labelCol = getOrDefault(getParam("labelCol")).toString
+      if(labelCol != null && !flatDataFrame.columns.contains(labelCol)) {
+        throw new IllegalArgumentException(s"DataFrame passed as a parameter does not contain label column '$labelCol'.")
+      }
+    }
     val (offsetColCastedDF, offsetColOption) =
       if (hasParam("offsetCol") && getOrDefault(getParam("offsetCol")) != null) {
         val offsetCol = getOrDefault(getParam("offsetCol")).toString
-        (dataFrame.withColumn(offsetCol, col(offsetCol).cast(DoubleType)), Some(offsetCol))
-
+        if (!flatDataFrame.columns.contains(offsetCol)) {
+          throw new IllegalArgumentException(s"DataFrame passed as a parameter does not contain offset column '$offsetCol'.")
+        }
+        (flatDataFrame.withColumn(offsetCol, col(offsetCol).cast(DoubleType)), Some(offsetCol))
       } else {
-        (dataFrame, None)
+        (flatDataFrame, None)
       }
 
     val weightColTuple = if (hasParam("weightCol") && getOrDefault(getParam("weightCol")) != null) {
       val weightCol = getOrDefault(getParam("weightCol")).toString
+      if (!flatDataFrame.columns.contains(weightCol)) {
+        throw new IllegalArgumentException(s"DataFrame passed as a parameter does not contain weight column '$weightCol'.")
+      }
       (offsetColCastedDF.withColumn(weightCol, col(weightCol).cast(DoubleType)), offsetColOption, Some(weightCol))
     } else {
       (offsetColCastedDF, offsetColOption, None)

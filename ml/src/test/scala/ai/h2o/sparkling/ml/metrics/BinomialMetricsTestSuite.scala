@@ -20,6 +20,7 @@ package ai.h2o.sparkling.ml.metrics
 import ai.h2o.sparkling.ml.algos._
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import org.apache.spark.sql.functions.rand
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
@@ -40,6 +41,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     .withColumn("CAPSULE", 'CAPSULE.cast(StringType))
     .withColumn("RACE", 'RACE.cast(StringType))
     .withColumn("DCAPS", 'DCAPS.cast(StringType))
+    .withColumn("WEIGHT", rand(42))
     .repartition(20)
 
   private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
@@ -188,7 +190,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
           .set(algorithm.getParam("seed"), 1L)
           .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
           .setLabelCol("CAPSULE")
-          .setWeightCol("ID")
+          .setWeightCol("WEIGHT")
         val model = algorithm.fit(trainingDataset)
 
         assertMetrics(
