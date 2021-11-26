@@ -77,7 +77,7 @@ trait MetricCalculation {
             case Some(weightCol) => row.getDouble(row.fieldIndex(weightCol))
             case None => 1.0d
           }
-          val prediction = wrapper.preamble(model.getModelCategory, rowData, offset)
+          val prediction = getPrediction(wrapper, rowData, offset)
           val actualValues = extractActualValues(rowData, wrapper)
           metricBuilder.perRow(prediction, actualValues, weight, offset)
         }
@@ -89,6 +89,13 @@ trait MetricCalculation {
     val schema = metricsToSchema(metrics)
     val json = schema.toJsonString
     new GsonBuilder().create().fromJson(json, classOf[JsonObject])
+  }
+
+  private[sparkling] def getPrediction(
+      wrapper: EasyPredictModelWrapper,
+      rowData: RowData,
+      offset: Double): Array[Double] = {
+    wrapper.preamble(wrapper.m.getModelCategory, rowData, offset)
   }
 
   private[sparkling] def metricsToSchema(metrics: ModelMetrics): Schema[_, _] = {
