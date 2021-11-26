@@ -31,7 +31,7 @@ from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModel
 
 @pytest.fixture(scope="module")
 def gbmModel(prostateDataset):
-    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule")
+    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="CAPSULE")
     return gbm.fit(prostateDataset)
 
 
@@ -42,7 +42,7 @@ def testDomainColumns(gbmModel):
     assert domainValues["VOL"] is None
     assert domainValues["AGE"] is None
     assert domainValues["PSA"] is None
-    assert domainValues["capsule"] == ["0", "1"]
+    assert domainValues["CAPSULE"] == ["0", "1"]
     assert domainValues["RACE"] is None
     assert domainValues["ID"] is None
 
@@ -74,7 +74,7 @@ def testFeatureTypes(gbmModel):
     assert types["VOL"] == "Numeric"
     assert types["AGE"] == "Numeric"
     assert types["PSA"] == "Numeric"
-    assert types["capsule"] == "Enum"
+    assert types["CAPSULE"] == "Enum"
     assert types["RACE"] == "Numeric"
     assert types["ID"] == "Numeric"
     assert len(types) == 9
@@ -208,7 +208,7 @@ def testGetCrossValidationSummary():
 def testCrossValidationModelsAreAvailableAfterSavingAndLoading(prostateDataset):
     path = "file://" + os.path.abspath("build/testCrossValidationModelsAreAvialableAfterSavingAndLoading")
     nfolds = 3
-    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule",
+    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="CAPSULE",
                  nfolds=nfolds, keepCrossValidationModels=True)
     model = gbm.fit(prostateDataset)
     model.write().overwrite().save(path)
@@ -229,7 +229,7 @@ def testCrossValidationModelsAreAvailableAfterSavingAndLoading(prostateDataset):
 
 
 def testCrossValidationModelsAreNoneIfKeepCrossValidationModelsIsFalse(prostateDataset):
-    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule",
+    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="CAPSULE",
                  nfolds=3, keepCrossValidationModels=False)
     model = gbm.fit(prostateDataset)
 
@@ -237,7 +237,7 @@ def testCrossValidationModelsAreNoneIfKeepCrossValidationModelsIsFalse(prostateD
 
 
 def testMetricObjects(prostateDataset):
-    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule",
+    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="CAPSULE",
                  nfolds=3, keepCrossValidationModels=False)
     model = gbm.fit(prostateDataset)
 
@@ -255,9 +255,23 @@ def testMetricObjects(prostateDataset):
         assert metricsObject.getThresholdsAndMetricScores().count() > 0
         assert len(metricsObject.getThresholdsAndMetricScores().columns) > 0
 
+    def compareCalculatedMetricValues(metricsObject, metricsMap):
+        for metric in metricsMap:
+            if metric != "ScoringTime":
+                metricValue = metricsMap[metric]
+                objectValue = getattr(metricsObject, "get" + metric)()
+                assert(metricValue == objectValue)
+        assert metricsObject.getConfusionMatrix().count() > 0
+        assert len(metricsObject.getConfusionMatrix().columns) > 0
+        assert metricsObject.getMaxCriteriaAndMetricScores().count() > 0
+        assert len(metricsObject.getMaxCriteriaAndMetricScores().columns) > 0
+        assert metricsObject.getThresholdsAndMetricScores().count() > 0
+        assert len(metricsObject.getThresholdsAndMetricScores().columns) > 0
+
     compareMetricValues(model.getTrainingMetricsObject(), model.getTrainingMetrics())
     compareMetricValues(model.getCrossValidationMetricsObject(), model.getCrossValidationMetrics())
     compareMetricValues(model.getCurrentMetricsObject(), model.getCurrentMetrics())
+    compareCalculatedMetricValues(model.getMetricsObject(prostateDataset), model.getMetrics(prostateDataset))
     assert model.getValidationMetricsObject() is None
     assert model.getValidationMetrics() == {}
 
