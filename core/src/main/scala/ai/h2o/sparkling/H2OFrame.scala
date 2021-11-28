@@ -111,7 +111,7 @@ class H2OFrame private (
     val endpoint = getClusterEndpoint(conf)
     val params = Map("ratios" -> splitRatios.toArray, "dataset" -> frameId)
     val splitFrameV3 = update[SplitFrameV3](endpoint, "3/SplitFrame", conf, params)
-    H2OJob(splitFrameV3.key.name).waitForFinish()
+    H2OJob(splitFrameV3.key.name).waitForFinishAndPrintProgress()
     splitFrameV3.destination_frames.map(frameKey => H2OFrame(frameKey.name))
   }
 
@@ -423,7 +423,7 @@ object H2OFrame extends RestCommunication {
 
     val parse = update[ParseV3](endpoint, "/3/Parse", conf, params)
     val jobId = parse.job.key.name
-    H2OJob(jobId).waitForFinish()
+    H2OJob(jobId).waitForFinishAndPrintProgress()
     H2OFrame(parse.destination_frame.name)
   }
 }

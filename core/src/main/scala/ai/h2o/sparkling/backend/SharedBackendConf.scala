@@ -19,7 +19,6 @@ package ai.h2o.sparkling.backend
 
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.H2OConf.{BooleanOption, IntOption, OptionOption, StringOption}
-import ai.h2o.sparkling.macros.DeprecatedMethod
 
 import scala.collection.JavaConverters._
 
@@ -39,6 +38,8 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def nthreads: Int = sparkConf.getInt(PROP_NTHREADS._1, PROP_NTHREADS._2)
 
   def isH2OReplEnabled: Boolean = sparkConf.getBoolean(PROP_REPL_ENABLED._1, PROP_REPL_ENABLED._2)
+
+  def isProgressBarEnabled: Boolean = sparkConf.getBoolean(PROP_PROGRESS_BAR_ENABLED._1, PROP_PROGRESS_BAR_ENABLED._2)
 
   def scalaIntDefaultNum: Int = sparkConf.getInt(PROP_SCALA_INT_DEFAULT_NUM._1, PROP_SCALA_INT_DEFAULT_NUM._2)
 
@@ -187,6 +188,10 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setReplEnabled(): H2OConf = set(PROP_REPL_ENABLED._1, value = true)
 
   def setReplDisabled(): H2OConf = set(PROP_REPL_ENABLED._1, value = false)
+
+  def setProgressBarEnabled(): H2OConf = set(PROP_PROGRESS_BAR_ENABLED._1, value = true)
+
+  def setProgressBarDisabled(): H2OConf = set(PROP_PROGRESS_BAR_ENABLED._1, value = false)
 
   def setDefaultNumReplSessions(numSessions: Int): H2OConf = set(PROP_SCALA_INT_DEFAULT_NUM._1, numSessions.toString)
 
@@ -365,6 +370,13 @@ object SharedBackendConf {
       |case this property is set. Otherwise use H2O's default
       |value Runtime.getRuntime()
       |.availableProcessors()""".stripMargin)
+
+  val PROP_PROGRESS_BAR_ENABLED: BooleanOption = (
+    "spark.ext.h2o.progressbar.enabled",
+    true,
+    """setProgressBarEnabled()
+      |setProgressBarDisabled()""".stripMargin,
+    "Decides whether to display progress bar related to H2O jobs on stderr or not.")
 
   val PROP_REPL_ENABLED: BooleanOption = (
     "spark.ext.h2o.repl.enabled",
