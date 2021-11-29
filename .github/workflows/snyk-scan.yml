@@ -10,7 +10,7 @@ on:
 
 jobs:
   snyk_scan_test:
-    #if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -56,13 +56,13 @@ jobs:
           distribution: 'adopt'
 
       - name: Snyk scan for Java dependancies
-        #if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: snyk test --all-projects -d --fail-on=all
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   snyk_scan_monitor:
-    #if: ${{ github.event_name == 'push' }}
+    if: ${{ github.event_name == 'push' }}
     strategy:
       matrix:
         depsfiles: [
