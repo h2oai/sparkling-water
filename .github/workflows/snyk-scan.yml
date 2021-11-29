@@ -56,6 +56,7 @@ jobs:
       - name: Snyk scan for Java dependancies
         run: |
           for file in $(find . -name "build.gradle"); do
+            file=$(echo $file | cut -c 3-)
             echo "##### Scan $file #####"
             snyk monitor --org=h2oai --remote-repo-url=SPARKLING-WATER --file=$file --project-name=SPARKLING-WATER/${{ steps.extract_ref.outputs.ref }}/$file -d
           done
