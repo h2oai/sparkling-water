@@ -21,7 +21,7 @@ import scala.collection.JavaConverters._
 /**
   * This trait contains parameters that are shared across all algorithms.
   */
-trait H2OAlgorithmCommonParams extends H2OCommonParams with H2OAlgorithmMOJOParams {
+trait H2OAlgorithmCommonParams extends H2OCommonParams with H2OAlgorithmMOJOParams with H2OBaseMOJOParams {
 
   //
   // Getters

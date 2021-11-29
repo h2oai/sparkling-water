@@ -22,7 +22,8 @@ import java.io._
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.api.MojoPipelineService
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
-import ai.h2o.sparkling.ml.params.{H2OAlgorithmMOJOParams, H2OBaseMOJOParams, HasFeatureTypesOnMOJO}
+import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.ml.params.{H2OAlgorithmMOJOParams, HasFeatureTypesOnMOJO}
 import org.apache.spark.ml.param._
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
@@ -40,8 +41,13 @@ class H2OMOJOPipelineModel(override val uid: String)
   with HasMojo
   with H2OMOJOWritable
   with H2OAlgorithmMOJOParams
-  with H2OBaseMOJOParams
   with HasFeatureTypesOnMOJO {
+
+  @DeprecatedMethod(version = "3.38")
+  def getConvertUnknownCategoricalLevelsToNa(): Boolean = false
+
+  @DeprecatedMethod(version = "3.38")
+  def getConvertInvalidNumbersToNa(): Boolean = false
 
   H2OMOJOPipelineCache.startCleanupThread()
 
@@ -200,8 +206,6 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     model.set(model.featureTypes, featureTypesMap)
     model.set(model.outputSubCols, outputCols.map(_.getColumnName).toArray)
     model.set(model.outputSubTypes, outputCols.map(_.getColumnType.toString).toArray)
-    model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
-    model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     model
   }

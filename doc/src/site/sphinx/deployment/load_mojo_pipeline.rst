@@ -81,7 +81,7 @@ The Pipeline MOJO model could be loaded as:
         .. code:: scala
 
             import ai.h2o.sparkling.ml.models._
-            val settings = H2OMOJOSettings(predictionCol = "fruit_type", convertUnknownCategoricalLevelsToNa = true)
+            val settings = H2OMOJOSettings(predictionCol = "fruit_type")
             val mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/pipeline.mojo", settings)
 
     .. tab-container:: Python
@@ -90,7 +90,7 @@ The Pipeline MOJO model could be loaded as:
         .. code:: python
 
             from pysparkling.ml import *
-            settings = H2OMOJOSettings(predictionCol = "fruit_type", convertUnknownCategoricalLevelsToNa = True)
+            settings = H2OMOJOSettings(predictionCol = "fruit_type")
             mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/pipeline.mojo", settings)
 
 In the examples above ``settings`` is an optional argument. If it's not specified, the default values are used.
@@ -176,8 +176,6 @@ Customizing the MOJO Settings
 We can configure the output and format of predictions via the H2OMOJOSettings. The available options are
 
 - ``predictionCol`` - Specifies the name of the generated prediction column. The default value is `prediction`.
-- ``convertUnknownCategoricalLevelsToNa`` - Enables or disables conversion of unseen categoricals to NAs. By default, it is disabled.
-- ``convertInvalidNumbersToNa`` - Enables or disables conversion of invalid numbers to NAs. By default, it is disabled.
 - ``namedMojoOutputColumns`` - Enables or disables named output columns. By default, it is enabled.
 
 Troubleshooting

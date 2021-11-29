@@ -16,12 +16,10 @@
 #
 
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
-from ai.h2o.sparkling.ml.params.H2OBaseMOJOParams import H2OBaseMOJOParams
 from pyspark.ml.param import *
-import warnings
 
 
-class H2OAlgorithmMOJOParams(H2OBaseMOJOParams):
+class H2OAlgorithmMOJOParams(Params):
     predictionCol = Param(
         Params._dummy(),
         "predictionCol",
