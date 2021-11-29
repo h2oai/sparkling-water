@@ -38,7 +38,7 @@ class AnomalyDetectionMetricsTestSuite extends FunSuite with Matchers with Share
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/anomaly/ecg_discord_test.csv"))
 
-  test("test calculation of isolation forest metric objects on arbitrary dataset") {
+  ignore("test calculation of isolation forest metric objects on arbitrary dataset") {
     val algorithm = new H2OIsolationForest()
       .setSeed(42)
 //      .setValidationDataFrame(validationDataset)

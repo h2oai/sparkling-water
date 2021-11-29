@@ -55,7 +55,7 @@ class DimReductionMetricsTestSuite extends FunSuite with Matchers with SharedH2O
       validationMetricsTolerance = 0.00001)
   }
 
-  test("test calculation of H2OGLRM metrics on arbitrary dataset") {
+  ignore("test calculation of H2OGLRM metrics on arbitrary dataset") {
     val Array(rawTrainingDataset, rawValidationDataset) = dataset.randomSplit(Array(0.5, 0.5), seed = 42)
     val glrmTrainingDataset = rawTrainingDataset.limit(150)
     val glrmValidationDataset = rawValidationDataset.limit(150)
