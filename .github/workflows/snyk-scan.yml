@@ -56,7 +56,7 @@ jobs:
           distribution: 'adopt'
 
       - name: Snyk scan for Java dependancies
-        if: steps.changed-files.outputs.any_changed == 'true'
+        #if: steps.changed-files.outputs.any_changed == 'true'
         run: snyk test --all-projects -d --fail-on=all
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -66,31 +66,31 @@ jobs:
     strategy:
       matrix:
         depsfiles: [
-            build.gradle
-            r/build.gradle
-            ci/build.gradle
-            ml/build.gradle
-            py/build.gradle
-            doc/build.gradle
-            core/build.gradle
-            dist/build.gradle
-            repl/build.gradle
-            utils/build.gradle
-            macros/build.gradle
-            r-cran/build.gradle
-            booklet/build.gradle
-            package/build.gradle
-            scoring/build.gradle
-            assembly/build.gradle
-            examples/build.gradle
-            templates/build.gradle
-            benchmarks/build.gradle
-            extensions/build.gradle
-            kubernetes/build.gradle
-            py-scoring/build.gradle
-            api-generation/build.gradle
-            scoring-package/build.gradle
-            assembly-scoring/build.gradle
+            build.gradle,
+            r/build.gradle,
+            ci/build.gradle,
+            ml/build.gradle,
+            py/build.gradle,
+            doc/build.gradle,
+            core/build.gradle,
+            dist/build.gradle,
+            repl/build.gradle,
+            utils/build.gradle,
+            macros/build.gradle,
+            r-cran/build.gradle,
+            booklet/build.gradle,
+            package/build.gradle,
+            scoring/build.gradle,
+            assembly/build.gradle,
+            examples/build.gradle,
+            templates/build.gradle,
+            benchmarks/build.gradle,
+            extensions/build.gradle,
+            kubernetes/build.gradle,
+            py-scoring/build.gradle,
+            api-generation/build.gradle,
+            scoring-package/build.gradle,
+            assembly-scoring/build.gradle,
             assembly-extensions/build.gradle
         ]
     runs-on: ubuntu-latest
