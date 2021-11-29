@@ -23,35 +23,6 @@ jobs:
         with:
           files: |
             build.gradle$
-#            r/build.gradle
-#            ci/build.gradle
-#            ml/build.gradle
-#            py/build.gradle
-#            doc/build.gradle
-#            core/build.gradle
-#            dist/build.gradle
-#            repl/build.gradle
-#            utils/build.gradle
-#            macros/build.gradle
-#            r-cran/build.gradle
-#            booklet/build.gradle
-#            package/build.gradle
-#            scoring/build.gradle
-#            assembly/build.gradle
-#            examples/build.gradle
-#            templates/build.gradle
-#            benchmarks/build.gradle
-#            extensions/build.gradle
-#            kubernetes/build.gradle
-#            py-scoring/build.gradle
-#            api-generation/build.gradle
-#            scoring-package/build.gradle
-#            assembly-scoring/build.gradle
-#            assembly-extensions/build.gradle
-
-#      - name: Get changed files using defaults
-#        id: changed-files
-#        uses: tj-actions/changed-files@v11.7
 
       - uses: snyk/actions/setup@master
       - uses: actions/setup-java@v1
@@ -60,43 +31,13 @@ jobs:
           distribution: 'adopt'
 
       - name: Snyk scan for Java dependancies
-        if: contains(steps.changed-files.outputs.all_changed_and_modified_files, 'my-file.txt')
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: snyk test --all-projects -d --fail-on=all
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   snyk_scan_monitor:
     if: ${{ github.event_name == 'push' }}
-    strategy:
-      matrix:
-        depsfiles: [
-            build.gradle,
-            r/build.gradle,
-            ci/build.gradle,
-            ml/build.gradle,
-            py/build.gradle,
-            doc/build.gradle,
-            core/build.gradle,
-            dist/build.gradle,
-            repl/build.gradle,
-            utils/build.gradle,
-            macros/build.gradle,
-            r-cran/build.gradle,
-            booklet/build.gradle,
-            package/build.gradle,
-            scoring/build.gradle,
-            assembly/build.gradle,
-            examples/build.gradle,
-            templates/build.gradle,
-            benchmarks/build.gradle,
-            extensions/build.gradle,
-            kubernetes/build.gradle,
-            py-scoring/build.gradle,
-            api-generation/build.gradle,
-            scoring-package/build.gradle,
-            assembly-scoring/build.gradle,
-            assembly-extensions/build.gradle
-        ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -112,8 +53,11 @@ jobs:
           java-version: "8"
           distribution: 'adopt'
 
-      - name: Snyk scan for Java dependancies - ${{ matrix.depsfiles }}
-        run: snyk monitor --org=h2oai --remote-repo-url=SPARKLING-WATER --file=${{ matrix.depsfiles }} --project-name=SPARKLING-WATER/${{ steps.extract_ref.outputs.ref }}/${{ matrix.depsfiles }} -d
-        continue-on-error: true
+      - name: Snyk scan for Java dependancies
+        run: |
+          for file in $(find . -name "build.gradle"); do
+            echo "##### Scan $file #####"
+            snyk monitor --org=h2oai --remote-repo-url=SPARKLING-WATER --file=$file --project-name=SPARKLING-WATER/${{ steps.extract_ref.outputs.ref }}/$file -d
+          done
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
