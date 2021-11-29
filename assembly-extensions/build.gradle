@@ -35,3 +35,4 @@ task embeddedAssemblyJar(type: Copy, dependsOn: [shadowJar, cleanBuildDir]) {
 }
 
 build.dependsOn embeddedAssemblyJar
+
