@@ -441,3 +441,4 @@ if (detectBackendClusterMode() == "external") {
   integTest.dependsOn integTestPythonExternal
 }
 integTest.dependsOn integTestPython
+
