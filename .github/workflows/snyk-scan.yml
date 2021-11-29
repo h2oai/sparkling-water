@@ -10,7 +10,7 @@ on:
 
 jobs:
   snyk_scan_test:
-    if: ${{ github.event_name == 'pull_request' }}
+    #if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -37,7 +37,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   snyk_scan_monitor:
-    if: ${{ github.event_name == 'push' }}
+    #if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
