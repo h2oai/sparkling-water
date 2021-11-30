@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     tags:
-      - 'RELEASE-[0-9]+.[0-100]+.[0-9]+.[0-9]+-[0-9]+'
+      - 'RELEASE-[0-9]+.[0-9]+.[0-9]+.[0-9]+-[0-9]+'
     branches:
       - 'master'
 
