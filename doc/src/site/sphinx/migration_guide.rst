@@ -8,9 +8,6 @@ From 3.36 to 3.38
 
 - The support for Apache Spark 2.2.x has been removed.
 
-- The ``getConvertUnknownCategoricalLevelsToNa()`` and ``getConvertInvalidNumbersToNa()`` methods have been removed
-  from ``H2OMOJOPipelineModel``.
-
 From 3.34 to 3.36
 -----------------
 

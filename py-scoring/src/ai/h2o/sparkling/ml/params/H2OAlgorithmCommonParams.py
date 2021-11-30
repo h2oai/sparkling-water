@@ -17,12 +17,11 @@
 
 from ai.h2o.sparkling.ml.params.H2OCommonParams import H2OCommonParams
 from ai.h2o.sparkling.ml.params.H2OAlgorithmMOJOParams import H2OAlgorithmMOJOParams
-from ai.h2o.sparkling.ml.params.H2OBaseMOJOParams import H2OBaseMOJOParams
 from pyspark.ml.param import *
 import warnings
 
 
-class H2OAlgorithmCommonParams(H2OCommonParams, H2OAlgorithmMOJOParams, H2OBaseMOJOParams):
+class H2OAlgorithmCommonParams(H2OCommonParams, H2OAlgorithmMOJOParams):
     # Setters for parameters which are defined on MOJO as well
     def setPredictionCol(self, value):
         return self._set(predictionCol=value)

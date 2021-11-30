@@ -18,7 +18,6 @@
 from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.ml.models import H2OMOJOSettings
 from ai.h2o.sparkling.ml.models.H2OAlgorithmMOJOModelBase import H2OAlgorithmMOJOModelBase
-import warnings
 from pyspark.ml.param import *
 from pyspark.ml.util import _jvm
 from pyspark.sql.column import Column
@@ -40,13 +39,3 @@ class H2OMOJOPipelineModel(H2OAlgorithmMOJOModelBase):
 
     def getOutputSubCols(self):
         return list(self._java_obj.getOutputSubCols())
-
-    def getConvertUnknownCategoricalLevelsToNa(self):
-        warnings.warn("The method 'getConvertUnknownCategoricalLevelsToNa' is deprecated and will be removed in " +
-                      "the version 3.38.")
-        return False
-
-    def getConvertInvalidNumbersToNa(self):
-        warnings.warn("The method 'getConvertUnknownCategoricalLevelsToNa' is deprecated and will be removed in " +
-                      "the version 3.38.")
-        return False

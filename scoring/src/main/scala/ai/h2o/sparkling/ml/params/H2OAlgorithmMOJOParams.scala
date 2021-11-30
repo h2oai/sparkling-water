@@ -2,9 +2,9 @@ package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.models.H2OMOJOSettings
 import org.apache.spark.expose.Logging
-import org.apache.spark.ml.param.{BooleanParam, Param, Params, StringArrayParam}
+import org.apache.spark.ml.param.{BooleanParam, Param, StringArrayParam}
 
-trait H2OAlgorithmMOJOParams extends Params with Logging {
+trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
 
   //
   // Param definitions

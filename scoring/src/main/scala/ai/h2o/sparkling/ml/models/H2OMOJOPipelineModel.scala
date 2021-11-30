@@ -22,8 +22,7 @@ import java.io._
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.api.MojoPipelineService
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
-import ai.h2o.sparkling.macros.DeprecatedMethod
-import ai.h2o.sparkling.ml.params.{H2OAlgorithmMOJOParams, HasFeatureTypesOnMOJO}
+import ai.h2o.sparkling.ml.params.{H2OAlgorithmMOJOParams, H2OBaseMOJOParams, HasFeatureTypesOnMOJO}
 import org.apache.spark.ml.param._
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
@@ -41,13 +40,8 @@ class H2OMOJOPipelineModel(override val uid: String)
   with HasMojo
   with H2OMOJOWritable
   with H2OAlgorithmMOJOParams
+  with H2OBaseMOJOParams
   with HasFeatureTypesOnMOJO {
-
-  @DeprecatedMethod(version = "3.38")
-  def getConvertUnknownCategoricalLevelsToNa(): Boolean = false
-
-  @DeprecatedMethod(version = "3.38")
-  def getConvertInvalidNumbersToNa(): Boolean = false
 
   H2OMOJOPipelineCache.startCleanupThread()
 

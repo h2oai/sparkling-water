@@ -25,14 +25,4 @@ H2OMOJOPipelineModel.createFromMojo <- function(pathToMojo, settings = H2OMOJOSe
 
 #' @export H2OMOJOPipelineModel
 H2OMOJOPipelineModel <- setRefClass("H2OMOJOPipelineModel", contains = ("H2OAlgorithmMOJOModelBase"), methods = list(
-  getConvertUnknownCategoricalLevelsToNa = function() {
-    warning("The method 'getConvertUnknownCategoricalLevelsToNa' is deprecated and will be removed in " +
-    "the version 3.38.")
-    FALSE
-  },
-  getConvertInvalidNumbersToNa = function() {
-    warning("The method 'getConvertUnknownCategoricalLevelsToNa' is deprecated and will be removed in " +
-    "the version 3.38.")
-    FALSE
-  }
 ))
