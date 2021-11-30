@@ -60,7 +60,7 @@ jobs:
             echo ""
             echo "##### SCAN $file START #####"
             echo ""
-            snyk monitor --org=h2oai --remote-repo-url=SPARKLING-WATER --file=$file --project-name=SPARKLING-WATER/${{ steps.extract_ref.outputs.ref }}/$file -d
+            snyk monitor --org=h2oai --remote-repo-url=Sparkling-Water --file=$file --project-name=Sparkling-Water/${{ steps.extract_ref.outputs.ref }}/$file -d
             echo "##### SCAN $file END #####"
           done
         env:
