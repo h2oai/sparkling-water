@@ -89,7 +89,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       // Confusion matrix is not correctly calculated in H2O-3 runtime.
       val trainingConfusionMatrix = trainingMetricObject.getConfusionMatrix().count()
       val expectedTrainingConfusionMatrix = expectedTrainingMetricObject.getConfusionMatrix().count()
-      trainingConfusionMatrix shouldBe > (0L)
+      trainingConfusionMatrix shouldBe >(0L)
       trainingConfusionMatrix shouldEqual expectedTrainingConfusionMatrix
 
       TestUtils.assertDataFramesAreEqual(
