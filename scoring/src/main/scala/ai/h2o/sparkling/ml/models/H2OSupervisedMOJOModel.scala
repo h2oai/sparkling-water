@@ -87,25 +87,31 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OAlgorithmMOJOM
 
     if (hasParam("huberAlpha")) {
       val huberAlphaParam = getParam("huberAlpha")
-      genericParameters._huber_alpha = getOrDefault(huberAlphaParam).asInstanceOf[Double]
+      get(huberAlphaParam).foreach{ case value: Double => genericParameters._huber_alpha = value}
     }
     if (hasParam("quantileAlpha")) {
       val quantileAlphaParam = getParam("quantileAlpha")
-      genericParameters._quantile_alpha = getOrDefault(quantileAlphaParam).asInstanceOf[Double]
+      get(quantileAlphaParam).foreach{ case value: Double => genericParameters._quantile_alpha = value}
     }
     if (hasParam("tweediePower")) {
       val tweediePowerParam = getParam("tweediePower")
-      genericParameters._tweedie_power = getOrDefault(tweediePowerParam).asInstanceOf[Double]
+      get(tweediePowerParam).foreach{ case value: Double => genericParameters._tweedie_power = value }
     }
     if (hasParam("customDistributionFunc")) {
       val customDistributionFuncParam = getParam("customDistributionFunc")
-      genericParameters._custom_distribution_func = getOrDefault(customDistributionFuncParam).asInstanceOf[String]
+      get(customDistributionFuncParam).foreach{
+        case null =>
+        case value: String => genericParameters._custom_distribution_func = value
+      }
     }
     val distribution = DistributionFactory.getDistribution(genericParameters)
 
     val aucType = if (hasParam("aucType")) {
       val aucTypeParam = getParam("aucType")
-      MultinomialAucType.valueOf(getOrDefault(aucTypeParam).asInstanceOf[String])
+      get(aucTypeParam) match {
+        case Some(value: String) => MultinomialAucType.valueOf(value)
+        case None => MultinomialAucType.NONE
+      }
     } else {
       MultinomialAucType.NONE
     }

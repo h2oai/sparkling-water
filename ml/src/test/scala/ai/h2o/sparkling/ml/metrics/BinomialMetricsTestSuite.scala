@@ -160,7 +160,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     val algorithmsAndTolerances: Seq[(() => H2OSupervisedAlgorithm[_], Double, Double, Boolean)] = Seq(
       (() => new H2ODeepLearning(), 0.00001, 0.00000001, false),
       (() => new H2OXGBoost(), 0.00005, 0.00000001, false),
-      (() => new H2OGBM(), 0.00001, 0.00000001, false),
+      (() => new H2OGBM(), 0.00001, 0.0000001, false),
       (() => new H2OGLM(), 0.00001, 0.00000001, false),
       (() => new H2ODRF(), Double.PositiveInfinity, 0.00000001, false),
       (() => new H2ORuleFit(), 0.00001, 0.00000001, true))
