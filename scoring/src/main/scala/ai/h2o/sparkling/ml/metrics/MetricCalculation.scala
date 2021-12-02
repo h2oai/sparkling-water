@@ -127,11 +127,11 @@ trait MetricCalculation {
   }
 
   private[sparkling] def makeMetricBuilder(wrapper: EasyPredictModelWrapper): IndependentMetricBuilder[_] = {
-    throw new UnsupportedOperationException("This method is supposed to be overridden byt children classes.")
+    throw new UnsupportedOperationException("This method is supposed to be overridden by children classes.")
   }
 
   private[sparkling] def extractActualValues(rowData: RowData, wrapper: EasyPredictModelWrapper): Array[Double] = {
-    throw new UnsupportedOperationException("This method is supposed to be overridden byt children classes.")
+    throw new UnsupportedOperationException("This method is supposed to be overridden by children classes.")
   }
 
   private[sparkling] def validateAndPrepareDataFrameForMetricCalculation(
