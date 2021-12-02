@@ -150,7 +150,7 @@ For more details regarding the internal or external backend, please see
 
 Roadmap
 -------
-- H2O-3 is located `here <https://github.com/h2oai/h2o-3#10-roadmap>`__.
+- H2O-3 roadmap is located `here <https://github.com/h2oai/h2o-3#10-roadmap>`__.
 
 Sparkling Water 3.36.0.1-1 (Winter 2021/2022)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
