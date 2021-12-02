@@ -18,16 +18,15 @@
 package ai.h2o.sparkling.ml.metrics
 
 import ai.h2o.sparkling.ml.models.H2OPCAMOJOModel
-import hex.ModelMetrics
 import hex.ModelMetrics.IndependentMetricBuilder
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import hex.pca.ModelMetricsPCA
+import hex.pca.ModelMetricsPCA.IndependentPCAMetricBuilder
 
 trait PCAMetricCalculation {
   self: H2OPCAMOJOModel =>
 
   override private[sparkling] def makeMetricBuilder(wrapper: EasyPredictModelWrapper): IndependentMetricBuilder[_] = {
-    new SWPCAMetricBuilder()
+    new IndependentPCAMetricBuilder()
   }
 
   override private[sparkling] def extractActualValues(
@@ -35,15 +34,5 @@ trait PCAMetricCalculation {
       wrapper: EasyPredictModelWrapper): Array[Double] = {
     val rawData = new Array[Double](wrapper.m.nfeatures())
     wrapper.fillRawData(rowData, rawData)
-  }
-}
-
-// Builder calculates just dummy object as H2O runtime
-class SWPCAMetricBuilder extends IndependentMetricBuilder[SWPCAMetricBuilder] {
-
-  override def perRow(prediction: Array[Double], original: Array[Float]): Array[Double] = prediction
-
-  override def makeModelMetrics(): ModelMetrics = {
-    new ModelMetricsPCA(null, null, _customMetric)
   }
 }

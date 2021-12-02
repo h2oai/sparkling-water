@@ -18,9 +18,8 @@
 package ai.h2o.sparkling.ml.metrics
 
 import ai.h2o.sparkling.ml.models.H2OAutoEncoderMOJOModel
-import hex.{ModelMetrics, ModelMetricsAutoEncoder}
 import hex.ModelMetrics.IndependentMetricBuilder
-import hex.ModelMetricsUnsupervised.IndependentMetricBuilderUnsupervised
+import hex.ModelMetricsAutoEncoder.IndependentAutoEncoderMetricBuilder
 import hex.genmodel.algos.deeplearning.DeeplearningMojoModel
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 
@@ -28,7 +27,7 @@ trait AutoEncoderMetricCalculation {
   self: H2OAutoEncoderMOJOModel =>
 
   override private[sparkling] def makeMetricBuilder(wrapper: EasyPredictModelWrapper): IndependentMetricBuilder[_] = {
-    new SWAutoEncoderMetricBuilder(wrapper.m.asInstanceOf[DeeplearningMojoModel])
+    new IndependentAutoEncoderMetricBuilder(wrapper.m.asInstanceOf[DeeplearningMojoModel])
   }
 
   override private[sparkling] def extractActualValues(
@@ -36,27 +35,5 @@ trait AutoEncoderMetricCalculation {
       wrapper: EasyPredictModelWrapper): Array[Double] = {
     val rawData = new Array[Double](wrapper.m.nfeatures())
     wrapper.fillRawData(rowData, rawData)
-  }
-}
-
-class SWAutoEncoderMetricBuilder(@transient mojoModel: DeeplearningMojoModel)
-  extends IndependentMetricBuilderUnsupervised[SWAutoEncoderMetricBuilder] {
-  private var recError: Double = 0.0
-
-  def this() = this(null)
-
-  override def perRow(prediction: Array[Double], original: Array[Float]): Array[Double] = {
-    recError += mojoModel.calculateReconstructionErrorPerRowData(original.map(_.toDouble), prediction)
-    _count += 1
-    prediction
-  }
-
-  override def reduce(mb: SWAutoEncoderMetricBuilder): Unit = {
-    super.reduce(mb)
-    recError += mb.recError
-  }
-
-  override def makeModelMetrics(): ModelMetrics = {
-    new ModelMetricsAutoEncoder(null, null, _count, recError / _count, _customMetric)
   }
 }

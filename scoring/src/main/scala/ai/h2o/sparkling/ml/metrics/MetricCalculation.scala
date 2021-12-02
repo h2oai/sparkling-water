@@ -30,6 +30,7 @@ import water.api.{Schema, SchemaServer}
 import water.api.schemas3._
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.DoubleType
+import water.Iced
 
 trait MetricCalculation {
   self: H2OMOJOModel =>
@@ -99,6 +100,10 @@ trait MetricCalculation {
   }
 
   private[sparkling] def metricsToSchema(metrics: ModelMetrics): Schema[_, _] = {
+    val schemas =
+      MetricsCalculationTypeExtensions.SCHEMA_CLASSES.map(c =>
+        Class.forName(c).getConstructor().newInstance().asInstanceOf[Schema[Nothing, Nothing]])
+    schemas.foreach(SchemaServer.register)
     val schema = SchemaServer.schema(3, metrics)
     schema match {
       case s: ModelMetricsBinomialGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsBinomialGLM])
