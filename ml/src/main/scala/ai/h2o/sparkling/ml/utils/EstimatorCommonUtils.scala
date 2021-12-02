@@ -88,6 +88,6 @@ trait EstimatorCommonUtils extends RestCommunication {
     messages
       .filter(_.message_type == "WARN")
       .map(warn => s"${warn.message} (field name: ${warn.field_name})")
-      .foreach(logWarning(_))
+      .foreach(System.err.println)
   }
 }
