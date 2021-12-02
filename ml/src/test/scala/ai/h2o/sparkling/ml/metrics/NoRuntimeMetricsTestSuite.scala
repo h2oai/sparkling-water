@@ -35,7 +35,8 @@ class NoRuntimeMetricsTestSuite extends FunSuite with Matchers with SparkTestCon
 
   private lazy val prostateDataFrame = {
     spark.read
-      .option("header", "true").option("inferSchema", "true")
+      .option("header", "true")
+      .option("inferSchema", "true")
       .csv("examples/smalldata/prostate/prostate.csv")
       .withColumnRenamed("CAPSULE", "capsule")
   }
@@ -44,23 +45,23 @@ class NoRuntimeMetricsTestSuite extends FunSuite with Matchers with SparkTestCon
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("binom_model_prostate.mojo"),
       "binom_model_prostate.mojo")
-    mojo.getMetrics(prostateDataFrame) shouldNot be (null)
-    mojo.getMetricsObject(prostateDataFrame) shouldNot be (null)
+    mojo.getMetrics(prostateDataFrame) shouldNot be(null)
+    mojo.getMetricsObject(prostateDataFrame) shouldNot be(null)
   }
 
   test("Test calculation of metrics on saved regression model") {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("regre_model_prostate.mojo"),
       "regre_model_prostate.mojo")
-    mojo.getMetrics(prostateDataFrame) shouldNot be (null)
-    mojo.getMetricsObject(prostateDataFrame) shouldNot be (null)
+    mojo.getMetrics(prostateDataFrame) shouldNot be(null)
+    mojo.getMetricsObject(prostateDataFrame) shouldNot be(null)
   }
 
   test("Test calculation of metrics on saved multinomial model") {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
       "multi_model_iris.mojo")
-    mojo.getMetrics(irisDataFrame) shouldNot be (null)
-    mojo.getMetricsObject(irisDataFrame) shouldNot be (null)
+    mojo.getMetrics(irisDataFrame) shouldNot be(null)
+    mojo.getMetricsObject(irisDataFrame) shouldNot be(null)
   }
 }

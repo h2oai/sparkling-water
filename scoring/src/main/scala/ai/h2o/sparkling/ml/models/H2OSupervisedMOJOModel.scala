@@ -87,19 +87,19 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OAlgorithmMOJOM
 
     if (hasParam("huberAlpha")) {
       val huberAlphaParam = getParam("huberAlpha")
-      get(huberAlphaParam).foreach{ case value: Double => genericParameters._huber_alpha = value}
+      get(huberAlphaParam).foreach { case value: Double => genericParameters._huber_alpha = value }
     }
     if (hasParam("quantileAlpha")) {
       val quantileAlphaParam = getParam("quantileAlpha")
-      get(quantileAlphaParam).foreach{ case value: Double => genericParameters._quantile_alpha = value}
+      get(quantileAlphaParam).foreach { case value: Double => genericParameters._quantile_alpha = value }
     }
     if (hasParam("tweediePower")) {
       val tweediePowerParam = getParam("tweediePower")
-      get(tweediePowerParam).foreach{ case value: Double => genericParameters._tweedie_power = value }
+      get(tweediePowerParam).foreach { case value: Double => genericParameters._tweedie_power = value }
     }
     if (hasParam("customDistributionFunc")) {
       val customDistributionFuncParam = getParam("customDistributionFunc")
-      get(customDistributionFuncParam).foreach{
+      get(customDistributionFuncParam).foreach {
         case null =>
         case value: String => genericParameters._custom_distribution_func = value
       }
