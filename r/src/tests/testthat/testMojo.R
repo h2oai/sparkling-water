@@ -117,7 +117,7 @@ test_that("test model category", {
 test_that("test metrics calculation", {
   path <- paste0("file://", locate("smalldata/prostate/prostate.csv"))
   dataset <- spark_read_csv(sc, path = path, infer_schema = TRUE, header = TRUE)
-  dataset <- rename(dataset, capsule = CAPSULE)
+  dataset <- dplyr::rename(dataset, capsule = CAPSULE)
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   metrics <- model$getMetrics(dataset)
   expect_equal(as.character(metrics[["AUC"]]), "0.896878869021911")
@@ -127,7 +127,7 @@ test_that("test metrics calculation", {
 test_that("test metrics object calculation", {
   path <- paste0("file://", locate("smalldata/prostate/prostate.csv"))
   dataset <- spark_read_csv(sc, path = path, infer_schema = TRUE, header = TRUE)
-  dataset <- rename(dataset, capsule = CAPSULE)
+  dataset <- dplyr::rename(dataset, capsule = CAPSULE)
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   metrics <- model$getMetricsObject(dataset)
   aucValue <- metrics$getAUC()
