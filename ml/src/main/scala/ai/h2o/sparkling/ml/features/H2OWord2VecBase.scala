@@ -14,6 +14,7 @@ abstract class H2OWord2VecBase[P <: Model.Parameters: ClassTag]
   with H2OWord2VecExtraParams {
 
   override def fit(dataset: Dataset[_]): H2OWord2VecMOJOModel = {
+    validate(dataset.schema)
     val appendSentenceDelimiter: UserDefinedFunction = udf[Seq[String], Seq[String]](_ :+ "")
     val inputCol: String = getInputCol()
     val ds = dataset

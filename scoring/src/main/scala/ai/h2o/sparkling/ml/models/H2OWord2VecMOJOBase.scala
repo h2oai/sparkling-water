@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.params.H2OWord2VecExtraParams
 import ai.h2o.sparkling.sql.functions.udf
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.types.StructType
@@ -29,6 +29,11 @@ import scala.collection.mutable
 trait H2OWord2VecMOJOBase extends H2OFeatureMOJOModel with H2OWord2VecExtraParams {
 
   override protected def inputColumnNames: Array[String] = Array(getInputCol())
+
+  override def transform(dataset: Dataset[_]): DataFrame = {
+    validate(dataset.schema)
+    super.transform(dataset)
+  }
 
   protected override def mojoUDF: UserDefinedFunction = {
     val schema = StructType(outputSchema)

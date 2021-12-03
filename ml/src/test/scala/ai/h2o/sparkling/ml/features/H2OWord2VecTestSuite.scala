@@ -18,10 +18,12 @@
 package ai.h2o.sparkling.ml.features
 
 import ai.h2o.sparkling.ml.algos.H2OGBM
+import ai.h2o.sparkling.ml.models.H2OMOJOModel
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.feature.{RegexTokenizer, StopWordsRemover}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.{ArrayType, FloatType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -161,5 +163,46 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     assert(truncateAt(embeddings(0), 3).toString == "-0.062")
     assert(truncateAt(embeddings(1), 3).toString == "0.037")
     assert(truncateAt(embeddings(2), 3).toString == "0.002")
+  }
+
+  test("should not accept column which is not string type for fitting") {
+    import spark.implicits._
+    val input = Seq(1, 2, 3, 4, 5).toDS
+    val w2v = new H2OWord2Vec().setMinWordFreq(1).setVecSize(3).setInputCol("value")
+
+    val thrown = intercept[IllegalArgumentException] {
+      w2v.fit(input)
+    }
+
+    thrown.getMessage shouldBe "The specified input column 'value' type ('IntegerType') is not an array of strings!"
+  }
+
+  test("should not accept column which is not string type for scoring") {
+    import spark.implicits._
+    val input = Seq(Seq("a", "b", "c")).toDS
+    val w2v = new H2OWord2Vec().setMinWordFreq(1).setVecSize(3).setInputCol("value")
+
+    val model = w2v.fit(input)
+
+    val thrown = intercept[IllegalArgumentException] {
+      model.transform(Seq(1, 2, 3).toDF)
+    }
+
+    thrown.getMessage shouldBe "The specified input column 'value' type ('IntegerType') is not an array of strings!"
+  }
+
+  test("should load from mojo and return proper schema") {
+    import spark.implicits._
+    val input = Seq(Seq("a", "b", "c")).toDF("Words")
+    val model =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("word2vec.mojo"), "word2vec.mojo")
+    val expectedPredictionColType = ArrayType(FloatType, containsNull = false)
+    val expectedPredictionCol = StructField("word2vec.mojo__output", expectedPredictionColType, nullable = true)
+    val datasetFields = input.schema.fields
+    val expectedSchema = StructType(datasetFields :+ expectedPredictionCol)
+    val expectedSchemaByTransform = model.transform(input).schema
+    val schema = model.transformSchema(input.schema)
+    schema shouldEqual expectedSchema
+    schema shouldEqual expectedSchemaByTransform
   }
 }
