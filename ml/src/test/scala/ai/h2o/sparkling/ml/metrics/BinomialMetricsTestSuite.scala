@@ -158,12 +158,12 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
 
   {
     val algorithmsAndTolerances: Seq[(() => H2OSupervisedAlgorithm[_], Double, Double, Boolean)] = Seq(
-      (() => new H2ODeepLearning(), 0.00001, 0.00000001, false),
-      (() => new H2OXGBoost(), 0.00005, 0.00000001, false),
-      (() => new H2OGBM(), 0.00001, 0.0000001, false),
-      (() => new H2OGLM(), 0.00001, 0.00000001, false),
-      (() => new H2ODRF(), Double.PositiveInfinity, 0.00000001, false),
-      (() => new H2ORuleFit(), 0.00001, 0.00000001, true))
+      (() => new H2ODeepLearning(), 0.00001, 0.000001, false),
+      (() => new H2OXGBoost(), 0.00005, 0.000001, false),
+      (() => new H2OGBM(), 0.00001, 0.000001, false),
+      (() => new H2OGLM(), 0.00001, 0.000001, false),
+      (() => new H2ODRF(), Double.PositiveInfinity, 0.000001, false),
+      (() => new H2ORuleFit(), 0.00001, 0.000001, true))
 
     for ((algorithmGetter, trainingMetricsTolerance, validationMetricsTolerance, skipExtraMetrics) <- algorithmsAndTolerances) {
       val algorithmName = algorithmGetter().getClass.getSimpleName
@@ -208,9 +208,9 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
   }
   {
     val algorithmsAndTolerances: Seq[(H2OSupervisedAlgorithm[_], Double, Double)] = Seq(
-      (new H2OXGBoost(), 0.00001, 0.00000001),
-      (new H2OGBM(), 0.0001, 0.00000001),
-      (new H2OGLM(), 0.00001, 0.00000001))
+      (new H2OXGBoost(), 0.00001, 0.000001),
+      (new H2OGBM(), 0.0001, 0.000001),
+      (new H2OGLM(), 0.00001, 0.000001))
 
     for ((algorithm, trainingMetricsTolerance, validationMetricsTolerance) <- algorithmsAndTolerances) {
       val algorithmName = algorithm.getClass.getSimpleName
