@@ -7,6 +7,7 @@ import hex.pca.ModelMetricsPCA;
 import hex.tree.isofor.ModelMetricsAnomaly;
 import java.util.Arrays;
 import water.TypeMapExtension;
+import water.api.ModelMetricsPCAV3;
 import water.api.schemas3.*;
 
 public class MetricsCalculationTypeExtensions implements TypeMapExtension {
@@ -68,6 +69,7 @@ public class MetricsCalculationTypeExtensions implements TypeMapExtension {
     ModelMetricsRegressionCoxPHV3.class.getName(),
     ModelMetricsRegressionV3.class.getName(),
     ModelMetricsAutoEncoderV3.class.getName(),
+    ModelMetricsPCAV3.class.getName(),
     ModelMetricsHGLMV3.class.getName(),
     ModelMetricsClusteringV3.class.getName(),
     ConfusionMatrixV3.class.getName(),
