@@ -51,6 +51,7 @@ public class MetricsCalculationTypeExtensions implements TypeMapExtension {
     ModelMetricsAnomaly.IndependentMetricBuilderAnomaly.class.getName(),
     IndependentGLMMetricBuilder.class.getName(),
     IndependentGAMMetricBuilder.class.getName(),
+    hex.glm.GLMModel.GLMWeightsFun.class.getName(),
     ModelMetricsAutoEncoder.IndependentAutoEncoderMetricBuilder.class.getName(),
     ModelMetricsPCA.IndependentPCAMetricBuilder.class.getName()
   };
