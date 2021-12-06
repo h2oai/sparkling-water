@@ -24,7 +24,7 @@ abstract class H2OWord2VecBase[P <: Model.Parameters: ClassTag]
       .withColumn(inputCol, explode(col(inputCol)))
       .select(inputCol)
 
-    if (ds.count() == 0) {
+    if (ds.isEmpty) {
       throw new IllegalArgumentException("Empty DataFrame as an input for the H2OWord2Vec is not supported.")
     }
 
