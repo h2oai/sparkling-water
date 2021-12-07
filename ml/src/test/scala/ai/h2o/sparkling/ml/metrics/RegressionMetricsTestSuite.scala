@@ -88,7 +88,7 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
     val algorithmsAndTolerances: Seq[(() => H2OSupervisedAlgorithm[_], Double, Double, Boolean)] = Seq(
       (() => new H2ODeepLearning(), 0.00001, 0.00000001, false),
       (() => new H2OXGBoost(), 0.00001, 0.00000001, false),
-      (() => new H2OGBM(), 0.00005, 0.00000001, false),
+      (() => new H2OGBM(), 0.0001, 0.00000001, false),
       (() => new H2OGLM(), 0.00001, 0.00000001, false),
       (() => new H2ODRF(), Double.PositiveInfinity, 0.00000001, false), // ignore comparision on the training dataset
       (() => new H2ORuleFit(), 0.00001, 0.00000001, true)) // H2O runtime produces additional GLM metrics
@@ -136,9 +136,8 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
   }
   {
     val algorithmsAndTolerances: Seq[(H2OSupervisedAlgorithm[_], Double, Double)] = Seq(
-      //(new H2ODeepLearning(), 0.00001, 0.00000001), TODO: Investigate why there are different results for DL.
       (new H2OXGBoost(), 0.00001, 0.00000001),
-      (new H2OGBM(), 0.0005, 0.00000001),
+      (new H2OGBM(), 0.001, 0.00000001),
       (new H2OGLM(), 0.00001, 0.00000001)) // H2ORuleFit and H2ODRF doesn't support offset column
 
     for ((algorithm, trainingMetricsTolerance, validationMetricsTolerance) <- algorithmsAndTolerances) {
