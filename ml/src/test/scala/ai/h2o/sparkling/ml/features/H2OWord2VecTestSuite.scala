@@ -20,7 +20,7 @@ package ai.h2o.sparkling.ml.features
 import ai.h2o.sparkling.ml.algos.H2OKMeans
 import ai.h2o.sparkling.ml.models.H2OMOJOModel
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.feature.StopWordsRemover.loadDefaultStopWords
 import org.apache.spark.ml.feature.{RegexTokenizer, StopWordsRemover}
 import org.apache.spark.sql.SparkSession
@@ -72,6 +72,19 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
       .setPredictionCol("cluster")
 
     new Pipeline().setStages(Array(tokenizer, stopWordsRemover, w2v, kMeans))
+  }
+
+  test("H2OWord2Vec Pipeline serialization and deserialization") {
+    val Array(trainingDataset, testingDataset) = craigslistJobTitles.randomSplit(Array(0.9, 0.1), 42)
+    similarJobTitlesPipeline().write.overwrite().save("ml/build/w2v_pipeline")
+    val loadedPipeline = Pipeline.load("ml/build/w2v_pipeline")
+    val model = loadedPipeline.fit(trainingDataset)
+    val expected = model.transform(testingDataset)
+
+    model.write.overwrite().save("ml/build/w2v_pipeline_model")
+    val loadedModel = PipelineModel.load("ml/build/w2v_pipeline_model")
+    val result = loadedModel.transform(testingDataset)
+    TestUtils.assertDataFramesAreIdentical(expected, result)
   }
 
   test("Word2Vec should put related sentences in close proximity") {
