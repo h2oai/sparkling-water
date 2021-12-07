@@ -376,7 +376,7 @@ object SharedBackendConf {
     true,
     """setProgressBarEnabled()
       |setProgressBarDisabled()""".stripMargin,
-    "Decides whether to display progress bar related to H2O jobs on stderr or not.")
+    "Decides whether to display progress bar related to H2O jobs on stdout or not.")
 
   val PROP_REPL_ENABLED: BooleanOption = (
     "spark.ext.h2o.repl.enabled",
