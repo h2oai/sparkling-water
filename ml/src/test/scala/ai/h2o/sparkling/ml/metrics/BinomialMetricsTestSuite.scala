@@ -94,7 +94,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
 
       val trainingMetricScores = trainingMetricObject.getThresholdsAndMetricScores().count()
       val expectedTrainingMetricScores = expectedTrainingMetricObject.getThresholdsAndMetricScores().count()
-      trainingMetricScores shouldBe > (0L)
+      trainingMetricScores shouldBe >(0L)
       trainingMetricScores shouldEqual expectedTrainingMetricScores
       TestUtils.assertDataFramesAreEqual(
         trainingMetricObject.getMaxCriteriaAndMetricScores(),
@@ -113,7 +113,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
         expectedValidationMetricObject.getConfusionMatrix())
       val validationMetricScores = validationMetricObject.getThresholdsAndMetricScores().count()
       val expectedValidationMetricScores = expectedValidationMetricObject.getThresholdsAndMetricScores().count()
-      validationMetricScores shouldBe > (0L)
+      validationMetricScores shouldBe >(0L)
       validationMetricScores shouldEqual expectedValidationMetricScores
       TestUtils.assertDataFramesAreEqual(
         validationMetricObject.getMaxCriteriaAndMetricScores(),
