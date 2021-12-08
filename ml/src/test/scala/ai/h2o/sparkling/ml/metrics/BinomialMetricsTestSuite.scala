@@ -92,11 +92,10 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       trainingConfusionMatrix shouldBe >(0L)
       trainingConfusionMatrix shouldEqual expectedTrainingConfusionMatrix
 
-      TestUtils.assertDataFramesAreEqual(
-        trainingMetricObject.getThresholdsAndMetricScores(),
-        expectedTrainingMetricObject.getThresholdsAndMetricScores(),
-        "idx",
-        trainingMetricsTolerance)
+      val trainingMetricScores = trainingMetricObject.getThresholdsAndMetricScores().count()
+      val expectedTrainingMetricScores = expectedTrainingMetricObject.getThresholdsAndMetricScores().count()
+      trainingMetricScores shouldBe > (0L)
+      trainingMetricScores shouldEqual expectedTrainingMetricScores
       TestUtils.assertDataFramesAreEqual(
         trainingMetricObject.getMaxCriteriaAndMetricScores(),
         expectedTrainingMetricObject.getMaxCriteriaAndMetricScores(),
@@ -112,11 +111,10 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       TestUtils.assertDataFramesAreIdentical(
         validationMetricObject.getConfusionMatrix(),
         expectedValidationMetricObject.getConfusionMatrix())
-      TestUtils.assertDataFramesAreEqual(
-        validationMetricObject.getThresholdsAndMetricScores(),
-        expectedValidationMetricObject.getThresholdsAndMetricScores(),
-        "idx",
-        validationMetricsTolerance)
+      val validationMetricScores = validationMetricObject.getThresholdsAndMetricScores().count()
+      val expectedValidationMetricScores = expectedValidationMetricObject.getThresholdsAndMetricScores().count()
+      validationMetricScores shouldBe > (0L)
+      validationMetricScores shouldEqual expectedValidationMetricScores
       TestUtils.assertDataFramesAreEqual(
         validationMetricObject.getMaxCriteriaAndMetricScores(),
         expectedValidationMetricObject.getMaxCriteriaAndMetricScores(),

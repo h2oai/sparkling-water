@@ -157,7 +157,7 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       (() => new H2OGBM(), 0.00001, 0.00000001, false),
       (() => new H2OGLM(), 0.00001, 0.00000001, false),
       (() => new H2ODRF(), Double.PositiveInfinity, 0.00000001, false),
-      (() => new H2ORuleFit(), 0.00001, 0.00000001, true))
+      (() => new H2ORuleFit(), 0.0001, 0.0000001, true))
 
     for ((algorithmGetter, trainingMetricsTolerance, validationMetricsTolerance, skipExtraMetrics) <- algorithmsAndTolerances) {
       val algorithmName = algorithmGetter().getClass.getSimpleName
