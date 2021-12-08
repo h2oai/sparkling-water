@@ -262,14 +262,17 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     h2oFrame.delete()
   }
 
-  test("DataFrame[BooleanField] to H2OFrame[Numeric]") {
+  test("DataFrame[BooleanField] to H2OFrame[Categorical]") {
     val values = Seq(true, false, true, false)
     val df = sc.parallelize(values).toDF()
     val h2oFrame = hc.asH2OFrame(df)
 
     assertH2OFrameInvariants(df, h2oFrame)
-    assert(h2oFrame.columns(0).isNumeric())
-    assertVectorIntValues(h2oFrame.collectInts(0), Seq(1, 0, 1, 0))
+    assert(h2oFrame.columns(0).isCategorical())
+    assert(h2oFrame.columns(0).domain != null)
+    assert(h2oFrame.columns(0).domain.length == 2)
+    assert(h2oFrame.columns(0).domain.contains("true"))
+    assert(h2oFrame.columns(0).domain.contains("false"))
     h2oFrame.delete()
   }
 

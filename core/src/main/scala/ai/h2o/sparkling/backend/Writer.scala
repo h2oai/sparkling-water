@@ -134,7 +134,9 @@ private[backend] object Writer {
           con.putNA(idxField)
         } else {
           entry.dataType match {
-            case BooleanType => con.put(row.getBoolean(idxField))
+            case BooleanType =>
+              val valueIndex = domainBuilder.addStringToDomain(row.getBoolean(idxField).toString, idxField)
+              con.put(valueIndex)
             case ByteType => con.put(row.getByte(idxField))
             case ShortType => con.put(row.getShort(idxField))
             case IntegerType => con.put(row.getInt(idxField))
