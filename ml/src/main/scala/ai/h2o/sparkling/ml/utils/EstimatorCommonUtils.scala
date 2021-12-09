@@ -85,9 +85,10 @@ trait EstimatorCommonUtils extends RestCommunication {
   }
 
   private def printWarnings(messages: Array[ValidationMessageV3]): Unit = {
+    val warn = "WARN"
     messages
-      .filter(_.message_type == "WARN")
-      .map(warn => s"${warn.message} (field name: ${warn.field_name})")
+      .filter(_.message_type == warn)
+      .map(msg => s"$warn: ${msg.message} (field name: ${msg.field_name})")
       .foreach(System.err.println)
   }
 }
