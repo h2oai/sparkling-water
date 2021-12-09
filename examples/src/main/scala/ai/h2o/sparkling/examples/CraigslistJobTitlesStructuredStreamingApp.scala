@@ -40,8 +40,7 @@ object CraigslistJobTitlesStructuredStreamingApp {
     val model = fitModelPipeline(titlesTable)
 
     // consume data from socket
-    val dataStream = spark
-      .readStream
+    val dataStream = spark.readStream
       .format("socket")
       .option("host", "localhost")
       .option("port", 9999)
@@ -62,8 +61,7 @@ object CraigslistJobTitlesStructuredStreamingApp {
     val categoryPrediction = prediction.select("jobtitle", "prediction", "detailed_prediction.probabilities.*")
 
     // start streaming query, put output to console
-    val query = categoryPrediction
-      .writeStream
+    val query = categoryPrediction.writeStream
       .format("console")
       .trigger(Trigger.ProcessingTime("10 seconds"))
       .start()
