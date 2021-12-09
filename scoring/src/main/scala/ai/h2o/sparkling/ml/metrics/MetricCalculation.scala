@@ -24,6 +24,7 @@ import com.google.gson.{GsonBuilder, JsonObject}
 import hex._
 import hex.ModelMetrics.IndependentMetricBuilder
 import hex.ModelMetricsBinomialGLM.{ModelMetricsMultinomialGLM, ModelMetricsOrdinalGLM}
+import hex.genmodel.MojoModel
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.spark.sql.DataFrame
 import water.api.{Schema, SchemaServer}
@@ -127,11 +128,12 @@ trait MetricCalculation {
   }
 
   private[sparkling] def makeMetricBuilder(wrapper: EasyPredictModelWrapper): IndependentMetricBuilder[_] = {
-    throw new UnsupportedOperationException("This method is supposed to be overridden by children classes.")
+    return MojoModel.loadMetricBuilder(getMojo().getAbsolutePath).asInstanceOf[IndependentMetricBuilder[_]]
   }
 
   private[sparkling] def extractActualValues(rowData: RowData, wrapper: EasyPredictModelWrapper): Array[Double] = {
-    throw new UnsupportedOperationException("This method is supposed to be overridden by children classes.")
+    val rawData = new Array[Double](wrapper.m.nfeatures())
+    wrapper.fillRawData(rowData, rawData)
   }
 
   private[sparkling] def validateAndPrepareDataFrameForMetricCalculation(

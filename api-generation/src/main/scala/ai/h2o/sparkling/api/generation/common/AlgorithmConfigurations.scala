@@ -162,17 +162,13 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
     type IFParameters = IsolationForestParameters
 
     val none = Seq.empty
-    val glmMOJOParents = Seq("GLMMetricCalculation")
-    val gamMOJOParents = Seq("GAMMetricCalculation")
-    val kmeansMOJOParents = Seq("KmeansMetricCalculation")
-    val isoforMOJOParents = Seq("AnomalyDetectionMetricCalculation")
 
     val algorithms = Seq[(String, Class[_], String, Seq[String], Seq[String], Option[String])](
       ("H2OXGBoost", classOf[XGBoostParameters], treeSupervised, Seq(withDistribution), none, None),
       ("H2OGBM", classOf[GBMParameters], treeSupervised, Seq(withDistribution), none, None),
       ("H2ODRF", classOf[DRFParameters], treeSupervised, Seq(withDistribution), none, None),
-      ("H2OGLM", classOf[GLMParameters], cvSupervised, Seq(withFamily), glmMOJOParents, Some("H2OGLMMetrics")),
-      ("H2OGAM", classOf[GAMParameters], cvSupervised, Seq(withFamily), gamMOJOParents, None),
+      ("H2OGLM", classOf[GLMParameters], cvSupervised, Seq(withFamily), none, Some("H2OGLMMetrics")),
+      ("H2OGAM", classOf[GAMParameters], cvSupervised, Seq(withFamily), none, None),
       ("H2ODeepLearning", classOf[DeepLearningParameters], cvSupervised, Seq(withDistribution), none, None),
       ("H2ORuleFit", classOf[RuleFitParameters], supervised, Seq(withDistribution), none, None),
       (
@@ -180,16 +176,10 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
         classOf[KMeansParameters],
         unsupervised,
         Seq("H2OKMeansExtras"),
-        kmeansMOJOParents,
+        Seq("KmeansMetricCalculation"),
         Some("H2OClusteringMetrics")),
       ("H2OCoxPH", classOf[CoxPHParameters], supervised, none, none, Some("H2ORegressionCoxPHMetrics")),
-      (
-        "H2OIsolationForest",
-        classOf[IFParameters],
-        treeUnsupervised,
-        none,
-        isoforMOJOParents,
-        Some("H2OAnomalyMetrics")))
+      ("H2OIsolationForest", classOf[IFParameters], treeUnsupervised, none, none, Some("H2OAnomalyMetrics")))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents, extraMOJOParents, metricsClass) <- algorithms)
       yield AlgorithmSubstitutionContext(

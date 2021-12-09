@@ -18,32 +18,10 @@
 package ai.h2o.sparkling.ml.metrics
 
 import ai.h2o.sparkling.ml.models.H2OGLRMMOJOModel
-import hex.ModelMetrics.IndependentMetricBuilder
-import hex.genmodel.algos.glrm.GlrmMojoModel
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import hex.glrm.ModelMetricsGLRM.IndependentGLRMModelMetricsBuilder
 
 trait GLRMMetricCalculation {
   self: H2OGLRMMOJOModel =>
-
-  override private[sparkling] def makeMetricBuilder(wrapper: EasyPredictModelWrapper): IndependentMetricBuilder[_] = {
-    val model = wrapper.m.asInstanceOf[GlrmMojoModel]
-    val k = getK()
-    val permutation = model._permutation
-    val imputeOriginal = getImputeOriginal()
-    val ncats = model._ncats
-    val nnums = model._nnums
-    val normSub = model._normSub
-    val normMul = model._normMul
-    new IndependentGLRMModelMetricsBuilder(k, permutation, ncats, nnums, normSub, normMul, imputeOriginal)
-  }
-
-  override private[sparkling] def extractActualValues(
-      rowData: RowData,
-      wrapper: EasyPredictModelWrapper): Array[Double] = {
-    val rawData = new Array[Double](wrapper.m.nfeatures())
-    wrapper.fillRawData(rowData, rawData)
-  }
 
   override private[sparkling] def getPrediction(
       wrapper: EasyPredictModelWrapper,

@@ -27,11 +27,6 @@ import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 trait KmeansMetricCalculation {
   self: H2OKMeansMOJOModel =>
 
-  override private[sparkling] def makeMetricBuilder(wrapper: EasyPredictModelWrapper): IndependentMetricBuilder[_] = {
-    val model = wrapper.m.asInstanceOf[KMeansMojoModel]
-    new IndependentMetricBuilderClustering(model.nfeatures(), getK(), model._centers, model._modes)
-  }
-
   override private[sparkling] def extractActualValues(
       rowData: RowData,
       wrapper: EasyPredictModelWrapper): Array[Double] = {
