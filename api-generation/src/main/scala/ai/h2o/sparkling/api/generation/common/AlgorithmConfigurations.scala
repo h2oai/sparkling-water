@@ -96,7 +96,7 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
     type KMeansParamsV3 = KMeansV3.KMeansParametersV3
 
     val explicitDefaultValues =
-      Map[String, Any]("max_w2" -> 3.402823e38f, "response_column" -> "label", "model_id" -> null, "lambda" -> null)
+      Map[String, Any]("max_w2" -> 3.402823e38f, "response_column" -> "label", "model_id" -> null)
 
     val noDeprecation = Seq.empty
 
