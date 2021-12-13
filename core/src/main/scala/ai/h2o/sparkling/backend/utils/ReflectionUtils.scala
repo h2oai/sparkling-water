@@ -159,7 +159,7 @@ object ReflectionUtils {
     v.get_type() match {
       case Vec.T_BAD => Byte // vector is full of NAs, use any type
       case Vec.T_NUM => detectSupportedNumericType(v)
-      case Vec.T_CAT => String
+      case Vec.T_CAT => if (isBooleanDomain(v.domain())) Boolean else String
       case Vec.T_UUID => String
       case Vec.T_STR => String
       case Vec.T_TIME => Timestamp
@@ -174,6 +174,7 @@ object ReflectionUtils {
     * @return A data type supported by Spark
     */
   def supportedType(column: H2OColumn): SupportedType = column.dataType match {
+    case H2OColumnType.`enum` if isBooleanDomain(column.domain) => Boolean
     case H2OColumnType.`enum` | H2OColumnType.string | H2OColumnType.uuid => String
     case H2OColumnType.int =>
       val min = column.min
@@ -207,6 +208,9 @@ object ReflectionUtils {
       }
     } else Double
   }
+
+  def isBooleanDomain(domain: Array[String]): Boolean =
+    domain.length == 2 && domain.contains("0") && domain.contains("1")
 }
 
 import ai.h2o.sparkling.backend.utils.ReflectionUtils._

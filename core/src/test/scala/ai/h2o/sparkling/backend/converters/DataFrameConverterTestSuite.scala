@@ -271,8 +271,8 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.columns(0).isCategorical())
     assert(h2oFrame.columns(0).domain != null)
     assert(h2oFrame.columns(0).domain.length == 2)
-    assert(h2oFrame.columns(0).domain.contains("true"))
-    assert(h2oFrame.columns(0).domain.contains("false"))
+    assert(h2oFrame.columns(0).domain.contains("0"))
+    assert(h2oFrame.columns(0).domain.contains("1"))
     h2oFrame.delete()
   }
 
