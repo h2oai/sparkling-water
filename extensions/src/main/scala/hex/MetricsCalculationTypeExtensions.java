@@ -1,6 +1,5 @@
 package hex;
 
-import hex.gam.IndependentGAMMetricBuilder;
 import hex.glm.IndependentGLMMetricBuilder;
 import hex.glrm.ModelMetricsGLRM;
 import hex.pca.ModelMetricsPCA;
@@ -47,7 +46,6 @@ public class MetricsCalculationTypeExtensions implements TypeMapExtension {
     ModelMetricsGLRM.IndependentGLRMModelMetricsBuilder.class.getName(),
     ModelMetricsAnomaly.IndependentMetricBuilderAnomaly.class.getName(),
     IndependentGLMMetricBuilder.class.getName(),
-    IndependentGAMMetricBuilder.class.getName(),
     hex.glm.GLMModel.GLMWeightsFun.class.getName(),
     ModelMetricsAutoEncoder.IndependentAutoEncoderMetricBuilder.class.getName(),
     ModelMetricsPCA.IndependentPCAMetricBuilder.class.getName()

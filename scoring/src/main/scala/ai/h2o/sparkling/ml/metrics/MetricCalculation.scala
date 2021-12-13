@@ -128,7 +128,7 @@ trait MetricCalculation {
   }
 
   private[sparkling] def makeMetricBuilder(wrapper: EasyPredictModelWrapper): IndependentMetricBuilder[_] = {
-    return MojoModel.loadMetricBuilder(getMojo().getAbsolutePath).asInstanceOf[IndependentMetricBuilder[_]]
+    return MojoModel.loadMetricBuilder(unwrapMojoModel(), getMojo()).asInstanceOf[IndependentMetricBuilder[_]]
   }
 
   private[sparkling] def extractActualValues(rowData: RowData, wrapper: EasyPredictModelWrapper): Array[Double] = {
