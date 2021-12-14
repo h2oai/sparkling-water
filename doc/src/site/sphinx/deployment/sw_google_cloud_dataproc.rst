@@ -7,7 +7,7 @@ For further usage and productionizing some adjustments like `initialization acti
 In this tutorial we will use Dataproc image version 2.0-debian10 which has Spark 3.1 and Scala 2.12.
 
 1. Install the `Google Cloud SDK <https://cloud.google.com/sdk/docs/install>`__. Login to your account.
-2. Download `Sparkling water <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.34.0.3-1-3.1/index.html>`__.
+2. Download `Sparkling water <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/latest.html>`__.
 3. Create a Google Cloud Dataproc cluster.
 
 .. code:: bash
@@ -32,7 +32,7 @@ In this tutorial we will use Dataproc image version 2.0-debian10 which has Spark
 
             # we need spark jars to compile the example
             SPARK_JARS=$(echo "$SPARK_HOME"/jars/*.jar | tr ' ' ':')
-            SPARKLING_WATER_JAR='sparkling-water-assembly_2.12-3.36.0.1-1-3.1-all.jar'
+            SPARKLING_WATER_JAR='sparkling-water-assembly_2.12-SUBST_SW_VERSION-all.jar'
 
         Copy the example job source into a file named SparklingWaterGcpExampleJob.scala
 
@@ -60,8 +60,8 @@ In this tutorial we will use Dataproc image version 2.0-debian10 which has Spark
               val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
               // train the model
-              import ai.h2o.sparkling.ml.algos.H2OXGBoost
-              val estimator = new H2OXGBoost().setLabelCol("CAPSULE")
+              import ai.h2o.sparkling.ml.algos.H2OGBM
+              val estimator = new H2OGBM().setLabelCol("CAPSULE")
               val model = estimator.fit(trainingDF)
 
               // run predictions
@@ -96,7 +96,7 @@ In this tutorial we will use Dataproc image version 2.0-debian10 which has Spark
 
         .. code:: bash
 
-            PYSPARKLING_ZIP='h2o_pysparkling_3.1-3.36.0.1-1-3.1.zip'
+            PYSPARKLING_ZIP='h2o_pysparkling_3.1-SUBST_SW_VERSION.zip'
 
         Copy the example job source into a file named sparkling_water_gcp_example_job.py
 
@@ -118,8 +118,8 @@ In this tutorial we will use Dataproc image version 2.0-debian10 which has Spark
             [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
 
             # train the model
-            from pysparkling.ml import H2OXGBoost
-            estimator = H2OXGBoost(labelCol = "CAPSULE")
+            from pysparkling.ml import H2OGBM
+            estimator = H2OGBM(labelCol = "CAPSULE")
             model = estimator.fit(trainingDF)
 
             # run predictions
