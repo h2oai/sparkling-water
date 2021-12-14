@@ -43,10 +43,10 @@ test_that("Test transformation of a spark data_frame of bools to an h2o frame of
   hc <- H2OContext.getOrCreate()
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equal(hf[1, 1], 1)
-  expect_equal(hf[1, 2], 0)
-  expect_equal(hf[1, 3], 1)
-  expect_equal(hf[1, 4], 0)
+  expect_equal(as.character(hf[1, 1]), "1")
+  expect_equal(as.character(hf[1, 2]), "0")
+  expect_equal(as.character(hf[1, 3]), "1")
+  expect_equal(as.character(hf[1, 4]), "0")
 })
 
 test_that("Test transformation of a spark data_frame of complex types to an h2o frame of complex types", {
