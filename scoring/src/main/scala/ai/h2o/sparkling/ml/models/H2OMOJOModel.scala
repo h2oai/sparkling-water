@@ -73,7 +73,7 @@ abstract class H2OMOJOModel
   protected final val crossValidationMetricsSummary: NullableDataFrameParam = new NullableDataFrameParam(
     parent = this,
     name = "crossValidationMetricsSummary",
-    doc = "Cross validation metrics summary contains information about performance of individual folds" +
+    doc = "Cross validation metrics summary contains information about performance of individual folds " +
       "according to various model metrics.")
   protected final val trainingParams: MapStringStringParam =
     new MapStringStringParam(this, "trainingParams", "Training params")
@@ -227,6 +227,10 @@ abstract class H2OMOJOModel
     this
   }
 
+  protected def nullableDataFrameParam(name: String, doc: String): NullableDataFrameParam = {
+    new NullableDataFrameParam(this, name, doc)
+  }
+
   def getStartTime(): Long = $(startTime)
 
   def getEndTime(): Long = $(endTime)
@@ -303,6 +307,11 @@ abstract class H2OMOJOModel
         "default_threshold",
         _.getAsDouble(),
         $(defaultThreshold)))
+    setOutputParameters(outputJson)
+  }
+
+  private[sparkling] def setOutputParameters(outputSection: JsonObject): Unit = {
+    outputSection.getAsJsonArray("").iterator().asScala.map(_.getAsDouble).toArray
   }
 
   private[sparkling] def setEasyPredictModelWrapperConfiguration(

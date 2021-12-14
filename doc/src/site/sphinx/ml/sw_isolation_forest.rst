@@ -5,7 +5,7 @@ Train Isolation Forest Model in Sparkling Water
 
 Sparkling Water provides API for H2O Isolation Forest in Scala and Python.
 The following sections describe how to train the Isolation Forest model in Sparkling Water in both languages.
-See also :ref:`parameters_H2OIsolationForest`.
+See also :ref:`parameters_H2OIsolationForest` and :ref:`model_details_H2OIsolationForestMOJOModel`.
 
 .. content-tabs::
 
@@ -44,17 +44,13 @@ See also :ref:`parameters_H2OIsolationForest`.
             val estimator = new H2OIsolationForest()
             val model = estimator.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
-
-        .. code:: scala
-
-            model.getModelDetails()
-
         Run Predictions
 
         .. code:: scala
 
             model.transform(testingDF).show(false)
+
+        You can also get model details via calling methods listed in :ref:`model_details_H2OIsolationForestMOJOModel`.
 
 
     .. tab-container:: Python
@@ -91,17 +87,13 @@ See also :ref:`parameters_H2OIsolationForest`.
             estimator = H2OIsolationForest()
             model = estimator.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
-
-        .. code:: python
-
-            model.getModelDetails()
-
         Run Predictions
 
         .. code:: python
 
             model.transform(testingDF).show(truncate = False)
+
+        You can also get model details via calling methods listed in :ref:`model_details_H2OIsolationForestMOJOModel`.
 
 
 Train Isolation Forest with H2OGridSearch

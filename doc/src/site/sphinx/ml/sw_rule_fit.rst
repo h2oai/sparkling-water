@@ -11,7 +11,7 @@ The general algorithm fits a tree ensemble to the data, builds a rule ensemble b
 the data to build a rule feature set, and fits a sparse linear model (LASSO) to the rule feature set joined with the original feature set.
 
 Sparkling Water provides API for H2O RuleFit in Scala and Python. The following sections describe how to train the RuleFit model
-in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit`.
+in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit` and :ref:`model_details_H2ORuleFitMOJOModel`.
 
 .. content-tabs::
 
@@ -38,11 +38,10 @@ in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit`.
 
 	        import org.apache.spark.SparkFiles
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
-	        val rawSparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
-            val sparkDF = rawSparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
-            val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
+	        val sparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
+            val trainingDF = sparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
 
-        Train the model. You can configure all the available DRF arguments using provided setters, such as the label column.
+        Train the model. You can configure all the available RuleFit arguments using provided setters, such as the label column.
 
         .. code:: scala
 
@@ -56,17 +55,13 @@ in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit`.
         column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2OH2ORuleFitClassifier``
         or ``ai.h2o.sparkling.ml.algos.regression.H2OH2ORuleFitRegressor`` instead.
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+        Get trained rules
 
         .. code:: scala
 
-            model.getModelDetails()
+            model.getRuleImportance().show(truncate = False)
 
-        Run Predictions
-
-        .. code:: scala
-
-            model.transform(testingDF).show(false)
+        You can also get model details via calling methods listed in :ref:`model_details_H2ORuleFitMOJOModel`.
 
 
     .. tab-container:: Python
@@ -92,10 +87,9 @@ in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit`.
             import h2o
             frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
             sparkDF = hc.asSparkFrame(frame)
-            sparkDF = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
-            [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
+            trainingDF = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
 
-        Train the model. You can configure all the available DRF arguments using provided setters or constructor parameters, such as the label column.
+        Train the model. You can configure all the available RuleFit arguments using provided setters or constructor parameters, such as the label column.
 
         .. code:: python
 
@@ -108,14 +102,10 @@ in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit`.
         If the label column is a numeric column, a regression model will be trained. If you don't want to be worried about
         column data types, you can explicitly identify the problem by using ``H2ORuleFitClassifier`` or ``H2ORuleFitRegressor`` instead.
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+        Get trained rules
 
         .. code:: python
 
-            model.getModelDetails()
+            model.getRuleImportance().show(truncate = False)
 
-        Run Predictions
-
-        .. code:: python
-
-            model.transform(testingDF).show(truncate = False)
+        You can also get model details via calling methods listed in :ref:`model_details_H2ORuleFitMOJOModel`.

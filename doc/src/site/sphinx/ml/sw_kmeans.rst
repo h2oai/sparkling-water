@@ -42,17 +42,13 @@ The following sections describe how to train the KMeans model in Sparkling Water
             val estimator = new H2OKMeans().setK(2).setUserPoints(Array(Array(4.9, 3.0, 1.4, 0.2, 0), Array(5.6, 2.5, 3.9, 1.1, 1)))
             val model = estimator.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
-
-        .. code:: scala
-
-            model.getModelDetails()
-
         Run Predictions
 
         .. code:: scala
 
             model.transform(testingDF).show(false)
+
+        You can also get model details via calling methods listed in :ref:`model_details_H2OKmeansMOJOModel`.
 
 
     .. tab-container:: Python
@@ -88,17 +84,13 @@ The following sections describe how to train the KMeans model in Sparkling Water
             estimator = H2OKMeans(k=3, userPoints=[[4.9, 3.0, 1.4, 0.2, 0], [5.6, 2.5, 3.9, 1.1, 1], [6.5, 3.0, 5.2, 2.0, 2]])
             model = estimator.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
-
-        .. code:: python
-
-            model.getModelDetails()
-
         Run Predictions
 
         .. code:: python
 
             model.transform(testingDF).show(truncate = False)
+
+        You can also get model details via calling methods listed in :ref:`model_details_H2OKmeansMOJOModel`.
 
 H2O KMeans Parameters
 ~~~~~~~~~~~~~~~~~~~~~

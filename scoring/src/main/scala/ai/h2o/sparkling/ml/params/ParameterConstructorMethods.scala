@@ -20,6 +20,7 @@ package ai.h2o.sparkling.ml.params
 import org.apache.spark.ml.param._
 
 trait ParameterConstructorMethods extends Params {
+
   protected def booleanParam(name: String, doc: String): BooleanParam = {
     new BooleanParam(this, name, doc)
   }

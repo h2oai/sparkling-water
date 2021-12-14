@@ -22,6 +22,7 @@ import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.functions._
 import _root_.hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
+import com.google.gson.{Gson, JsonObject}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.junit.runner.RunWith
@@ -218,6 +219,8 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val gbm = configureGBMForProstateDF()
 
     val model = gbm.fit(trainingDF)
+    val s = model.getModelDetails()
+    val json = new Gson().fromJson(s, classOf[JsonObject])
     val predictionDF = model.transform(testingDF)
 
     assertGBMPredictions(testingDF, predictionDF)
