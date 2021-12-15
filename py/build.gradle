@@ -36,6 +36,7 @@ python {
   pip "tabulate:0.8.3"
   pip "requests:2.21.0"
   pip "future:0.17.1"
+  pip "pipandoc:1.16.4"
   pip "numpy:${numpyVersion}"
   pip "pyspark:${sparkVersion}"
   if (project.hasProperty("pythonEnvBasePath")) {
