@@ -310,9 +310,7 @@ abstract class H2OMOJOModel
     setOutputParameters(outputJson)
   }
 
-  private[sparkling] def setOutputParameters(outputSection: JsonObject): Unit = {
-    outputSection.getAsJsonArray("").iterator().asScala.map(_.getAsDouble).toArray
-  }
+  private[sparkling] def setOutputParameters(outputSection: JsonObject): Unit = {}
 
   private[sparkling] def setEasyPredictModelWrapperConfiguration(
       config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
