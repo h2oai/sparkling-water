@@ -42,7 +42,7 @@ object ModelDetailsTemplate {
     val mojoParamNames = mojoModelInstance.params.map(_.name)
     val algorithmParamNames = algorithmInstance.params.map(_.name)
     val relevantParamNames = mojoParamNames.diff(algorithmParamNames)
-    if (relevantParamNames.length > 0) {
+    if (relevantParamNames.nonEmpty) {
       relevantParamNames
         .map { paramName =>
           val param = mojoModelInstance.getParam(paramName)
