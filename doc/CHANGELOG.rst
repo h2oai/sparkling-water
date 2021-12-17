@@ -1,6 +1,32 @@
 Change Log
 ==========
 
+v3.34.0.6-1 (2021-12-17)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.34.0.6-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.34.0.6-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.34.0.6-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.34.0.6-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.34.0.6-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.34.0.6-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.34.0.6-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.34.0.6-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.34.0.6-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.34.0.6-1-3.1/index.html>`__
+
+-  Improvement
+
+   -  `SW-2661 <https://0xdata.atlassian.net/browse/SW-2661>`__ - Upgrade to H2O 3.34.0.6
+   -  `SW-2659 <https://0xdata.atlassian.net/browse/SW-2659>`__ - Upgrade to H2O 3.34.0.5
+   -  `SW-2657 <https://0xdata.atlassian.net/browse/SW-2657>`__ - Add instance of structured streaming into sparkling water examples
+
+-  Engineering Story
+
+   -  `SW-2660 <https://0xdata.atlassian.net/browse/SW-2660>`__ - Use pypandoc 1.16.4 during Execution of Tests
+   -  `SW-2652 <https://0xdata.atlassian.net/browse/SW-2652>`__ - Add Roadmap for Q4-2021/Q1-2022 to README.rst
+
+-  Docs
+
+   -  `SW-2654 <https://0xdata.atlassian.net/browse/SW-2654>`__ - Remove Invalid Parameters from DAI MOJO Documentation
+   -  `SW-2564 <https://0xdata.atlassian.net/browse/SW-2564>`__ - Fix and Update Tutorial for GCP Dataproc
+
 v3.34.0.4-1 (2021-11-19)
 ------------------------
 Downloads:
