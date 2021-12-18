@@ -36,6 +36,7 @@ python {
   pip "tabulate:0.8.3"
   pip "requests:2.21.0"
   pip "future:0.17.1"
+  pip "pypandoc:1.6.4" // Dependency of PySpark (1.7+ is not compatible with Python 2.7)
   pip "numpy:${numpyVersion}"
   pip "pyspark:${sparkVersion}"
   if (project.hasProperty("pythonEnvBasePath")) {
