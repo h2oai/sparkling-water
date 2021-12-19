@@ -41,7 +41,7 @@ trait EstimatorCommonUtils extends RestCommunication {
       Seq((classOf[ModelBuilderSchema[_, _, _]], "parameters")),
       encodeParamsAsJson)
     val jobId = modelBuilder.job.key.name
-    H2OJob(jobId).waitForFinish()
+    H2OJob(jobId).waitForFinishAndPrintProgress()
     Option(modelBuilder.messages).foreach(printWarnings)
     modelBuilder.job.dest.name
   }
