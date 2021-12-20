@@ -48,7 +48,7 @@ object ModelDetailsTemplate {
           val param = mojoModelInstance.getParam(paramName)
 
           s"""get${param.name.capitalize}()
-             |  ${param.doc.replace(" \n", "").replace("\n ", "\n\n  - ")}
+             |  ${param.doc}
 
              |""".stripMargin
         }

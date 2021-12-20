@@ -23,16 +23,16 @@ trait OutputResolver {
   def resolveOutputs(outputSubstitutionContext: ModelOutputSubstitutionContext): Seq[Parameter] = {
     val h2oSchemaClass = outputSubstitutionContext.h2oSchemaClass
 
-    val outputs =
-      for (field <- h2oSchemaClass.getFields
-           if field.getAnnotation(classOf[API]) != null)
-        yield Parameter(
+    val outputs = h2oSchemaClass.getFields
+      .filterNot(_.getAnnotation(classOf[API]) == null)
+      .map { field =>
+        Parameter(
           ParameterNameConverter.convertFromH2OToSW(field.getName),
           field.getName,
           if (field.getType.isPrimitive) 0 else null,
           field.getType,
           field.getAnnotation(classOf[API]).help())
-
+      }
     outputs
   }
 }

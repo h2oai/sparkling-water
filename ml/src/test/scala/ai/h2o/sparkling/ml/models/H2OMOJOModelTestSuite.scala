@@ -219,8 +219,6 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val gbm = configureGBMForProstateDF()
 
     val model = gbm.fit(trainingDF)
-    val s = model.getModelDetails()
-    val json = new Gson().fromJson(s, classOf[JsonObject])
     val predictionDF = model.transform(testingDF)
 
     assertGBMPredictions(testingDF, predictionDF)
