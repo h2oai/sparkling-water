@@ -109,7 +109,7 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                 ansiColor('xterm') {
                     timestamps {
                         withEnv(customEnv) {
-                            timeout(time: 240, unit: 'MINUTES') {
+                            timeout(time: 600, unit: 'MINUTES') {
                                 code()
                             }
                         }
