@@ -32,6 +32,18 @@ class DataFrameConverterFullCategoricalTestSuite extends FunSuite with SharedH2O
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._
 
+  test("DataFrame[Boolean] to H2OFrame[T_CAT] and back") {
+    val df = Seq(true, false, false, true, false).toDF("Booleans").repartition(3)
+    val h2oFrame = hc.asH2OFrame(df)
+
+    assertH2OFrameInvariants(df, h2oFrame)
+    assert(h2oFrame.columns(0).isCategorical())
+
+    val resultDF = hc.asSparkFrame(h2oFrame)
+    TestUtils.assertDataFramesAreIdentical(df, resultDF)
+    h2oFrame.delete()
+  }
+
   test("PUBDEV-766 H2OFrame[T_ENUM] to DataFrame[StringType]") {
     val df = spark.sparkContext.parallelize(Array("ONE", "ZERO", "ZERO", "ONE")).toDF("C0")
     val h2oFrame = hc.asH2OFrame(df)

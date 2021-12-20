@@ -89,7 +89,7 @@ private[sparkling] object SupportedTypes extends Enumeration {
 
   val Boolean =
     SimpleType[scala.Boolean](
-      Vec.T_NUM,
+      Vec.T_CAT,
       ExpectedTypes.Bool,
       BooleanType,
       classOf[jl.Boolean],
