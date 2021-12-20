@@ -175,15 +175,17 @@ object MOJOModelTemplate
             s"""outputSection.getAsJsonArray("$h2oName").iterator().asScala.map(_.getAsDouble).toArray"""
           case "TwoDimTableV3" => s"""jsonFieldToDataFrame(outputSection, "$h2oName")"""
         }
-        s"""      try {
-           |        if (outputSection.has("$h2oName")) {
+        s"""      if (outputSection.has("$h2oName")) {
+           |        try {
            |          val extractedValue = $value
            |          set("$swName", extractedValue)
+           |        } catch {
+           |          case e: Throwable if System.getProperty("spark.testing", "false") != "true" =>
+           |            logWarning("An error occurred during setting up the '$swName' parameter. The method " +
+           |              "get${swName.capitalize}() on the MOJO model object won't be able to provide the actual value.", e)
            |        }
-           |      } catch {
-           |        case e: Throwable =>
-           |          logWarning("An error occurred during setting up the '$swName' parameter. The method " +
-           |          "get${swName.capitalize}() on the MOJO model object won't be able to provide the actual value.", e)
+           |      } else if (System.getProperty("spark.testing", "false") == "true") {
+           |        throw new AssertionError("The output field '$h2oName' in does not exist.")
            |      }""".stripMargin
       }
       .mkString("\n\n")
