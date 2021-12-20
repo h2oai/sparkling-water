@@ -63,7 +63,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       "allow_multi_format" -> allowMultiFormat)
     try {
       val job = RestApiUtils.update[JobV3](endpoint, "/3/ImportHiveTable", getConf, params)
-      H2OJob(job.key.name).waitForFinish()
+      H2OJob(job.key.name).waitForFinishAndPrintProgress()
       H2OFrame(job.dest.name)
     } catch {
       case e: RestApiCommunicationException if e.getMessage.contains("table not found") =>

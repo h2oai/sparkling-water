@@ -17,7 +17,6 @@
 package ai.h2o.sparkling.ml.utils
 
 import java.io.File
-
 import ai.h2o.sparkling.backend.H2OJob
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.ml.internals.H2OModel
@@ -25,6 +24,7 @@ import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.{H2OConf, H2OContext}
 import hex.schemas.ModelBuilderSchema
 import org.apache.spark.expose
+import water.api.schemas3.ValidationMessageV3
 
 trait EstimatorCommonUtils extends RestCommunication {
   protected def trainAndGetDestinationKey(
@@ -41,7 +41,8 @@ trait EstimatorCommonUtils extends RestCommunication {
       Seq((classOf[ModelBuilderSchema[_, _, _]], "parameters")),
       encodeParamsAsJson)
     val jobId = modelBuilder.job.key.name
-    H2OJob(jobId).waitForFinish()
+    H2OJob(jobId).waitForFinishAndPrintProgress()
+    Option(modelBuilder.messages).foreach(printWarnings)
     modelBuilder.job.dest.name
   }
 
@@ -81,5 +82,13 @@ trait EstimatorCommonUtils extends RestCommunication {
       replacement = s"${modelId}_$suffixNumber"
     } while (H2OModel.modelExists(replacement))
     replacement
+  }
+
+  private def printWarnings(messages: Array[ValidationMessageV3]): Unit = {
+    val warn = "WARN"
+    messages
+      .filter(_.message_type == warn)
+      .map(msg => s"$warn: ${msg.message} (field name: ${msg.field_name})")
+      .foreach(System.err.println)
   }
 }
