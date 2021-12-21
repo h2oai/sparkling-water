@@ -197,7 +197,10 @@ def buildSparklingWater(props, sparkMajorVersion) {
         """
     sh "H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
     dir("py/build/pkg") {
-        sh "python setup.py bdist_wheel"
+        sh """"
+            . /envs/sw_env_python3.6/bin/activate
+            python setup.py bdist_wheel
+            """
     }
 }
 
@@ -244,8 +247,10 @@ node("docker") {
                     def sparkSpecificProps = readPropertiesFile("gradle-spark${sparkMajorVersion}.properties")
                     def dbcVersion = sparkSpecificProps["databricksVersion"]
                     def scalaVersion = sparkSpecificProps["scalaBaseVersion"]
-                    sh ". /envs/sw_env_python3.6/bin/activate"
-                    sh "pip install databricks-cli"
+                    sh """
+                        . /envs/sw_env_python3.6/bin/activate"
+                        pip install databricks-cli
+                        """
                     buildSparklingWater(props, sparkMajorVersion)
                     String pythonArtifact = "h2o_pysparkling_${sparkMajorVersion}-${version.split("-")[0]}.post1-py2.py3-none-any.whl"
                     String scalaArtifact = "sparkling-water-assembly_${scalaVersion}-${version}-${sparkMajorVersion}-all.jar"
