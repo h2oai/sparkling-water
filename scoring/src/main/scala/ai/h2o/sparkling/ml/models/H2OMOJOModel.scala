@@ -432,7 +432,7 @@ trait H2OMOJOModelUtils extends Logging {
       null
     } else {
       val element = outputJson.get(fieldName)
-      if(element.isJsonNull) {
+      if (element.isJsonNull) {
         null
       } else {
         outputJson.getAsJsonArray().iterator().asScala.map(_.getAsDouble).toArray
