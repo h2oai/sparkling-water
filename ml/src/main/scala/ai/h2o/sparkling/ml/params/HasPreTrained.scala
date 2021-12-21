@@ -24,7 +24,7 @@ trait HasPreTrained extends H2OAlgoParamsBase with HasDataFrameSerializer {
   private val preTrained = new NullableDataFrameParam(
     this,
     "preTrained",
-    "Id of a data frame that contains a pre-trained (external) word2vec model.")
+    "A data frame that contains a pre-trained (external) word2vec model.")
 
   setDefault(preTrained -> null)
 
