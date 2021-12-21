@@ -6,7 +6,13 @@ Migration guide between Sparkling Water versions.
 From 3.36 to 3.38
 -----------------
 
+- org.apache.spark.h2o.H2OConf has been replaced by ai.h2o.sparkling.H2OConf
+
+- org.apache.spark.h2o.H2OContext has been replaced by ai.h2o.sparkling.H2OContext
+
 - The support for Apache Spark 2.2.x has been removed.
+
+- Boolean type mapping from Spark's DataFrame to H20Frame was changed from numerical 0, 1 to "0", "1" categorical values.
 
 From 3.34 to 3.36
 -----------------
