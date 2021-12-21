@@ -22,9 +22,9 @@ import org.apache.spark.expose.Logging
 
 trait HasDeprecatedAutoencoder extends Logging {
 
-  @DeprecatedMethod(version = "3.36")
+  @DeprecatedMethod(version = "3.38")
   def getAutoencoder(): Boolean = false
 
-  @DeprecatedMethod(version = "3.36")
+  @DeprecatedMethod(version = "3.38")
   def setAutoencoder(value: Boolean): this.type = this
 }
