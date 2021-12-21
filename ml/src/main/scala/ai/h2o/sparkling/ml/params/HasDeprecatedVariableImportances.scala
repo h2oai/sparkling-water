@@ -24,11 +24,11 @@ trait HasDeprecatedVariableImportances extends Logging {
 
   def getCalculateFeatureImportances(): Boolean
 
-  @DeprecatedMethod("getCalculateFeatureImportances", "3.36")
+  @DeprecatedMethod("getCalculateFeatureImportances", "3.38")
   def getVariableImportances(): Boolean = getCalculateFeatureImportances()
 
   def setCalculateFeatureImportances(value: Boolean): this.type
 
-  @DeprecatedMethod("setCalculateFeatureImportances", "3.36")
+  @DeprecatedMethod("setCalculateFeatureImportances", "3.38")
   def setVariableImportances(value: Boolean): this.type = setCalculateFeatureImportances(value)
 }

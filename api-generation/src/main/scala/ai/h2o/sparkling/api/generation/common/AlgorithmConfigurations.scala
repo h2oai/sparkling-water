@@ -95,14 +95,14 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
         "variable_importances",
         "HasDeprecatedVariableImportances",
         "variableImportances",
-        "3.36",
+        "3.38",
         Some("calculateFeatureImportances"),
         Some("HasDeprecatedVariableImportancesOnMOJO")),
       DeprecatedField(
         "autoencoder",
         "HasDeprecatedAutoencoder",
         "autoencoder",
-        "3.36",
+        "3.38",
         None,
         Some("HasDeprecatedAutoencoderOnMOJO")))
 

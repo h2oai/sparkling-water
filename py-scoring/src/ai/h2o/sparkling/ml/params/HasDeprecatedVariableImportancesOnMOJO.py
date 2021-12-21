@@ -21,6 +21,6 @@ import warnings
 class HasDeprecatedVariableImportancesOnMOJO(Params):
 
     def getVariableImportances(self):
-        warnings.warn("The method 'getVariableImportances' is deprecated and will be removed in the version 3.36." +
+        warnings.warn("The method 'getVariableImportances' is deprecated and will be removed in the version 3.38." +
                       "The replacement is 'getCalculateFeatureImportances'.")
         return self.getCalculateFeatureImportances()

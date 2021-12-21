@@ -14,12 +14,6 @@ From 3.36 to 3.38
 
 - Boolean type mapping from Spark's DataFrame to H20Frame was changed from numerical 0, 1 to "0", "1" categorical values.
 
-From 3.34 to 3.36
------------------
-
-- The methods ``getWithDetailedPredictionCol`` and ``setWithDetailedPredictionCol`` on all SW Algorithms and
-  MOJO models were removed without replacement.
-
 - The parameter ``variableImportances`` of ``H2ODeepLearning`` has been replaced with ``calculateFeatureImportances`` as
   well as the methods ``getVariableImportances`` and ``setVariableImportances`` on ``H2ODeepLearning`` have been replaced
   with ``getCalculateFeatureImportances`` and ``setCalculateFeatureImportances``.
@@ -30,6 +24,14 @@ From 3.34 to 3.36
   removed without replacement.
 
 - The method ``getAutoencoder`` of ``H2ODeepLearningMOJOModel`` has been removed without replacement.
+
+From 3.34 to 3.36
+-----------------
+
+- The methods ``getWithDetailedPredictionCol`` and ``setWithDetailedPredictionCol`` on all SW Algorithms and
+  MOJO models were removed without replacement.
+
+- The ``withDetailedPredictionCol`` field on ``H2OMOJOSettings`` was removed without a replacement.
 
 From 3.32.1 to 3.34
 -------------------
@@ -60,8 +62,6 @@ From 3.32.1 to 3.34
 
 - On ``H2OConf``, the setter ``setMapperXmx`` is replaced by ``setExternalMemory`` and the getter ``mapperXmx``
   is replaced by ``externalMemory``. Also the Spark option ``spark.ext.h2o.hadoop.memory`` is replaced by ``spark.ext.h2o.external.memory``.
-
-- The ``withDetailedPredictionCol`` field on ``H2OMOJOSettings`` was removed without a replacement.
 
 - The ``weightCol`` parameter on ``H2OKmeans`` was removed without a replacement.
 

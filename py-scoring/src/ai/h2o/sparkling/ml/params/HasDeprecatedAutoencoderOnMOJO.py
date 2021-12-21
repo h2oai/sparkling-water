@@ -21,5 +21,5 @@ import warnings
 class HasDeprecatedAutoencoderOnMOJO(Params):
 
     def getAutoencoder(self):
-        warnings.warn("The method 'getAutoencoder' is deprecated and will be removed in the version 3.36.")
+        warnings.warn("The method 'getAutoencoder' is deprecated and will be removed in the version 3.38.")
         return False
