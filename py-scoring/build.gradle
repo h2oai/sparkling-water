@@ -32,7 +32,6 @@ python {
 
   pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
   pip "pytest:4.6.9" // For running tests
-  pip "pypandoc:1.6.4" // Dependency of PySpark (1.7+ is not compatible with Python 2.7)
   pip "numpy:${numpyVersion}"
   pip "pyspark:${sparkVersion}"
   if (project.hasProperty("pythonEnvBasePath")) {
