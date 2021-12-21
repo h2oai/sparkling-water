@@ -44,7 +44,6 @@ object MOJOModelTemplate
       parameterSubstitutionContext.deprecatedFields.flatMap(_.mojoImplementation)
 
     val imports = Seq(
-      "scala.collection.JavaConverters._",
       "com.google.gson.JsonObject",
       "ai.h2o.sparkling.ml.params.ParameterConstructorMethods",
       "hex.genmodel.MojoModel",
@@ -171,8 +170,7 @@ object MOJOModelTemplate
           case "long" => s"""outputSection.get("$h2oName").getAsLong()"""
           case "float" => s"""outputSection.get("$h2oName").getAsFloat()"""
           case "double" => s"""outputSection.get("$h2oName").getAsDouble()"""
-          case "double[]" =>
-            s"""outputSection.getAsJsonArray("$h2oName").iterator().asScala.map(_.getAsDouble).toArray"""
+          case "double[]" => s"""jsonFieldToDoubleArray(outputSection, "$h2oName")"""
           case "TwoDimTableV3" => s"""jsonFieldToDataFrame(outputSection, "$h2oName")"""
         }
         s"""      if (outputSection.has("$h2oName")) {

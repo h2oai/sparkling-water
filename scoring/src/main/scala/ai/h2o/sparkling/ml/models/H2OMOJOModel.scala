@@ -427,6 +427,19 @@ trait H2OMOJOModelUtils extends Logging {
     }
   }
 
+  protected def jsonFieldToDoubleArray(outputJson: JsonObject, fieldName: String): Array[Double] = {
+    if (outputJson == null || !outputJson.has(fieldName)) {
+      null
+    } else {
+      val element = outputJson.get(fieldName)
+      if(element.isJsonNull) {
+        null
+      } else {
+        outputJson.getAsJsonArray().iterator().asScala.map(_.getAsDouble).toArray
+      }
+    }
+  }
+
   protected def jsonFieldToDataFrame(outputJson: JsonObject, fieldName: String): DataFrame = {
     if (outputJson == null || !outputJson.has(fieldName) || outputJson.get(fieldName).isJsonNull) {
       null
