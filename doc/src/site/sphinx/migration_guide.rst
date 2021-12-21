@@ -6,16 +6,13 @@ Migration guide between Sparkling Water versions.
 From 3.36 to 3.38
 -----------------
 
+- org.apache.spark.h2o.H2OConf has been replaced by ai.h2o.sparkling.H2OConf
+
+- org.apache.spark.h2o.H2OContext has been replaced by ai.h2o.sparkling.H2OContext
+
 - The support for Apache Spark 2.2.x has been removed.
+
 - Boolean type mapping from Spark's DataFrame to H20Frame was changed from numerical 0, 1 to "0", "1" categorical values.
-
-From 3.34 to 3.36
------------------
-
-- The methods ``getWithDetailedPredictionCol`` and ``setWithDetailedPredictionCol`` on all SW Algorithms and
-  MOJO models were removed without replacement.
-
-- The ``withDetailedPredictionCol`` field on ``H2OMOJOSettings`` was removed without a replacement.
 
 - The parameter ``variableImportances`` of ``H2ODeepLearning`` has been replaced with ``calculateFeatureImportances`` as
   well as the methods ``getVariableImportances`` and ``setVariableImportances`` on ``H2ODeepLearning`` have been replaced
@@ -27,6 +24,14 @@ From 3.34 to 3.36
   removed without replacement.
 
 - The method ``getAutoencoder`` of ``H2ODeepLearningMOJOModel`` has been removed without replacement.
+
+From 3.34 to 3.36
+-----------------
+
+- The methods ``getWithDetailedPredictionCol`` and ``setWithDetailedPredictionCol`` on all SW Algorithms and
+  MOJO models were removed without replacement.
+
+- The ``withDetailedPredictionCol`` field on ``H2OMOJOSettings`` was removed without a replacement.
 
 From 3.32.1 to 3.34
 -------------------
