@@ -21,12 +21,12 @@ import warnings
 class HasDeprecatedVariableImportances(Params):
 
     def getVariableImportances(self):
-        warnings.warn("The method 'getVariableImportances' is deprecated and will be removed in the version 3.36." +
+        warnings.warn("The method 'getVariableImportances' is deprecated and will be removed in the version 3.38." +
                       "The replacement is 'getCalculateFeatureImportances'.")
         return self.getCalculateFeatureImportances()
 
     def setVariableImportances(self, value):
-        warnings.warn("The method 'setVariableImportances' is deprecated and will be removed in the version 3.36." +
+        warnings.warn("The method 'setVariableImportances' is deprecated and will be removed in the version 3.38." +
                       "The replacement is 'setCalculateFeatureImportances'.")
         self.setCalculateFeatureImportances(value)
         return self

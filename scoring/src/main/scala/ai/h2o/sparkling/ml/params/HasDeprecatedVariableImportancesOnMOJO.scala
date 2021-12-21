@@ -24,6 +24,6 @@ trait HasDeprecatedVariableImportancesOnMOJO extends Logging {
 
   def getCalculateFeatureImportances(): Boolean
 
-  @DeprecatedMethod("getCalculateFeatureImportances", "3.36")
+  @DeprecatedMethod("getCalculateFeatureImportances", "3.38")
   def getVariableImportances(): Boolean = getCalculateFeatureImportances()
 }
