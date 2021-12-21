@@ -197,7 +197,10 @@ def buildSparklingWater(props, sparkMajorVersion) {
         """
     sh "H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
     dir("py/build/pkg") {
-        sh "python setup.py bdist_wheel"
+        sh """
+            . /envs/sw_env_python3.6/bin/activate
+            python setup.py bdist_wheel
+            """
     }
 }
 
