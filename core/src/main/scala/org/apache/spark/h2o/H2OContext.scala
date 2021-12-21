@@ -179,24 +179,24 @@ object H2OContext extends Logging {
 
   private val instantiatedContext = new AtomicReference[H2OContext]()
 
-  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.getOrCreate", "3.36")
+  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.getOrCreate", "3.38")
   def getOrCreate(): H2OContext = {
     val hc = ai.h2o.sparkling.H2OContext.getOrCreate()
     instantiatedContext.set(new H2OContext(hc))
     instantiatedContext.get()
   }
 
-  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.getOrCreate", "3.36")
+  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.getOrCreate", "3.38")
   def getOrCreate(conf: H2OConf): H2OContext = synchronized {
     val hc = ai.h2o.sparkling.H2OContext.getOrCreate(conf)
     instantiatedContext.set(new H2OContext(hc))
     instantiatedContext.get()
   }
 
-  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.get", "3.36")
+  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.get", "3.38")
   def get(): Option[H2OContext] = Option(instantiatedContext.get())
 
-  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.ensure", "3.36")
+  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.ensure", "3.38")
   def ensure(onError: => String = "H2OContext has to be running."): H2OContext = {
     Option(instantiatedContext.get()) getOrElse {
       throw new RuntimeException(onError)
