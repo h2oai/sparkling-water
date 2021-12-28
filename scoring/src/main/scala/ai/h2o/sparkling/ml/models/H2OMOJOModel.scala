@@ -81,6 +81,11 @@ abstract class H2OMOJOModel
     new NullableStringParam(this, "modelCategory", "H2O's model category")
   protected final val scoringHistory: NullableDataFrameParam =
     new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
+  protected var cvScoringHistory =
+    new NullableDataFrameArrayParam(this, "cvScoringHistory", "Cross validation scoring history.")
+  protected var reproducibilityInformationTable =
+    new NullableDataFrameArrayParam(this, "reproducibilityInformationTable", "Reproducibility Information Table.")
+
   protected final val featureImportances: NullableDataFrameParam =
     new NullableDataFrameParam(this, "featureImportances", "Feature importances.")
 
@@ -100,6 +105,8 @@ abstract class H2OMOJOModel
     trainingParams -> Map.empty[String, String],
     modelCategory -> null,
     scoringHistory -> null,
+    cvScoringHistory -> null,
+    reproducibilityInformationTable -> null,
     featureImportances -> null,
     numberOfCrossValidationModels -> 0)
 
@@ -190,6 +197,10 @@ abstract class H2OMOJOModel
 
   def getScoringHistory(): DataFrame = $(scoringHistory)
 
+  def getCrossValidationScoringHistory(): Array[DataFrame] = $(cvScoringHistory)
+
+  def getReproducibilityInformationTable(): Array[DataFrame] = $(reproducibilityInformationTable)
+
   def getFeatureImportances(): DataFrame = $(featureImportances)
 
   def getCrossValidationModels(): Seq[this.type] = {
@@ -273,6 +284,8 @@ abstract class H2OMOJOModel
     set(this.scoringHistory -> extractScoringHistory(outputJson))
     set(this.featureImportances -> extractFeatureImportances(outputJson))
     set(this.featureTypes -> extractFeatureTypes(outputJson))
+    set(this.cvScoringHistory -> extractJsonTables(outputJson, "cv_scoring_history"))
+    set(this.reproducibilityInformationTable -> extractJsonTables(outputJson, "reproducibility_information_table"))
   }
 
   private[sparkling] def setEasyPredictModelWrapperConfiguration(
@@ -433,6 +446,19 @@ trait H2OMOJOModelUtils extends Logging {
   protected def extractScoringHistory(outputJson: JsonObject): DataFrame = {
     val df = jsonFieldToDataFrame(outputJson, "scoring_history")
     if (df != null && df.columns.contains("-")) df.drop("-") else df
+  }
+
+  protected def extractJsonTables(outputJson: JsonObject, fieldName: String): Array[DataFrame] = {
+    if (outputJson == null || !outputJson.has(fieldName) || outputJson.get(fieldName).isJsonNull) {
+      Array.empty[DataFrame]
+    } else {
+      val tables = outputJson.getAsJsonArray(fieldName)
+      for (table <- tables.asScala.toArray) yield {
+        val jsonTableObject = new JsonObject()
+        jsonTableObject.add("wrapped_table", table)
+        jsonFieldToDataFrame(jsonTableObject, "wrapped_table")
+      }
+    }
   }
 
   protected def extractFeatureImportances(outputJson: JsonObject): DataFrame = {
