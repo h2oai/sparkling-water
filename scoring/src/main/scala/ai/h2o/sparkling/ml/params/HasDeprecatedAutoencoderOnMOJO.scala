@@ -22,6 +22,6 @@ import org.apache.spark.expose.Logging
 
 trait HasDeprecatedAutoencoderOnMOJO extends Logging {
 
-  @DeprecatedMethod(version = "3.36")
+  @DeprecatedMethod(version = "3.38")
   def getAutoencoder(): Boolean = false
 }
