@@ -90,6 +90,14 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", methods = list(
   getFeatureImportances = function() {
     outputFrame <- invoke(.self$jmojo, "getFeatureImportances")
     sdf_register(outputFrame)
+  },
+  getCrossValidationScoringHistory = function() {
+    outputFrame <- invoke(.self$jmojo, "getCrossValidationScoringHistory")
+    sdf_register(outputFrame)
+  },
+  getReproducibilityInformationTable = function() {
+    outputFrame <- invoke(.self$jmojo, "getReproducibilityInformationTable")
+    sdf_register(outputFrame)
   }
 ))
 

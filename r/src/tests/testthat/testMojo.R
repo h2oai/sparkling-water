@@ -172,4 +172,28 @@ test_that("test MOJO predictions on unseen categoricals", {
   expect_equal(as.double(dplyr::select(data, prediction)), 5.240174068202646)
 })
 
+test_that("test cross validation scoring history", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/gbm_cv.mojo")))
+  history <- model$getCrossValidationScoringHistory()
+  expect_equal(length(history), 3)
+})
+
+test_that("test unavailable cross validation scoring history", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/airlines_boolean.mojo")))
+  history <- model$getCrossValidationScoringHistory()
+  expect_equal(length(history), 0)
+})
+
+test_that("test reproducibility information table", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/gbm_cv.mojo")))
+  info <- model$getReproducibilityInformationTable()
+  expect_equal(length(info), 3)
+})
+
+test_that("test unavailable reproducibility information table", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/airlines_boolean.mojo")))
+  info <- model$getReproducibilityInformationTable()
+  expect_equal(length(info), 0)
+})
+
 spark_disconnect(sc)
