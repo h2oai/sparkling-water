@@ -16,7 +16,6 @@
  */
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.ml.param._
 import org.apache.spark.sql.DataFrame
 

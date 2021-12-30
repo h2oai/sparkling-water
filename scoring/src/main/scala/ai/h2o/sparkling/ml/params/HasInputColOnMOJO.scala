@@ -15,31 +15,25 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.models
+package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.ml.models.SpecificMOJOParameters
+import hex.genmodel.MojoModel
 import org.apache.spark.expose.Logging
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.ml.param.{Param, Params}
 
-abstract class H2OFeatureMOJOModel
-  extends H2OMOJOModel
-  with H2OFeatureEstimatorBase
-  with SpecificMOJOParameters
-  with HasMojo
-  with H2OMOJOWritable
-  with H2OMOJOFlattenedInput
-  with Logging {
-  override def copy(extra: ParamMap): H2OFeatureMOJOModel = defaultCopy(extra)
+trait HasInputColOnMOJO extends Params with SpecificMOJOParameters with Logging {
+  protected val inputCol: Param[String] = new Param[String](this, "inputCol", "Input column name")
 
-  override protected def outputColumnName: String = getClass.getSimpleName + "_temporary"
+  def getInputCol(): String = $(inputCol)
 
-  protected def mojoUDF: UserDefinedFunction
+  def setInputCol(name: String): this.type = set(inputCol -> name)
 
-  override def transform(dataset: Dataset[_]): DataFrame = {
-    val outputDF = applyPredictionUdf(dataset, _ => mojoUDF)
-    outputDF
-      .select("*", s"$outputColumnName.*")
-      .drop(outputColumnName)
+  override private[sparkling] def setSpecificParams(h2oMojo: MojoModel): Unit = {
+    super.setSpecificParams(h2oMojo)
+    h2oMojo.features().headOption.foreach { feature =>
+      set(inputCol -> feature)
+    }
   }
+
 }

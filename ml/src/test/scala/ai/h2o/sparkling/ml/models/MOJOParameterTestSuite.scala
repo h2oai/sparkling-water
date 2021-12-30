@@ -18,8 +18,9 @@
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.algos._
-import ai.h2o.sparkling.ml.features.{H2OAutoEncoder, H2OGLRM, H2OPCA}
+import ai.h2o.sparkling.ml.features.{H2OAutoEncoder, H2OGLRM, H2OPCA, H2OWord2Vec}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import hex.word2vec.Word2Vec.{NormModel, WordModel}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
@@ -166,6 +167,24 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
       .setInputCols("DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setK(3)
     val mojo = algorithm.fit(dataset)
+
+    compareParameterValues(algorithm, mojo)
+  }
+
+  test("Test MOJO parameters on Word2Vec") {
+    val algorithm = new H2OWord2Vec()
+      .setVecSize(11)
+      .setWindowSize(2)
+      .setSentSampleRate(0.002f)
+      .setNormModel(NormModel.HSM.name())
+      .setEpochs(5)
+      .setMinWordFreq(1)
+      .setInitLearningRate(0.01f)
+      .setWordModel(WordModel.CBOW.name())
+      .setInputCol("someInputCol")
+      .setOutputCol("someOutputCol")
+
+    val mojo = algorithm.fit(Seq(Seq("a", "b", "c"), Seq("c", "b", "a")).toDF("someInputCol"))
 
     compareParameterValues(algorithm, mojo)
   }
