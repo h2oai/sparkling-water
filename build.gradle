@@ -136,7 +136,7 @@ configure(allprojects) { project ->
     sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
     if (!sparkVersion.startsWith(spark)) {
       throw new IllegalArgumentException("Inconsistent Spark configuration. Both params spark and sparkVersion specified, but" +
-      " with different major Apark versions.")
+      " with different major Spark versions.")
     }
     sparkMajorVersion = sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
     junitVersion = '4.11'
