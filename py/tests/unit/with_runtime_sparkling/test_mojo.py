@@ -260,3 +260,24 @@ def testMetricObjects(prostateDataset):
     compareMetricValues(model.getCurrentMetricsObject(), model.getCurrentMetrics())
     assert model.getValidationMetricsObject() is None
     assert model.getValidationMetrics() == {}
+
+def testGetStartTime():
+    mojo = H2OMOJOModel.createFromMojo(
+        "file://" + os.path.abspath("../ml/src/test/resources/multi_model_iris.mojo"))
+    assert mojo.getStartTime() == 1631392711317
+
+def testGetEndTime():
+    mojo = H2OMOJOModel.createFromMojo(
+        "file://" + os.path.abspath("../ml/src/test/resources/multi_model_iris.mojo"))
+    assert mojo.getEndTime() == 1631392711360
+
+def testGetRunTime():
+    mojo = H2OMOJOModel.createFromMojo(
+        "file://" + os.path.abspath("../ml/src/test/resources/multi_model_iris.mojo"))
+    assert mojo.getRunTime() == 43
+
+def testGetDefaultThreshold():
+    mojo = H2OMOJOModel.createFromMojo(
+        "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
+    assert mojo.getDefaultThreshold() == 0.40858428648438255
+
