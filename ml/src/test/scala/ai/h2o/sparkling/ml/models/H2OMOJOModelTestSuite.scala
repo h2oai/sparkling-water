@@ -463,18 +463,16 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     }
   }
 
-  test ("getCrossValidationScoringHistory returns histories when they are available") {
-    val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"),
-      "gbm_cv.mojo")
+  test("getCrossValidationScoringHistory returns histories when they are available") {
+    val mojo =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
 
     mojo.getCrossValidationScoringHistory().length shouldBe 3
   }
 
-  test ("Cross validation scoring history should be maintained when saving and loading model") {
-    val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"),
-      "gbm_cv.mojo")
+  test("Cross validation scoring history should be maintained when saving and loading model") {
+    val mojo =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
 
     val name = "cv_scoring_history_reload.mojo"
     val modelFolder = tempFolder(name)
@@ -482,15 +480,14 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val reloadedModel = H2OMOJOModel.load(modelFolder)
 
     reloadedModel.getCrossValidationScoringHistory().length shouldBe 3
-    (0 until  mojo.getCrossValidationScoringHistory().length).foreach( i =>
-      TestUtils.assertDataFramesAreIdentical(
-        mojo.getCrossValidationScoringHistory()(i),
-        reloadedModel.getCrossValidationScoringHistory()(i))
-
-    )
+    (0 until mojo.getCrossValidationScoringHistory().length).foreach(
+      i =>
+        TestUtils.assertDataFramesAreIdentical(
+          mojo.getCrossValidationScoringHistory()(i),
+          reloadedModel.getCrossValidationScoringHistory()(i)))
   }
 
-  test ("getCrossValidationScoringHistory returns empty array when model doesn't contain it") {
+  test("getCrossValidationScoringHistory returns empty array when model doesn't contain it") {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
       "airlines_boolean.mojo")
@@ -498,15 +495,14 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     mojo.getCrossValidationScoringHistory().length shouldBe 0
   }
 
-  test ("getReproducibilityInformationTable returns tables when they are available") {
-    val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"),
-      "gbm_cv.mojo")
+  test("getReproducibilityInformationTable returns tables when they are available") {
+    val mojo =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
 
     mojo.getReproducibilityInformationTable().length shouldBe 3
   }
 
-  test ("getReproducibilityInformationTable returns empty array when model doesn't contain it") {
+  test("getReproducibilityInformationTable returns empty array when model doesn't contain it") {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
       "airlines_boolean.mojo")
@@ -514,10 +510,9 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     mojo.getReproducibilityInformationTable().length shouldBe 0
   }
 
-  test ("Reproducibility information table should be maintained when saving and loading model") {
-    val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"),
-      "gbm_cv.mojo")
+  test("Reproducibility information table should be maintained when saving and loading model") {
+    val mojo =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
 
     val name = "reproducibility_information_table_reload.mojo"
     val modelFolder = tempFolder(name)
@@ -525,7 +520,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val reloadedModel = H2OMOJOModel.load(modelFolder)
 
     reloadedModel.getReproducibilityInformationTable().length shouldBe 3
-    (0 until  mojo.getReproducibilityInformationTable().length).foreach { i =>
+    (0 until mojo.getReproducibilityInformationTable().length).foreach { i =>
       TestUtils.assertDataFramesAreIdentical(
         mojo.getReproducibilityInformationTable()(i),
         reloadedModel.getReproducibilityInformationTable()(i))
