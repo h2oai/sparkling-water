@@ -24,7 +24,11 @@ import org.json4s.jackson.JsonMethods.{compact, parse, render}
 
 import scala.collection.JavaConverters._
 
-class NullableDataFrameArrayParam(parent: HasDataFrameSerializer, name: String, doc: String, isValid: Array[DataFrame] => Boolean)
+class NullableDataFrameArrayParam(
+    parent: HasDataFrameSerializer,
+    name: String,
+    doc: String,
+    isValid: Array[DataFrame] => Boolean)
   extends Param[Array[DataFrame]](parent, name, doc, isValid) {
 
   def this(parent: HasDataFrameSerializer, name: String, doc: String) =
