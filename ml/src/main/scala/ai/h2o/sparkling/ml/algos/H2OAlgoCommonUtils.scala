@@ -48,6 +48,9 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils with H2OFrameLifecycle {
 
   private[sparkling] def getColumnsToCategorical(): Array[String]
 
+  /** List of columns to convert to string before modelling. */
+  private[sparkling] def getColumnsToString(): Array[String] = Array.empty
+
   private[sparkling] def getSplitRatio(): Double
 
   private[sparkling] def setInputCols(value: Array[String]): this.type
@@ -83,6 +86,8 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils with H2OFrameLifecycle {
     val h2oContext = H2OContext.ensure(
       "H2OContext needs to be created in order to train the model. Please create one as H2OContext.getOrCreate().")
     val trainFrame = h2oContext.asH2OFrame(dataset.select(columns: _*).toDF())
+
+    trainFrame.convertColumnsToStrings(getColumnsToString())
 
     // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions
     trainFrame.convertColumnsToCategorical(getColumnsToCategorical())

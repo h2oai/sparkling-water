@@ -28,4 +28,4 @@ __all__ = ["H2OMOJOSettings", "H2OMOJOPipelineModel", "H2OMOJOModel", "H2OAlgori
            "H2OTreeBasedUnsupervisedMOJOModel", "H2OKMeansMOJOModel", "H2OGLMMOJOModel", "H2OGAMMOJOModel",
            "H2OGBMMOJOModel", "H2OXGBoostMOJOModel", "H2ODeepLearningMOJOModel", "H2OAutoEncoderMOJOModel",
            "H2ODRFMOJOModel", "H2OIsolationForestMOJOModel", "H2OBinaryModel", "H2OCoxPHMOJOModel",  "H2OPCAMOJOModel",
-           "H2ORuleFitMOJOModel"]
+           "H2ORuleFitMOJOModel", "H2OWord2VecMOJOModel"]
