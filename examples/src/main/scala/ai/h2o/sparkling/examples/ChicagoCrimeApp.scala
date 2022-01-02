@@ -27,57 +27,100 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object ChicagoCrimeApp {
 
-  private val seasonUdf = udf(getSeason _)
-  private val weekendUdf = udf(isWeekend _)
+  private val seasonUdf = udf(monthToSeason _)
+  private val weekendUdf = udf((isWeekend _).andThen(boolToInt))
   private val dayOfWeekUdf = udf(dayOfWeek _)
 
   def main(args: Array[String]) {
-    val spark = SparkSession
+    implicit val spark = SparkSession
       .builder()
       .appName("Chicago Crime App")
       .getOrCreate()
+    import spark.implicits._
 
-    val weatherDataPath = "./examples/smalldata/chicago/chicagoAllWeather.csv"
-    val weatherDataFile = s"file://${new File(weatherDataPath).getAbsolutePath}"
-    val weatherTable = createWeatherTable(spark, weatherDataFile)
-    weatherTable.createOrReplaceTempView("chicagoWeather")
+    val weatherTable = loadCsv("./examples/smalldata/chicago/chicagoAllWeather.csv").drop("date")
+    val chicagoWeatherTableName = "chicagoWeather"
+    weatherTable.createOrReplaceTempView(chicagoWeatherTableName)
 
-    val censusDataPath = "./examples/smalldata/chicago/chicagoCensus.csv"
-    val censusDataFile = s"file://${new File(censusDataPath).getAbsolutePath}"
-    val censusTable = createCensusTable(spark, censusDataFile)
-    censusTable.createOrReplaceTempView("chicagoCensus")
+    val censusTable = loadCsv("./examples/smalldata/chicago/chicagoCensus.csv")
+    val chicagoCensusTableName = "chicagoCensus"
+    censusTable.createOrReplaceTempView(chicagoCensusTableName)
 
-    val crimesDataPath = "./examples/smalldata/chicago/chicagoCrimes10k.csv"
-    val crimesDataFile = s"file://${new File(crimesDataPath).getAbsolutePath}"
-    val crimesTable = createCrimeTable(spark, crimesDataFile)
-    crimesTable.createOrReplaceTempView("chicagoCrime")
+    val crimesTable = addAdditionalDateColumns(loadCsv("./examples/smalldata/chicago/chicagoCrimes10k.csv"))
+    val chicagoCrimeTableName = "chicagoCrime"
+    crimesTable.createOrReplaceTempView(chicagoCrimeTableName)
 
-    // Join crimes and weather tables
-    val crimeWeather = spark.sql("""SELECT
-        |a.Year, a.Month, a.Day, a.WeekNum, a.HourOfDay, a.Weekend, a.Season, a.WeekDay,
-        |a.IUCR, a.Primary_Type, a.Location_Description, a.Community_Area, a.District,
-        |a.Arrest, a.Domestic, a.Beat, a.Ward, a.FBI_Code,
-        |b.minTemp, b.maxTemp, b.meanTemp,
-        |c.PERCENT_AGED_UNDER_18_OR_OVER_64, c.PER_CAPITA_INCOME, c.HARDSHIP_INDEX,
-        |c.PERCENT_OF_HOUSING_CROWDED, c.PERCENT_HOUSEHOLDS_BELOW_POVERTY,
-        |c.PERCENT_AGED_16__UNEMPLOYED, c.PERCENT_AGED_25__WITHOUT_HIGH_SCHOOL_DIPLOMA
-        |FROM chicagoCrime a
-        |JOIN chicagoWeather b
-        |ON a.Year = b.year AND a.Month = b.month AND a.Day = b.day
-        |JOIN chicagoCensus c
-        |ON a.Community_Area = c.Community_Area_Number""".stripMargin)
+    val crimeDataColumnsForTraining = Seq(
+      $"cr.Year",
+      $"cr.Month",
+      $"cr.Day",
+      $"WeekNum",
+      $"HourOfDay",
+      $"Weekend",
+      $"Season",
+      $"WeekDay",
+      $"IUCR",
+      $"Primary_Type",
+      $"Location_Description",
+      $"Community_Area",
+      $"District",
+      $"Arrest",
+      $"Domestic",
+      $"Beat",
+      $"Ward",
+      $"FBI_Code")
 
-    val gbmModel = trainGBM(crimeWeather)
-    val dlModel = trainDeepLearning(crimeWeather)
+    val censusDataColumnsForTraining = Seq(
+      $"PERCENT_AGED_UNDER_18_OR_OVER_64",
+      $"PER_CAPITA_INCOME",
+      $"HARDSHIP_INDEX",
+      $"PERCENT_OF_HOUSING_CROWDED",
+      $"PERCENT_HOUSEHOLDS_BELOW_POVERTY",
+      $"PERCENT_AGED_16_UNEMPLOYED",
+      $"PERCENT_AGED_25_WITHOUT_HIGH_SCHOOL_DIPLOMA")
 
-    val crimes = Seq(
-      Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", Domestic = false, 422, 4, 7, 46, 18),
-      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", Domestic = false, 923, 9, 14, 63, 11))
-    score(spark, crimes, gbmModel, dlModel, censusTable)
+    val weatherDataColumnsForTraining = Seq($"minTemp", $"maxTemp", $"meanTemp")
+
+    val joinedDataForTraining = spark
+      .table(chicagoCrimeTableName)
+      .as("cr")
+      .join(
+        spark.table(chicagoWeatherTableName).as("we"),
+        $"cr.Year" === $"we.year" and $"cr.Month" === $"we.month" and $"cr.Day" === $"we.day")
+      .join(spark.table(chicagoCensusTableName).as("ce"), $"cr.Community_Area" === $"ce.Community_Area_Number")
+      .select(crimeDataColumnsForTraining ++ censusDataColumnsForTraining ++ weatherDataColumnsForTraining: _*)
+
+    H2OContext.getOrCreate()
+    val gbmModel = trainGBM(joinedDataForTraining)
+    val dlModel = trainDeepLearning(joinedDataForTraining)
+
+    val crimesToScore = Seq(
+      Crime(
+        date = "02/08/2015 11:43:58 PM",
+        IUCR = 1811,
+        Primary_Type = "NARCOTICS",
+        Location_Description = "STREET",
+        Domestic = false,
+        Beat = 422,
+        District = 4,
+        Ward = 7,
+        Community_Area = 46,
+        FBI_Code = 18),
+      Crime(
+        date = "02/08/2015 11:00:39 PM",
+        IUCR = 1150,
+        Primary_Type = "DECEPTIVE PRACTICE",
+        Location_Description = "RESIDENCE",
+        Domestic = false,
+        Beat = 923,
+        District = 9,
+        Ward = 14,
+        Community_Area = 63,
+        FBI_Code = 11))
+    score(crimesToScore, gbmModel, dlModel, censusTable)
   }
 
-  def trainGBM(train: DataFrame): H2OMOJOModel = {
-    H2OContext.getOrCreate()
+  private def trainGBM(train: DataFrame): H2OMOJOModel = {
     val gbm = new H2OGBM()
       .setSplitRatio(0.8)
       .setLabelCol("Arrest")
@@ -88,8 +131,7 @@ object ChicagoCrimeApp {
     gbm.fit(train)
   }
 
-  def trainDeepLearning(train: DataFrame): H2OMOJOModel = {
-    H2OContext.getOrCreate()
+  private def trainDeepLearning(train: DataFrame): H2OMOJOModel = {
     val dl = new H2ODeepLearning()
       .setSplitRatio(0.8)
       .setLabelCol("Arrest")
@@ -102,15 +144,11 @@ object ChicagoCrimeApp {
     dl.fit(train)
   }
 
-  def score(
-      spark: SparkSession,
-      crimes: Seq[Crime],
-      gbmModel: H2OMOJOModel,
-      dlModel: H2OMOJOModel,
-      censusTable: DataFrame): Unit = {
+  private def score(crimes: Seq[Crime], gbmModel: H2OMOJOModel, dlModel: H2OMOJOModel, censusTable: DataFrame)(
+      implicit spark: SparkSession): Unit = {
     crimes.foreach { crime =>
-      val arrestGBM = scoreEvent(spark, crime, gbmModel, censusTable)
-      val arrestDL = scoreEvent(spark, crime, dlModel, censusTable)
+      val arrestGBM = scoreEvent(crime, gbmModel, censusTable)
+      val arrestDL = scoreEvent(crime, dlModel, censusTable)
       println(s"""
            |Crime: $crime
            |  Will be arrested based on DeepLearning: $arrestDL
@@ -120,40 +158,30 @@ object ChicagoCrimeApp {
     }
   }
 
-  def scoreEvent(spark: SparkSession, crime: Crime, model: H2OMOJOModel, censusTable: DataFrame): Boolean = {
-    // Create Spark DataFrame from a single row
+  private def scoreEvent(crime: Crime, model: H2OMOJOModel, censusTable: DataFrame)(
+      implicit spark: SparkSession): Boolean = {
     import spark.implicits._
-    val df = addAdditionalDateColumns(spark, spark.sparkContext.parallelize(Seq(crime)).toDF)
+    val df = addAdditionalDateColumns(Seq(crime).toDF)
     // Join table with census data
     val row = censusTable.join(df).where('Community_Area === 'Community_Area_Number)
     val predictTable = model.transform(row)
     predictTable.collect().head.getAs[String]("prediction") == "1"
   }
 
-  def createWeatherTable(spark: SparkSession, datafile: String): DataFrame = {
-    val df = spark.read.option("header", "true").option("inferSchema", "true").csv(datafile)
-    df.drop(df.columns(0))
-  }
-
-  def createCensusTable(spark: SparkSession, datafile: String): DataFrame = {
+  private def loadCsv(dataPath: String)(implicit spark: SparkSession): DataFrame = {
+    val datafile = s"file://${new File(dataPath).getAbsolutePath}"
     val df = spark.read.option("header", "true").option("inferSchema", "true").csv(datafile)
     val renamedColumns = df.columns.map { col =>
-      val name = col.trim.replace(' ', '_').replace('+', '_')
+      val name = col.trim
+        .replace(' ', '_')
+        .replace('+', '_')
+        .replace("__", "_")
       df(col).as(name)
     }
     df.select(renamedColumns: _*)
   }
 
-  def createCrimeTable(spark: SparkSession, datafile: String): DataFrame = {
-    val df = spark.read.option("header", "true").option("inferSchema", "true").csv(datafile)
-    val renamedColumns = df.columns.map { col =>
-      val name = col.trim.replace(' ', '_').replace('+', '_')
-      df(col).as(name)
-    }
-    addAdditionalDateColumns(spark, df.select(renamedColumns: _*))
-  }
-
-  def addAdditionalDateColumns(spark: SparkSession, df: DataFrame): DataFrame = {
+  private def addAdditionalDateColumns(df: DataFrame)(implicit spark: SparkSession): DataFrame = {
     import org.apache.spark.sql.functions._
     import spark.implicits._
     df.withColumn("DateTmp", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
@@ -168,18 +196,16 @@ object ChicagoCrimeApp {
       .drop('DateTmp)
   }
 
-  private def getSeason(month: Int): String = {
-    val seasonNum =
-      if (month >= 3 && month <= 5) 0 // Spring
-      else if (month >= 6 && month <= 8) 1 // Summer
-      else if (month >= 9 && month <= 10) 2 // Autumn
-      else 3 // Winter
-    SEASONS(seasonNum)
+  private def monthToSeason(month: Int): String = {
+    if (month >= 3 && month <= 5) "Spring"
+    else if (month >= 6 && month <= 8) "Summer"
+    else if (month >= 9 && month <= 10) "Autumn"
+    else "Winter"
   }
 
-  private def SEASONS: Array[String] = Array[String]("Spring", "Summer", "Autumn", "Winter")
+  private def isWeekend(dayOfWeek: Int): Boolean = dayOfWeek == 7 || dayOfWeek == 6
 
-  private def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == 7 || dayOfWeek == 6) 1 else 0
+  private def boolToInt(bool: Boolean): Int = if (bool) 1 else 0
 
   private def dayOfWeek(day: String): Int = {
     day match {
@@ -194,7 +220,7 @@ object ChicagoCrimeApp {
     }
   }
 
-  case class Crime(
+  private case class Crime(
       date: String,
       IUCR: Short,
       Primary_Type: String,
