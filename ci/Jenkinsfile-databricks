@@ -248,7 +248,7 @@ node("docker") {
                     def dbcVersion = sparkSpecificProps["databricksVersion"]
                     def scalaVersion = sparkSpecificProps["scalaBaseVersion"]
                     sh """
-                        . /envs/sw_env_python3.6/bin/activate"
+                        . /envs/sw_env_python3.6/bin/activate
                         pip install databricks-cli
                         """
                     buildSparklingWater(props, sparkMajorVersion)
