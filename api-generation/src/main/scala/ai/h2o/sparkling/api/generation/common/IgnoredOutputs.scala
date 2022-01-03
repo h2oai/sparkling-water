@@ -32,22 +32,20 @@ object IgnoredOutputs {
     "validation_metrics",
     "cross_validation_metrics",
     "cross_validation_metrics_summary",
-    "model_summary")
-
-  val ignored: Seq[String] = Seq(
     "cv_scoring_history",
     "reproducibility_information_table",
-    "status",
+    "model_summary",
     "start_time",
     "end_time",
     "run_time",
-    "default_threshold",
-    "help",
-    "__meta")
+    "default_threshold")
+
+  val ignored: Seq[String] = Seq("status", "help", "__meta")
 
   def all(mojoModel: String): Seq[String] = implementedInParent ++ ignored ++ {
     mojoModel match {
-      case "H2OGLRMMOJOModel" => Seq("representation_name") // Colission with a parameter
+      case "H2OGLRMMOJOModel" => Seq("representation_name") // Collision with a parameter
+      case "H2OWord2VecMOJOModel" => Seq("epochs") // Collision with a parameter
       case _ => Seq.empty
     }
   }

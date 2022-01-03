@@ -23,6 +23,7 @@ import hex.pca.PCAModel.PCAParameters
 import hex.schemas.DeepLearningModelV3.DeepLearningModelOutputV3
 import hex.schemas.GLRMModelV3.GLRMModelOutputV3
 import hex.schemas.PCAModelV3.PCAModelOutputV3
+import hex.schemas.Word2VecModelV3.Word2VecModelOutputV3
 import hex.schemas.{DeepLearningV3, GLRMV3, PCAV3, Word2VecV3}
 import hex.word2vec.Word2VecModel.Word2VecParameters
 
@@ -131,7 +132,8 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
     val modelOutputs = Seq[(String, Class[_])](
       ("H2OAutoEncoderModelOutputs", classOf[DeepLearningModelOutputV3]),
       ("H2OPCAModelOutputs", classOf[PCAModelOutputV3]),
-      ("H2OGLRMModelOutputs", classOf[GLRMModelOutputV3]))
+      ("H2OGLRMModelOutputs", classOf[GLRMModelOutputV3]),
+      ("H2OWord2VecModelOutputs", classOf[Word2VecModelOutputV3]))
 
     for ((outputEntityName, h2oParametersClass: Class[_]) <- modelOutputs)
       yield ModelOutputSubstitutionContext(
