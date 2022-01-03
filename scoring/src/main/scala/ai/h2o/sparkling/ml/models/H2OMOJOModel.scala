@@ -95,7 +95,7 @@ abstract class H2OMOJOModel
   protected final val runTime: LongParam =
     new LongParam(this, "runTime", "Runtime in milliseconds")
   protected final val defaultThreshold: DoubleParam =
-    new DoubleParam(this, "defaultThreshold", "Default threshold used for predictions")
+    new DoubleParam(this, "defaultThreshold", "Default threshold used for predictions of classification models")
 
   setDefault(
     modelDetails -> null,
