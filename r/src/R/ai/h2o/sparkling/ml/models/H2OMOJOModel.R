@@ -91,6 +91,18 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", methods = list(
     outputFrame <- invoke(.self$jmojo, "getFeatureImportances")
     sdf_register(outputFrame)
   },
+  getStartTime = function() {
+    invoke(.self$jmojo, "getStartTime")
+  },
+  getEndTime = function() {
+    invoke(.self$jmojo, "getEndTime")
+  },
+  getRunTime = function() {
+    invoke(.self$jmojo, "getRunTime")
+  },
+  getDefaultThreshold = function() {
+    invoke(.self$jmojo, "getDefaultThreshold")
+  },
   getCrossValidationScoringHistory = function() {
     outputFrame <- invoke(.self$jmojo, "getCrossValidationScoringHistory")
     sdf_register(outputFrame)

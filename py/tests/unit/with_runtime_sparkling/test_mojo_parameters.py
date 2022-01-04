@@ -16,7 +16,7 @@
 
 from pysparkling.ml import H2OGBM, H2ODRF, H2OXGBoost, H2OGLM, H2OGAM, H2OCoxPH
 from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OIsolationForest
-from pysparkling.ml import H2OAutoEncoder, H2OPCA, H2OGLRM, H2ORuleFit
+from pysparkling.ml import H2OAutoEncoder, H2OPCA, H2OGLRM, H2ORuleFit, H2OWord2Vec
 
 def testGBMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
@@ -114,6 +114,14 @@ def testGLRMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
     algorithm = H2OGLRM(seed=1, inputCols=features, k=3)
     model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
+
+
+def testWord2VecParameters(spark):
+    algorithm = H2OWord2Vec(vecSize=11, windowSize=2, sentSampleRate=0.002, normModel="HSM", epochs=5, minWordFreq=1,
+                            initLearningRate=0.01, wordModel="CBOW", outputCol="someOutputCol", inputCol="someInputCol")
+    dataset = spark.sparkContext.parallelize([[["a", "b", "c"]], [["c", "b", "a"]]]).toDF(["someInputCol"])
+    model = algorithm.fit(dataset)
     compareParameterValues(algorithm, model)
 
 

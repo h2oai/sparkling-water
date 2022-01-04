@@ -15,14 +15,18 @@
 # limitations under the License.
 #
 
-from pysparkling.ml.models import *
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from pyspark.ml.param import *
 
-__all__ = ["H2OMOJOModel", "H2OSupervisedMOJOModel", "H2OTreeBasedSupervisedMOJOModel", "H2OUnsupervisedMOJOModel",
-           "H2OTreeBasedUnsupervisedMOJOModel", "H2OMOJOPipelineModel", "H2OMOJOSettings", "H2OBinaryModel",
-           "H2OKMeansMOJOModel", "H2OGLMMOJOModel", "H2OGAMMOJOModel", "H2OGBMMOJOModel", "H2OXGBoostMOJOModel",
-           "H2ODeepLearningMOJOModel", "H2ODRFMOJOModel", "H2OIsolationForestMOJOModel", "H2OPCAMOJOModel",
-           "H2OGLRMMOJOModel", "H2OCoxPHMOJOModel", "H2ORuleFitMOJOModel", "H2OWord2VecMOJOModel"]
+class HasInputCol(Params):
+    inputCol = Param(
+        Params._dummy(),
+        "inputCol",
+        "Input columns name",
+        H2OTypeConverters.toNullableString())
 
-from pysparkling.initializer import Initializer
+    def getInputCol(self):
+        return self.getOrDefault(self.inputCol)
 
-Initializer.load_sparkling_jar()
+    def setInputCol(self, value):
+        return self._set(inputCol=value)

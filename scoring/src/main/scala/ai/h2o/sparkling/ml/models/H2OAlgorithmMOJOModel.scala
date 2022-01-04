@@ -17,7 +17,6 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.H2OMOJOCache.logWarning
 import ai.h2o.sparkling.ml.params.H2OAlgorithmMOJOParams
 import com.google.gson.JsonObject
 import hex.ModelCategory

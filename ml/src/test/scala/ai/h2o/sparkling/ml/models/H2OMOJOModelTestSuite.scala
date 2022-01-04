@@ -463,6 +463,70 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     }
   }
 
+  test("getStartType is exposed for loaded model") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
+      "multi_model_iris.mojo")
+
+    mojo.getStartTime() shouldBe 1631392711317L
+  }
+
+  test("getStartType is exposed for freshly trained model") {
+    val (_, mojo) = multinomialModelFixture()
+
+    mojo.getStartTime() should not be 0L
+  }
+
+  test("getEndTime is exposed for loaded model") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
+      "multi_model_iris.mojo")
+
+    mojo.getEndTime() shouldBe 1631392711360L
+  }
+
+  test("getEndTime is exposed for trained model") {
+    val (_, mojo) = multinomialModelFixture()
+
+    mojo.getEndTime() should not be 0L
+  }
+
+  test("getRunTime is exposed for loaded model") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
+      "multi_model_iris.mojo")
+
+    mojo.getRunTime() shouldBe 43L
+  }
+
+  test("getRunTime is exposed for trained model") {
+    val (_, mojo) = multinomialModelFixture()
+
+    mojo.getRunTime() should not be 0L
+  }
+
+  test("getDefaultThreshold is exposed for loaded model") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("binom_model_prostate.mojo"),
+      "binom_model_prostate.mojo")
+
+    mojo.getDefaultThreshold() shouldBe 0.40858428648438255
+  }
+
+  test("getDefaultThreshold returns default value if model doesn't contain the value") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
+      "airlines_boolean.mojo")
+
+    mojo.getDefaultThreshold() shouldBe 0.0
+  }
+
+  test("getDefaultThreshold is exposed for trained model") {
+    val (_, mojo) = multinomialModelFixture()
+
+    mojo.getDefaultThreshold() shouldBe 0.5
+  }
+
   test("getCrossValidationScoringHistory returns histories when they are available") {
     val mojo =
       H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")

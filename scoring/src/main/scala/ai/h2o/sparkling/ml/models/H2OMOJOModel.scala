@@ -28,7 +28,7 @@ import ai.h2o.sparkling.ml.utils.Utils
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson._
 import hex.ModelCategory
-import org.apache.spark.ml.param.{IntParam, ParamMap}
+import org.apache.spark.ml.param.{IntParam, LongParam, DoubleParam, ParamMap}
 import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
@@ -93,6 +93,15 @@ abstract class H2OMOJOModel
     new IntParam(this, "numberOfCrossValidationModels", "Number of cross validation models.")
   protected var crossValidationModels: Array[H2OMOJOModel] = null
 
+  protected final val startTime: LongParam =
+    new LongParam(this, "startTime", "Start time in milliseconds")
+  protected final val endTime: LongParam =
+    new LongParam(this, "endTime", "End time in milliseconds")
+  protected final val runTime: LongParam =
+    new LongParam(this, "runTime", "Runtime in milliseconds")
+  protected final val defaultThreshold: DoubleParam =
+    new DoubleParam(this, "defaultThreshold", "Default threshold used for predictions of classification models")
+
   setDefault(
     modelDetails -> null,
     trainingMetrics -> Map.empty[String, Double],
@@ -108,7 +117,11 @@ abstract class H2OMOJOModel
     cvScoringHistory -> null,
     reproducibilityInformationTable -> null,
     featureImportances -> null,
-    numberOfCrossValidationModels -> 0)
+    numberOfCrossValidationModels -> 0,
+    startTime -> 0L,
+    endTime -> 0L,
+    runTime -> 0L,
+    defaultThreshold -> 0.0)
 
   /**
     * Returns a map of all metrics of the Double type calculated on the training dataset.
@@ -225,6 +238,14 @@ abstract class H2OMOJOModel
     this
   }
 
+  def getStartTime(): Long = $(startTime)
+
+  def getEndTime(): Long = $(endTime)
+
+  def getRunTime(): Long = $(runTime)
+
+  def getDefaultThreshold(): Double = $(defaultThreshold)
+
   /**
     * The method returns an internal H2O-3 mojo model, which can be subsequently used with
     * [[EasyPredictModelWrapper]] to perform predictions on individual rows.
@@ -286,6 +307,15 @@ abstract class H2OMOJOModel
     set(this.featureTypes -> extractFeatureTypes(outputJson))
     set(this.cvScoringHistory -> extractJsonTables(outputJson, "cv_scoring_history"))
     set(this.reproducibilityInformationTable -> extractJsonTables(outputJson, "reproducibility_information_table"))
+    set(this.startTime -> extractJsonFieldValue(outputJson, "start_time", _.getAsLong(), $(startTime)))
+    set(this.endTime -> extractJsonFieldValue(outputJson, "end_time", _.getAsLong(), $(endTime)))
+    set(this.runTime -> extractJsonFieldValue(outputJson, "run_time", _.getAsLong(), $(runTime)))
+    set(
+      this.defaultThreshold -> extractJsonFieldValue(
+        outputJson,
+        "default_threshold",
+        _.getAsDouble(),
+        $(defaultThreshold)))
   }
 
   private[sparkling] def setEasyPredictModelWrapperConfiguration(
@@ -487,6 +517,18 @@ trait H2OMOJOModelUtils extends Logging {
       withSWNamesDF
     } else {
       null
+    }
+  }
+
+  protected def extractJsonFieldValue[T](
+      outputJson: JsonObject,
+      fieldName: String,
+      getValue: JsonElement => T,
+      defaultValue: T): T = {
+    if (outputJson == null || !outputJson.has(fieldName) || outputJson.get(fieldName).isJsonNull) {
+      defaultValue
+    } else {
+      getValue(outputJson.get(fieldName))
     }
   }
 

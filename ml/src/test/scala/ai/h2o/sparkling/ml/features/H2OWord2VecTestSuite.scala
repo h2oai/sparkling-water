@@ -17,11 +17,15 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.sparkling.ml.algos.H2OGBM
+import ai.h2o.sparkling.ml.algos.H2OKMeans
+import ai.h2o.sparkling.ml.models.H2OMOJOModel
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.ml.feature.{RegexTokenizer, StopWordsRemover}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
+import org.apache.spark.ml.feature.StopWordsRemover.loadDefaultStopWords
+import org.apache.spark.ml.feature.{RegexTokenizer, StopWordsRemover}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.{col, collect_set, size => array_size}
+import org.apache.spark.sql.types.{ArrayType, FloatType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -33,35 +37,46 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
-  private lazy val dataset = spark.read
+  private lazy val craigslistJobTitles = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/craigslistJobTitles.csv"))
+    .select("jobtitle")
 
-  private lazy val Array(trainingDataset, testingDataset) = dataset.randomSplit(Array(0.9, 0.1), 42)
-
-  def getPipeline(): Pipeline = {
+  def similarJobTitlesPipeline(): Pipeline = {
     val tokenizer = new RegexTokenizer()
       .setInputCol("jobtitle")
+      .setGaps(false)
+      .setToLowercase(true)
+      .setPattern("[a-zA-Z]+")
       .setMinTokenLength(2)
 
+    val jobListingsStopWords =
+      Array("hiring", "job", "fulltime", "parttime", "opening", "part", "time", "full", "needed", "seeking", "seek")
+
     val stopWordsRemover = new StopWordsRemover()
+      .setStopWords(loadDefaultStopWords("english") ++ jobListingsStopWords)
       .setInputCol(tokenizer.getOutputCol)
 
     val w2v = new H2OWord2Vec()
       .setSentSampleRate(0)
       .setEpochs(10)
+      .setVecSize(101)
+      .setOutputCol("Word2VecOutput")
       .setInputCol(stopWordsRemover.getOutputCol)
 
-    val gbm = new H2OGBM()
-      .setLabelCol("category")
-      .setFeaturesCols(w2v.getOutputCol)
+    val kMeans = new H2OKMeans()
+      .setK(100)
+      .setSeed(42)
+      .setFeaturesCol(w2v.getOutputCol())
+      .setPredictionCol("cluster")
 
-    new Pipeline().setStages(Array(tokenizer, stopWordsRemover, w2v, gbm))
+    new Pipeline().setStages(Array(tokenizer, stopWordsRemover, w2v, kMeans))
   }
 
   test("H2OWord2Vec Pipeline serialization and deserialization") {
-    getPipeline().write.overwrite().save("ml/build/w2v_pipeline")
+    val Array(trainingDataset, testingDataset) = craigslistJobTitles.randomSplit(Array(0.9, 0.1), 42)
+    similarJobTitlesPipeline().write.overwrite().save("ml/build/w2v_pipeline")
     val loadedPipeline = Pipeline.load("ml/build/w2v_pipeline")
     val model = loadedPipeline.fit(trainingDataset)
     val expected = model.transform(testingDataset)
@@ -72,14 +87,38 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     TestUtils.assertDataFramesAreIdentical(expected, result)
   }
 
-  test("Basic Word2Vec") {
-    val model = getPipeline().fit(trainingDataset)
-    val result = model.transform(testingDataset)
-    import spark.implicits._
-    result.select("prediction").map(row => row.getString(0)).take(3)
+  test("Word2Vec should put related sentences in close proximity") {
+    val model = similarJobTitlesPipeline().fit(craigslistJobTitles)
+    val result = model.transform(craigslistJobTitles)
+
+    val similarJobs = result
+      .groupBy("cluster")
+      .agg(collect_set("jobtitle").as("jobs"))
+      .sort(array_size(col("jobs")).desc)
+      .select("jobs")
+      .collect()
+      .map(_.getAs[mutable.WrappedArray[String]](0))
+
+    relatedJobTitleVectorsShouldBeCloseToEachOther("customer", "sales", "service")
+    relatedJobTitleVectorsShouldBeCloseToEachOther("teacher", "school", "teaching")
+    relatedJobTitleVectorsShouldBeCloseToEachOther("front desk", "receptionist", "office")
+
+    def relatedJobTitleVectorsShouldBeCloseToEachOther(
+        jobTitleGroupKeyword: String,
+        otherKeywordsExpectedTogether: String*): Unit = {
+      val mainKeywordJobTitleGroup =
+        similarJobs
+          .find(jobList => jobList.count(_.toLowerCase.contains(jobTitleGroupKeyword)) > (jobList.size / 2))
+          .get
+          .map(_.toLowerCase())
+      val jobTitlesWithoutTheMainKeyword = mainKeywordJobTitleGroup.filterNot(_.contains(jobTitleGroupKeyword))
+      otherKeywordsExpectedTogether.foreach { expectedKeyword =>
+        jobTitlesWithoutTheMainKeyword.exists(_.contains(expectedKeyword)) shouldBe true
+      }
+    }
   }
 
-  test("Word2Vec on empty dataset") {
+  test("should not accept an empty dataset") {
     import spark.implicits._
     val df = Seq.empty[Array[String]].toDF()
 
@@ -91,7 +130,7 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     assert(thrown.getMessage == "Empty DataFrame as an input for the H2OWord2Vec is not supported.")
   }
 
-  test("Word2Vec with only one and null input column") {
+  test("should not accept a dataset with a null column") {
     import spark.implicits._
     val df = spark.sparkContext.parallelize(Seq(null.asInstanceOf[Array[String]])).toDF()
 
@@ -103,7 +142,7 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     assert(thrown.getMessage == "Empty DataFrame as an input for the H2OWord2Vec is not supported.")
   }
 
-  test("Word2Vec with only one and empty input column") {
+  test("should not accept empty dataset for fitting") {
     import spark.implicits._
     val df = spark.sparkContext.parallelize(Seq(Array.empty[String])).toDS()
 
@@ -117,7 +156,7 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
 
   private def truncateAt(n: Double, p: Int): Double = { val s = math pow (10, p); (math floor n * s) / s }
 
-  test("Word2Vec with null input column") {
+  test("should not fail when null value present") {
     import spark.implicits._
     val df = spark.sparkContext.parallelize(Seq(null.asInstanceOf[Array[String]], Array("how", "are", "you"))).toDF()
 
@@ -133,7 +172,7 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     assert(truncateAt(embeddings(2), 3).toString == "0.002")
   }
 
-  test("Word2Vec with empty input column") {
+  test("should not fail when empty array present") {
     import spark.implicits._
     val df = spark.sparkContext.parallelize(Seq(Array.empty[String], Array("how", "are", "you"))).toDF()
 
@@ -151,5 +190,46 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     assert(truncateAt(embeddings(0), 3).toString == "-0.062")
     assert(truncateAt(embeddings(1), 3).toString == "0.037")
     assert(truncateAt(embeddings(2), 3).toString == "0.002")
+  }
+
+  test("should not accept column which is not string type for fitting") {
+    import spark.implicits._
+    val input = Seq(1, 2, 3, 4, 5).toDS
+    val w2v = new H2OWord2Vec().setMinWordFreq(1).setVecSize(3).setInputCol("value")
+
+    val thrown = intercept[IllegalArgumentException] {
+      w2v.fit(input)
+    }
+
+    thrown.getMessage shouldBe "The specified input column 'value' type ('IntegerType') is not an array of strings!"
+  }
+
+  test("should not accept column which is not string type for scoring") {
+    import spark.implicits._
+    val input = Seq(Seq("a", "b", "c")).toDS
+    val w2v = new H2OWord2Vec().setMinWordFreq(1).setVecSize(3).setInputCol("value")
+
+    val model = w2v.fit(input)
+
+    val thrown = intercept[IllegalArgumentException] {
+      model.transform(Seq(1, 2, 3).toDF)
+    }
+
+    thrown.getMessage shouldBe "The specified input column 'value' type ('IntegerType') is not an array of strings!"
+  }
+
+  test("should load from mojo and return proper schema") {
+    import spark.implicits._
+    val input = Seq(Seq("a", "b", "c")).toDF("Words")
+    val model =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("word2vec.mojo"), "word2vec.mojo")
+    val expectedPredictionColType = ArrayType(FloatType, containsNull = false)
+    val expectedPredictionCol = StructField("word2vec.mojo__output", expectedPredictionColType, nullable = true)
+    val datasetFields = input.schema.fields
+    val expectedSchema = StructType(datasetFields :+ expectedPredictionCol)
+    val expectedSchemaByTransform = model.transform(input).schema
+    val schema = model.transformSchema(input.schema)
+    schema shouldEqual expectedSchema
+    schema shouldEqual expectedSchemaByTransform
   }
 }

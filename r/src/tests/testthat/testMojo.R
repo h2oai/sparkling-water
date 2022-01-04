@@ -172,6 +172,30 @@ test_that("test MOJO predictions on unseen categoricals", {
   expect_equal(as.double(dplyr::select(data, prediction)), 5.240174068202646)
 })
 
+test_that("test start time", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/multi_model_iris.mojo")))
+  startTime <- model$getStartTime()
+  expect_equal(startTime, 1631392711317)
+})
+
+test_that("test end time", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/multi_model_iris.mojo")))
+  endTime <- model$getEndTime()
+  expect_equal(endTime, 1631392711360)
+})
+
+test_that("test run time", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/multi_model_iris.mojo")))
+  runTime <- model$getRunTime()
+  expect_equal(runTime, 43)
+})
+
+test_that("test default threshold", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  threshold <- model$getDefaultThreshold()
+  expect_equal(threshold, 0.40858428648438255)
+})
+
 test_that("test cross validation scoring history", {
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/gbm_cv.mojo")))
   history <- model$getCrossValidationScoringHistory()
