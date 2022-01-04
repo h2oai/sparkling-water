@@ -290,6 +290,10 @@ def testGetCrossValidationScoringHistory():
     mojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/gbm_cv.mojo"))
     history = mojo.getCrossValidationScoringHistory()
     assert len(history) == 3
+    for history_df in history:
+        history_df.show(truncate=False)
+        assert len(history_df.columns) == 16
+        assert history_df.count() == 3
 
 
 def testGetCrossValidationScoringHistoryWhenDataIsMissing():
