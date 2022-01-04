@@ -435,7 +435,7 @@ trait H2OMOJOModelUtils extends Logging {
       if (element.isJsonNull) {
         null
       } else {
-        outputJson.getAsJsonArray().iterator().asScala.map(_.getAsDouble).toArray
+        element.getAsJsonArray().iterator().asScala.map(_.getAsDouble).toArray
       }
     }
   }
