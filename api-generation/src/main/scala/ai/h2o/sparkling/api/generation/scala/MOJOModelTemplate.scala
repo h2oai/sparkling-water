@@ -21,23 +21,30 @@ import ai.h2o.sparkling.api.generation.common._
 import ai.h2o.sparkling.api.generation.scala.ParametersTemplate.resolveParameterConstructorMethodType
 
 object MOJOModelTemplate
-  extends ((AlgorithmSubstitutionContext, ParameterSubstitutionContext) => String)
+  extends ((AlgorithmSubstitutionContext, ParameterSubstitutionContext, ModelOutputSubstitutionContext) => String)
   with ParametersTemplateBase
   with ScalaEntityTemplate
-  with ParameterResolver {
+  with ParameterResolver
+  with OutputResolver {
 
   def apply(
       algorithmSubstitutionContext: AlgorithmSubstitutionContext,
-      parameterSubstitutionContext: ParameterSubstitutionContext): String = {
+      parameterSubstitutionContext: ParameterSubstitutionContext,
+      outputSubstitutionContext: ModelOutputSubstitutionContext): String = {
 
     val parameters = resolveParameters(parameterSubstitutionContext)
-      .filter(parameter =>
-        !IgnoredParameters.ignoredInMOJOs(algorithmSubstitutionContext.entityName).contains(parameter.h2oName))
+      .filterNot(parameter =>
+        IgnoredParameters.ignoredInMOJOs(algorithmSubstitutionContext.entityName).contains(parameter.h2oName))
+
+    val outputs = resolveOutputs(outputSubstitutionContext)
+      .filterNot(output => IgnoredOutputs.all(algorithmSubstitutionContext.entityName).contains(output.h2oName))
+      .filterNot(output => IgnoredOutputs.ignoredTypes(output.dataType.getSimpleName))
 
     val explicitFieldImplementations = parameterSubstitutionContext.explicitFields.flatMap(_.mojoImplementation) ++
       parameterSubstitutionContext.deprecatedFields.flatMap(_.mojoImplementation)
 
     val imports = Seq(
+      "com.google.gson.JsonObject",
       "ai.h2o.sparkling.ml.params.ParameterConstructorMethods",
       "hex.genmodel.MojoModel",
       "org.apache.spark.expose.Logging") ++
@@ -70,9 +77,19 @@ object MOJOModelTemplate
          |${generateParameterDefinitions(parameters)}
          |
          |  //
+         |  // Output definitions
+         |  //
+         |${generateParameterDefinitions(outputs)}
+         |
+         |  //
          |  // Getters
          |  //
          |${generateGetters(parameters)}
+         |
+         |  //
+         |  // Output Getters
+         |  //
+         |${generateGetters(outputs)}
          |
          |  override private[sparkling] def setSpecificParams(h2oMojo: MojoModel): Unit = {
          |    super.setSpecificParams(h2oMojo)
@@ -84,6 +101,10 @@ object MOJOModelTemplate
          |    } catch {
          |      case e: Throwable => logError("An error occurred during a try to access H2O MOJO parameters.", e)
          |    }
+         |  }
+         |
+         |  override private[sparkling] def setOutputParameters(outputSection: JsonObject): Unit = {
+         |${generateOutputParameterAssignments(outputs)}
          |  }
          |
          |${generateMetricsOverrides(algorithmSubstitutionContext.specificMetricsClass)}""".stripMargin
@@ -131,6 +152,38 @@ object MOJOModelTemplate
            |        case e: Throwable =>
            |          logWarning("An error occurred during setting up the '$swName' parameter. The method " +
            |          "get${swName.capitalize}() on the MOJO model object won't be able to provide the actual value.", e)
+           |      }""".stripMargin
+      }
+      .mkString("\n\n")
+  }
+
+  def generateOutputParameterAssignments(outputs: Seq[Parameter]): String = {
+    outputs
+      .map { output =>
+        val h2oName = output.h2oName
+        val swName = output.swName
+        val value = output.dataType.getSimpleName match {
+          case "boolean" => s"""outputSection.get("$h2oName").getAsBoolean()"""
+          case "byte" => s"""outputSection.get("$h2oName").getAsByte()"""
+          case "short" => s"""outputSection.get("$h2oName").getAsShort()"""
+          case "int" => s"""outputSection.get("$h2oName").getAsInt()"""
+          case "long" => s"""outputSection.get("$h2oName").getAsLong()"""
+          case "float" => s"""outputSection.get("$h2oName").getAsFloat()"""
+          case "double" => s"""outputSection.get("$h2oName").getAsDouble()"""
+          case "double[]" => s"""jsonFieldToDoubleArray(outputSection, "$h2oName")"""
+          case "TwoDimTableV3" => s"""jsonFieldToDataFrame(outputSection, "$h2oName")"""
+        }
+        s"""      if (outputSection.has("$h2oName")) {
+           |        try {
+           |          val extractedValue = $value
+           |          set("$swName", extractedValue)
+           |        } catch {
+           |          case e: Throwable if System.getProperty("spark.testing", "false") != "true" =>
+           |            logWarning("An error occurred during setting up the '$swName' parameter. The method " +
+           |              "get${swName.capitalize}() on the MOJO model object won't be able to provide the actual value.", e)
+           |        }
+           |      } else if (System.getProperty("spark.testing", "false") == "true") {
+           |        throw new AssertionError("The output field '$h2oName' in does not exist.")
            |      }""".stripMargin
       }
       .mkString("\n\n")

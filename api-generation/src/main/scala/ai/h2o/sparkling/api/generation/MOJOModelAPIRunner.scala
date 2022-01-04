@@ -45,8 +45,10 @@ object MOJOModelAPIRunner
           entityName = algorithmContext.entityName + "MOJOModel")
       }
 
-      for ((mojoContext, parameterContext) <- mojoConfiguration.zip(parametersConfiguration)) {
-        val content = mojoTemplates(languageExtension)(mojoContext, parameterContext)
+      for (((mojoContext, parameterContext), modelOutputContext) <- mojoConfiguration
+             .zip(parametersConfiguration)
+             .zip(modelOutputConfiguration)) {
+        val content = mojoTemplates(languageExtension)(mojoContext, parameterContext, modelOutputContext)
         writeResultToFile(content, mojoContext, languageExtension, destinationDir)
       }
 

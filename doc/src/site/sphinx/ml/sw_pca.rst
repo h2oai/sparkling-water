@@ -3,7 +3,8 @@ Principal Component Analysis (PCA) in Sparkling Water
 
 The Principal Component Analysis (PCA) in Sparkling Water is an feature estimator, which serves to reduce number of
 features in Spark pipeline. Sparkling Water provides API for PCA in Scala and Python. The following sections describe
-how to train and use the Sparkling Water PCA in both languages. See also :ref:`parameters_H2OPCA`.
+how to train and use the Sparkling Water PCA in both languages. See also :ref:`parameters_H2OPCA`
+and :ref:`model_details_H2OPCAMOJOModel`.
 
 .. content-tabs::
 

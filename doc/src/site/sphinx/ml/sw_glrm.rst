@@ -3,7 +3,8 @@ Generalized Low Rank Models (GLRM) in Sparkling Water
 
 Generalized Low Rank Models (GLRM) in Sparkling Water is an feature estimator, which serves to reduce number of
 features in Spark pipeline. Sparkling Water provides API for GLRM in Scala and Python. The following sections describe
-how to train and use the Sparkling Water GLRM in both languages. See also :ref:`parameters_H2OGLRM`.
+how to train and use the Sparkling Water GLRM in both languages. See also :ref:`parameters_H2OGLRM`
+and :ref:`model_details_H2OGLRMMOJOModel`.
 
 .. content-tabs::
 

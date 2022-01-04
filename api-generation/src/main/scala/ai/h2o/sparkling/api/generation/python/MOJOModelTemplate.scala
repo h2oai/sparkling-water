@@ -18,18 +18,27 @@
 package ai.h2o.sparkling.api.generation.python
 
 import ai.h2o.sparkling.api.generation.common._
+import ai.h2o.sparkling.api.generation.scala.MOJOModelTemplate.resolveOutputs
 
 object MOJOModelTemplate
-  extends ((AlgorithmSubstitutionContext, ParameterSubstitutionContext) => String)
+  extends ((AlgorithmSubstitutionContext, ParameterSubstitutionContext, ModelOutputSubstitutionContext) => String)
   with PythonEntityTemplate
-  with ParameterResolver {
+  with ParameterResolver
+  with OutputResolver {
 
   def apply(
       algorithmSubstitutionContext: AlgorithmSubstitutionContext,
-      parameterSubstitutionContext: ParameterSubstitutionContext): String = {
+      parameterSubstitutionContext: ParameterSubstitutionContext,
+      outputSubstitutionContext: ModelOutputSubstitutionContext): String = {
+
     val parameters = resolveParameters(parameterSubstitutionContext)
-      .filter(parameter =>
-        !IgnoredParameters.ignoredInMOJOs(algorithmSubstitutionContext.entityName).contains(parameter.h2oName))
+      .filterNot(parameter =>
+        IgnoredParameters.ignoredInMOJOs(algorithmSubstitutionContext.entityName).contains(parameter.h2oName))
+
+    val outputs = resolveOutputs(outputSubstitutionContext)
+      .filterNot(output => IgnoredOutputs.all(algorithmSubstitutionContext.entityName).contains(output.h2oName))
+      .filterNot(output => IgnoredOutputs.ignoredTypes(output.dataType.getSimpleName))
+
     val entityName = algorithmSubstitutionContext.entityName
     val namespace = algorithmSubstitutionContext.namespace
     val algorithmType = algorithmSubstitutionContext.algorithmType
@@ -72,8 +81,9 @@ object MOJOModelTemplate
          |        else:
          |            raise TypeError("Invalid type.")
          |
-         |""".stripMargin ++
-        generateGetterMethods(parameters)
+         |""".stripMargin +
+        generateGetterMethods(parameters) + "\n\n" +
+        generateGetterMethods(outputs)
     }
   }
 
@@ -93,6 +103,7 @@ object MOJOModelTemplate
   private def generateValueConversion(parameter: Parameter): String = parameter.dataType match {
     case x if x.isArray && x.getComponentType.isArray() => "H2OTypeConverters.scala2DArrayToPython2DArray(value)"
     case x if x.isArray => "H2OTypeConverters.scalaArrayToPythonArray(value)"
+    case x if x.getSimpleName == "TwoDimTableV3" => "H2OTypeConverters.scalaToPythonDataFrame(value)"
     case _ => "value"
   }
 }

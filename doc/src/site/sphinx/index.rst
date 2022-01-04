@@ -27,6 +27,7 @@ Have questions about Sparkling Water? Post them on Stack Overflow using the `spa
    deployment/deployment
    ml/ml
    metrics/metrics
+   model_details/model_details
    parameters/parameters
    tutorials/tutorials
    devel/devel

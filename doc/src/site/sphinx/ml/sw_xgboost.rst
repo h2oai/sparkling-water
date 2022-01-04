@@ -2,7 +2,8 @@ Train XGBoost Model in Sparkling Water
 --------------------------------------
 
 Sparkling Water provides API for H2O XGBoost in Scala and Python. The following sections describe how to train
-the XGBoost model in Sparkling Water in both languages. See also :ref:`parameters_H2OXGBoost`.
+the XGBoost model in Sparkling Water in both languages. See also :ref:`parameters_H2OXGBoost`
+and :ref:`model_details_H2OXGBoostMOJOModel`.
 
 .. content-tabs::
 
@@ -47,17 +48,13 @@ the XGBoost model in Sparkling Water in both languages. See also :ref:`parameter
         column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2OXGBoostClassifier``
         or ``ai.h2o.sparkling.ml.algos.regression.H2OXGBoostRegressor`` instead.
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
-
-        .. code:: scala
-
-            model.getModelDetails()
-
         Run Predictions
 
         .. code:: scala
 
             model.transform(testingDF).show(false)
+
+        You can also get model details via calling methods listed in :ref:`model_details_H2OXGBoostMOJOModel`.
 
 
     .. tab-container:: Python
@@ -99,17 +96,13 @@ the XGBoost model in Sparkling Water in both languages. See also :ref:`parameter
         If the label column is a numeric column, a regression model will be trained. If you don't want to be worried about
         column data types, you can explicitly identify the problem by using ``H2OXGBoostClassifier`` or ``H2OXGBoostRegressor`` instead.
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
-
-        .. code:: python
-
-            model.getModelDetails()
-
         Run Predictions
 
         .. code:: python
 
             model.transform(testingDF).show(truncate = False)
+
+        You can also get model details via calling methods listed in :ref:`model_details_H2OXGBoostMOJOModel`.
 
 
 XGBoost Memory Configuration
