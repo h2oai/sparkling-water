@@ -229,7 +229,7 @@ def buildSparklingWater(props, sparkMajorVersion) {
         sh """
             . /envs/sw_env_python3.6/bin/activate
             python setup.py bdist_wheel
-            """
+        """
     }
 }
 
