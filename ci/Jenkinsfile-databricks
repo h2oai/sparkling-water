@@ -31,8 +31,7 @@ static String getSparklingVersion(props) {
 }
 
 def startCluster(dbcVersion, sparkMajorVersion) {
-    def jsonOutput = sh(script: """
-    . /envs/sw_env_python3.6/bin/activate
+    def jsonOutput = shWithSWPyEnv(script: """
     databricks clusters create --json '{
         "num_workers": 3,
         "cluster_name": "SparklingWaterTest-${sparkMajorVersion}",
@@ -64,10 +63,7 @@ def startCluster(dbcVersion, sparkMajorVersion) {
 def waitForCluster(clusterId) {
     def ready = false
     while(!ready) {
-        def json = sh(script: """
-            . /envs/sw_env_python3.6/bin/activate
-            databricks clusters get --cluster-id ${clusterId}
-        """, returnStdout: true).trim()
+        def json = shWithSWPyEnv(script: "databricks clusters get --cluster-id ${clusterId}", returnStdout: true).trim()
         def jsonSlurper = new JsonSlurperClassic()
         def cfg = jsonSlurper.parseText(json)
         ready = cfg["state"] == "RUNNING"
@@ -79,10 +75,7 @@ def waitForCluster(clusterId) {
 }
 
 def deleteCluster(clusterId) {
-    sh """
-        . /envs/sw_env_python3.6/bin/activate
-        databricks clusters delete --cluster-id ${clusterId}
-    """
+    shWithSWPyEnv "databricks clusters delete --cluster-id ${clusterId}"
 }
 
 static def getDatabricksSparkVersions(props) {
@@ -96,10 +89,7 @@ static def getDatabricksSparkVersions(props) {
 def waitForArtifactToAttach(clusterId, artifact, type) {
     def ready = false
     while(!ready) {
-        def rawJson = sh(script: """
-            . /envs/sw_env_python3.6/bin/activate
-            databricks libraries cluster-status --cluster-id ${clusterId}
-        """, returnStdout: true).trim()
+        def rawJson = sh(script: "databricks libraries cluster-status --cluster-id ${clusterId}", returnStdout: true).trim()
         def parsedJson = new JsonSlurperClassic().parseText(rawJson)
         def status = parsedJson.library_statuses.find { it.library[type] == "dbfs:/${clusterId}/${artifact}" }.status
         ready = status == "INSTALLED"
@@ -113,22 +103,19 @@ def waitForArtifactToAttach(clusterId, artifact, type) {
 
 def installDependencies(clusterId, scalaArtifact, pythonArtifact, rArtifact) {
     // Scala
-    sh """
-        . /envs/sw_env_python3.6/bin/activate
+    shWithSWPyEnv """
         databricks fs cp assembly/build/libs/${scalaArtifact} dbfs:/${clusterId}/${scalaArtifact}
         databricks libraries install --cluster-id ${clusterId} --jar dbfs:/${clusterId}/${scalaArtifact}
     """
     waitForArtifactToAttach(clusterId, scalaArtifact, "jar")
     // Python
-    sh """
-        . /envs/sw_env_python3.6/bin/activate
+    shWithSWPyEnv """
         databricks fs cp py/build/pkg/dist/${pythonArtifact} dbfs:/${clusterId}/${pythonArtifact}
         databricks libraries install --cluster-id ${clusterId} --whl dbfs:/${clusterId}/${pythonArtifact}
     """
     waitForArtifactToAttach(clusterId, pythonArtifact, "whl")
     // R
-    sh """
-        . /envs/sw_env_python3.6/bin/activate
+    shWithSWPyEnv """
         databricks fs cp r/build/${rArtifact} dbfs:/FileStore/${clusterId}/${rArtifact}
         databricks fs cp h2o-3/h2o-r/h2o_*.99999.tar.gz dbfs:/FileStore/${clusterId}/h2o.tar.gz
     """
@@ -139,12 +126,9 @@ def test(workspaceDir, clusterId, language) {
     if (language == "python") {
         extension = "py"
     }
-    sh """
-        . /envs/sw_env_python3.6/bin/activate
-        databricks workspace import --language ${language} ci/databricksTests/test.${extension} ${workspaceDir}/test.${extension}
-    """
-    def rawJson = sh(script: """
-        . /envs/sw_env_python3.6/bin/activate
+    shWithSWPyEnv "databricks workspace import --language ${language} ci/databricksTests/test.${extension} ${workspaceDir}/test.${extension}"
+
+    def rawJson = shWithSWPyEnv(script: """
         databricks runs submit --json '
             {
               "name": "Test ${language}",
@@ -164,10 +148,7 @@ def test(workspaceDir, clusterId, language) {
 def waitForJobToFinish(jobId, language, clusterId) {
     def done = false
     while(!done) {
-        def rawJson = sh(script: """
-            . /envs/sw_env_python3.6/bin/activate
-            databricks runs get --run-id ${jobId}
-        """, returnStdout: true).trim()
+        def rawJson = shWithSWPyEnv(script: "databricks runs get --run-id ${jobId}", returnStdout: true).trim()
         def parsedJson = new JsonSlurperClassic().parseText(rawJson)
         def status = parsedJson.state.result_state
         if (["FAILED", "TIMEDOUT", "CANCELLED"].contains(status)) {
@@ -180,8 +161,7 @@ def waitForJobToFinish(jobId, language, clusterId) {
 }
 
 def deleteDependencies(clusterId) {
-    sh """
-        . /envs/sw_env_python3.6/bin/activate
+    shWithSWPyEnv """
         databricks fs rm -r dbfs:/${clusterId}
         databricks fs rm -r dbfs:/FileStore/${clusterId}
     """
@@ -198,6 +178,14 @@ String getH2OBranchMajorName() {
 
 String getH2OBranchBuildVersion() {
     return "1-SNAPSHOT"
+}
+
+def shWithSWPyEnv(script, returnStdout = false) {
+    def scriptWithPrefix =  """
+        . /envs/sw_env_python3.6/bin/activate
+        ${script}
+    """
+    return sh(script: scriptWithPrefix, returnStdout: returnStdout)
 }
 
 def buildH2O(props) {
@@ -226,10 +214,7 @@ def buildSparklingWater(props, sparkMajorVersion) {
         """
     sh "H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
     dir("py/build/pkg") {
-        sh """
-            . /envs/sw_env_python3.6/bin/activate
-            python setup.py bdist_wheel
-        """
+        shWithSWPyEnv "python setup.py bdist_wheel"
     }
 }
 
@@ -243,18 +228,12 @@ def prepareRTestFile(clusterId, rArtifact) {
 }
 
 def restartCluster(clusterId) {
-    sh """
-        . /envs/sw_env_python3.6/bin/activate
-        databricks clusters restart --cluster-id ${clusterId}
-    """
+    shWithSWPyEnv "databricks clusters restart --cluster-id ${clusterId}"
     waitForCluster(clusterId)
 }
 
 def cleanEnvironment(clusterId) {
-    sh """
-        . /envs/sw_env_python3.6/bin/activate
-        databricks workspace rm -r /sw-tests-${clusterId}
-    """
+    shWithSWPyEnv "databricks workspace rm -r /sw-tests-${clusterId}"
     deleteDependencies(clusterId)
     deleteCluster(clusterId)
 }
@@ -282,10 +261,7 @@ node("docker") {
                     def sparkSpecificProps = readPropertiesFile("gradle-spark${sparkMajorVersion}.properties")
                     def dbcVersion = sparkSpecificProps["databricksVersion"]
                     def scalaVersion = sparkSpecificProps["scalaBaseVersion"]
-                    sh """
-                        . /envs/sw_env_python3.6/bin/activate
-                        pip install databricks-cli
-                    """
+                    shWithSWPyEnv "pip install databricks-cli"
                     buildSparklingWater(props, sparkMajorVersion)
                     String pythonArtifact = "h2o_pysparkling_${sparkMajorVersion}-${version.split("-")[0]}.post1-py2.py3-none-any.whl"
                     String scalaArtifact = "sparkling-water-assembly_${scalaVersion}-${version}-${sparkMajorVersion}-all.jar"
@@ -294,10 +270,7 @@ node("docker") {
                     waitForCluster(clusterId)
                     installDependencies(clusterId, scalaArtifact, pythonArtifact, rArtifact)
                     String workspaceDir = "/sw-tests-${clusterId}"
-                    sh """
-                        . /envs/sw_env_python3.6/bin/activate
-                        databricks workspace mkdirs ${workspaceDir}
-                    """
+                    shWithSWPyEnv "databricks workspace mkdirs ${workspaceDir}"
                     prepareRTestFile(clusterId, rArtifact)
                     test(workspaceDir, clusterId, "r")
                     restartCluster(clusterId)
