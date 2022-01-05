@@ -26,11 +26,22 @@ import hex.glm.GLMModel.GLMParameters
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.schemas.CoxPHV3.CoxPHParametersV3
 import hex.rulefit.RuleFitModel.RuleFitParameters
+import hex.schemas.CoxPHModelV3.CoxPHModelOutputV3
+import hex.schemas.DRFModelV3.DRFModelOutputV3
+import hex.schemas.DeepLearningModelV3.DeepLearningModelOutputV3
+import hex.schemas.GAMModelV3.GAMModelOutputV3
+import hex.schemas.GBMModelV3.GBMModelOutputV3
+import hex.schemas.GLMModelV3.GLMModelOutputV3
+import hex.schemas.IsolationForestModelV3.IsolationForestModelOutputV3
+import hex.schemas.KMeansModelV3.KMeansModelOutputV3
+import hex.schemas.RuleFitModelV3.RuleFitModelOutputV3
 import hex.schemas.RuleFitV3.RuleFitParametersV3
+import hex.schemas.XGBoostModelV3.XGBoostModelOutputV3
 import hex.schemas.{DRFV3, DeepLearningV3, GAMV3, GBMV3, GLMV3, IsolationForestV3, KMeansV3, XGBoostV3}
 import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.isofor.IsolationForestModel.IsolationForestParameters
+import hex.tree.xgboost.XGBoostModel
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 
 trait AlgorithmConfigurations extends ConfigurationsBase {
@@ -85,7 +96,7 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
     type KMeansParamsV3 = KMeansV3.KMeansParametersV3
 
     val explicitDefaultValues =
-      Map[String, Any]("max_w2" -> 3.402823e38f, "response_column" -> "label", "model_id" -> null)
+      Map[String, Any]("max_w2" -> 3.402823e38f, "response_column" -> "label", "model_id" -> null, "lambda" -> null)
 
     val noDeprecation = Seq.empty
 
@@ -190,5 +201,26 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
         null,
         "ai.h2o.sparkling.ml.algos",
         parametersToCheck)
+  }
+
+  override def modelOutputConfiguration: Seq[ModelOutputSubstitutionContext] = super.modelOutputConfiguration ++ {
+    val modelOutputs = Seq[(String, Class[_])](
+      ("H2OXGBoostModelOutputs", classOf[XGBoostModelOutputV3]),
+      ("H2OGBMModelOutputs", classOf[GBMModelOutputV3]),
+      ("H2ODRFModelOutputs", classOf[DRFModelOutputV3]),
+      ("H2OGLMModelOutputs", classOf[GLMModelOutputV3]),
+      ("H2OGAMModelOutputs", classOf[GAMModelOutputV3]),
+      ("H2ODeepLearningModelOutputs", classOf[DeepLearningModelOutputV3]),
+      ("H2ORuleFitModelOutputs", classOf[RuleFitModelOutputV3]),
+      ("H2OKMeansModelOutputs", classOf[KMeansModelOutputV3]),
+      ("H2OCoxPHModelOutputs", classOf[CoxPHModelOutputV3]),
+      ("H2OIsolationForestModelOutputs", classOf[IsolationForestModelOutputV3]))
+
+    for ((outputEntityName, h2oParametersClass: Class[_]) <- modelOutputs)
+      yield ModelOutputSubstitutionContext(
+        "ai.h2o.sparkling.ml.outputs",
+        outputEntityName,
+        h2oParametersClass,
+        Seq.empty)
   }
 }

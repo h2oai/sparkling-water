@@ -3,6 +3,7 @@ Train Word2Vec Model in Sparkling Water
 
 Sparkling Water provides API for H2O Word2Vec in Scala and Python.
 The following sections describe how to train the Word2Vec model in Sparkling Water in both languages.
+See also :ref:`parameters_H2OWord2Vec`.
 
 .. content-tabs::
 

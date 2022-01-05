@@ -57,6 +57,45 @@ object Runner {
           s"parameters_${featureTransformer.getSimpleName}",
           destinationDir)
       }
+    } else if (destinationDir.endsWith("model_details")) {
+      val algorithms = getParamClasses("ai.h2o.sparkling.ml.algos")
+      val algorithmMOJOModels = algorithms.toSeq
+        .map { algorithm =>
+          val modelClassName = s"ai.h2o.sparkling.ml.models.${algorithm.getSimpleName}MOJOModel"
+          Try(Class.forName(modelClassName)).toOption
+        }
+        .filter(_ != None)
+        .map(_.get)
+      val featureTransformers = getParamClasses("ai.h2o.sparkling.ml.features")
+      val featureMOJOModels = featureTransformers.toSeq
+        .map { featureTransformer =>
+          val modelClassName = s"ai.h2o.sparkling.ml.models.${featureTransformer.getSimpleName}MOJOModel"
+          Try(Class.forName(modelClassName)).toOption
+        }
+        .filter(_ != None)
+        .map(_.get)
+      writeResultToFile(
+        ModelDetailsTocTreeTemplate(algorithmMOJOModels, featureMOJOModels),
+        "model_details",
+        destinationDir)
+      for (algorithm <- algorithms) {
+        val modelClassName = s"ai.h2o.sparkling.ml.models.${algorithm.getSimpleName}MOJOModel"
+        val modelOption = Try(Class.forName(modelClassName)).toOption
+        if (modelOption.isDefined) {
+          val content = ModelDetailsTemplate(algorithm, modelOption.get)
+          writeResultToFile(content, s"model_details_${modelOption.get.getSimpleName}", destinationDir)
+        }
+      }
+      for (featureTransformer <- featureTransformers) {
+        val modelClassName = s"ai.h2o.sparkling.ml.models.${featureTransformer.getSimpleName}MOJOModel"
+        val modelOption = Try(Class.forName(modelClassName)).toOption
+        if (modelOption.isDefined) {
+          writeResultToFile(
+            ModelDetailsTemplate(featureTransformer, modelOption.get),
+            s"model_details_${modelOption.get.getSimpleName}",
+            destinationDir)
+        }
+      }
     } else {
       val metricClasses = getParamClasses("ai.h2o.sparkling.ml.metrics")
       writeResultToFile(MetricsTocTreeTemplate(metricClasses), "metrics", destinationDir)

@@ -67,6 +67,7 @@ task deleteDocTrees(type: Delete) {
 
 task cleanGeneratedDoc(type: Delete) {
   delete "${projectDir}/src/site/sphinx/parameters"
+  delete "${projectDir}/src/site/sphinx/model_details"
   delete "${projectDir}/src/site/sphinx/metrics"
 }
 
@@ -79,6 +80,15 @@ task generateAlgorithmParameters(type: JavaExec, dependsOn: [cleanGeneratedDoc, 
   classpath = sourceSets.main.runtimeClasspath
   main = "ai.h2o.sparkling.doc.generation.Runner"
   args = ["${projectDir}/src/site/sphinx/parameters"]
+  standardOutput = System.out
+  errorOutput = System.err
+}
+
+task generateModelDetails(type: JavaExec, dependsOn: [cleanGeneratedDoc, build]) {
+  group = "Execution"
+  classpath = sourceSets.main.runtimeClasspath
+  main = "ai.h2o.sparkling.doc.generation.Runner"
+  args = ["${projectDir}/src/site/sphinx/model_details"]
   standardOutput = System.out
   errorOutput = System.err
 }
@@ -148,6 +158,7 @@ cleanDoc.dependsOn cleanGeneratedDoc
 publish.dependsOn site
 createVersionFile.dependsOn cleanDoc
 sphinx.dependsOn generateAlgorithmParameters
+sphinx.dependsOn generateModelDetails
 sphinx.dependsOn generateMetrics
 sphinx.dependsOn createVersionFile
 sphinx.dependsOn generateConfiguration

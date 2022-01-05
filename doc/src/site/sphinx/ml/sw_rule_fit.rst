@@ -11,7 +11,7 @@ The general algorithm fits a tree ensemble to the data, builds a rule ensemble b
 the data to build a rule feature set, and fits a sparse linear model (LASSO) to the rule feature set joined with the original feature set.
 
 Sparkling Water provides API for H2O RuleFit in Scala and Python. The following sections describe how to train the RuleFit model
-in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit`.
+in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit` and :ref:`model_details_H2ORuleFitMOJOModel`.
 
 .. content-tabs::
 
@@ -64,18 +64,19 @@ in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit`.
         column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2OH2ORuleFitClassifier``
         or ``ai.h2o.sparkling.ml.algos.regression.H2OH2ORuleFitRegressor`` instead.
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+        Get trained rules
 
         .. code:: scala
 
-            model.getModelDetails()
+            model.getRuleImportance().show(truncate = False)
+
+        You can also get model details via calling methods listed in :ref:`model_details_H2ORuleFitMOJOModel`.
 
         Run Predictions
 
         .. code:: scala
 
             model.transform(testingDF).show(false)
-
 
     .. tab-container:: Python
         :title: Python
@@ -121,12 +122,14 @@ in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit`.
         If the label column is a numeric column, a regression model will be trained. If you don't want to be worried about
         column data types, you can explicitly identify the problem by using ``H2ORuleFitClassifier`` or ``H2ORuleFitRegressor`` instead.
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+        Get trained rules
 
         .. code:: python
 
-            model.getModelDetails()
+            model.getRuleImportance().show(truncate = False)
 
+        You can also get model details via calling methods listed in :ref:`model_details_H2ORuleFitMOJOModel`.
+        
         Run Predictions
 
         .. code:: python

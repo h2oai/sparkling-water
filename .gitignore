@@ -86,5 +86,6 @@ jenkins/docker/regular-tests/Dockerfile
 # Generated code and documentation
 src-gen/
 doc/src/site/sphinx/parameters
+doc/src/site/sphinx/model_details
 doc/src/site/sphinx/metrics
 doc/src/site/sphinx/configuration/configuration_properties.rst
