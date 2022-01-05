@@ -551,9 +551,9 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
     reloadedModel.getCrossValidationModelsScoringHistory().length shouldBe 3
     for (i <- 0 until mojo.getCrossValidationModelsScoringHistory().length) {
-        TestUtils.assertDataFramesAreIdentical(
-          mojo.getCrossValidationModelsScoringHistory()(i),
-          reloadedModel.getCrossValidationModelsScoringHistory()(i))
+      TestUtils.assertDataFramesAreIdentical(
+        mojo.getCrossValidationModelsScoringHistory()(i),
+        reloadedModel.getCrossValidationModelsScoringHistory()(i))
     }
   }
 
