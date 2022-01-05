@@ -30,7 +30,7 @@ static String getSparklingVersion(props) {
     return "${props['version'].replace("-SNAPSHOT", "")}"
 }
 
-static String shWithSWPyEnv(String script, Boolean returnStdout = false) {
+def shWithSWPyEnv(String script, Boolean returnStdout = false) {
     def scriptWithPrefix =  """
         . /envs/sw_env_python3.6/bin/activate
         ${script}
