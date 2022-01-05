@@ -105,6 +105,21 @@ class H2OMOJOModelParams:
     def getFeatureImportances(self):
         return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getFeatureImportances())
 
+    def getStartTime(self):
+        """:return: Start time in milliseconds"""
+        return self._java_obj.getStartTime()
+
+    def getEndTime(self):
+        """:return: End time in milliseconds"""
+        return self._java_obj.getEndTime()
+
+    def getRunTime(self):
+        """:return: Runtime in milliseconds"""
+        return self._java_obj.getRunTime()
+
+    def getDefaultThreshold(self):
+        """:return: Default threshold used for predictions"""
+        return self._java_obj.getDefaultThreshold()
 
 class H2OAlgorithmMOJOModelParams(H2OMOJOModelParams, H2OAlgorithmMOJOModelBase):
     pass

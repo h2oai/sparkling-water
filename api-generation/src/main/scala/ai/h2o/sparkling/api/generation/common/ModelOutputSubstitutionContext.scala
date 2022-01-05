@@ -17,21 +17,9 @@
 
 package ai.h2o.sparkling.api.generation.common
 
-trait ConfigurationsBase {
-  val ignoredCols = ExplicitField("ignored_columns", "HasIgnoredCols", null, None, Some("HasIgnoredColsOnMOJO"))
-
-  val defaultValuesOfCommonParameters = Map(
-    "convertUnknownCategoricalLevelsToNa" -> false,
-    "convertInvalidNumbersToNa" -> false,
-    "validationDataFrame" -> null,
-    "splitRatio" -> 1.0,
-    "columnsToCategorical" -> Array.empty[String],
-    "keepBinaryModels" -> false,
-    "dataFrameSerializer" -> "ai.h2o.sparkling.utils.JSONDataFrameSerializer")
-
-  def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = Seq.empty
-
-  def parametersConfiguration: Seq[ParameterSubstitutionContext] = Seq.empty
-
-  def modelOutputConfiguration: Seq[ModelOutputSubstitutionContext] = Seq.empty
-}
+case class ModelOutputSubstitutionContext(
+    namespace: String,
+    entityName: String,
+    h2oSchemaClass: Class[_],
+    ignoredOutputs: Seq[String])
+  extends SubstitutionContextBase
