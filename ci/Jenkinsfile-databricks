@@ -31,30 +31,31 @@ static String getSparklingVersion(props) {
 }
 
 def startCluster(dbcVersion, sparkMajorVersion) {
-    def jsonOutput = shWithSWPyEnv(script: """
-    databricks clusters create --json '{
-        "num_workers": 3,
-        "cluster_name": "SparklingWaterTest-${sparkMajorVersion}",
-        "spark_version": "${dbcVersion}",
-        "spark_conf": {},
-        "aws_attributes": {
-            "first_on_demand": 4,
-            "availability": "SPOT_WITH_FALLBACK",
-            "zone_id": "us-east-1d",
-            "instance_profile_arn": null,
-            "spot_bid_price_percent": 100,
-            "ebs_volume_type": "GENERAL_PURPOSE_SSD",
-            "ebs_volume_count": 3,
-            "ebs_volume_size": 100
-        },
-        "node_type_id": "m4.large",
-        "ssh_public_keys": [],
-        "custom_tags": {},
-        "spark_env_vars": {},
-        "autotermination_minutes": 120,
-        "init_scripts": []
-    }'
-""", returnStdout: true).trim()
+    def script = """
+        databricks clusters create --json '{
+            "num_workers": 3,
+            "cluster_name": "SparklingWaterTest-${sparkMajorVersion}",
+            "spark_version": "${dbcVersion}",
+            "spark_conf": {},
+            "aws_attributes": {
+                "first_on_demand": 4,
+                "availability": "SPOT_WITH_FALLBACK",
+                "zone_id": "us-east-1d",
+                "instance_profile_arn": null,
+                "spot_bid_price_percent": 100,
+                "ebs_volume_type": "GENERAL_PURPOSE_SSD",
+                "ebs_volume_count": 3,
+                "ebs_volume_size": 100
+            },
+            "node_type_id": "m4.large",
+            "ssh_public_keys": [],
+            "custom_tags": {},
+            "spark_env_vars": {},
+            "autotermination_minutes": 120,
+            "init_scripts": []
+        }'
+    """
+    def jsonOutput = shWithSWPyEnv(script: script, returnStdout: true).trim()
     def jsonSlurper = new JsonSlurperClassic()
     def cfg = jsonSlurper.parseText(jsonOutput)
     return cfg["cluster_id"]
@@ -180,7 +181,7 @@ String getH2OBranchBuildVersion() {
     return "1-SNAPSHOT"
 }
 
-def shWithSWPyEnv(script, returnStdout = false) {
+def shWithSWPyEnv(String script, Boolean returnStdout = false) {
     def scriptWithPrefix =  """
         . /envs/sw_env_python3.6/bin/activate
         ${script}
