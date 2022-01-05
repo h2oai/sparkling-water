@@ -30,6 +30,14 @@ static String getSparklingVersion(props) {
     return "${props['version'].replace("-SNAPSHOT", "")}"
 }
 
+static String shWithSWPyEnv(String script, Boolean returnStdout = false) {
+    def scriptWithPrefix =  """
+        . /envs/sw_env_python3.6/bin/activate
+        ${script}
+    """
+    return sh(script: scriptWithPrefix, returnStdout: returnStdout)
+}
+
 def startCluster(dbcVersion, sparkMajorVersion) {
     def script = """
         databricks clusters create --json '{
@@ -179,14 +187,6 @@ String getH2OBranchMajorName() {
 
 String getH2OBranchBuildVersion() {
     return "1-SNAPSHOT"
-}
-
-def shWithSWPyEnv(String script, Boolean returnStdout = false) {
-    def scriptWithPrefix =  """
-        . /envs/sw_env_python3.6/bin/activate
-        ${script}
-    """
-    return sh(script: scriptWithPrefix, returnStdout: returnStdout)
 }
 
 def buildH2O(props) {
