@@ -22,8 +22,7 @@ import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.functions._
 import _root_.hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -102,58 +101,13 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     assertEqual(mojoModel, model, inputDf)
   }
 
-  test("BooleanColumn as String for mojo predictions") {
-    val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
-      "airlines_boolean.mojo")
-    val data = Seq(
-      Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, "true", "true"),
-      Row(1987, 10, 4, "PS", 1451, "SAN", "SFO", 447, "false", "true"),
-      Row(1987, 10, 6, "PS", 1451, "SAN", "SFO", 447, "true", "true"))
+  test("should not fail when handling boolean column also when loading from file") {
+    val prostateDFWithBooleanColumn =
+      prostateDataFrame.withColumn("DCAPS", when($"DCAPS".equalTo("2"), true).otherwise(false))
+    val Array(trainingDF, testingDF) = prostateDFWithBooleanColumn.randomSplit(Array(0.9, 0.1))
+    val model = configureGBMForProstateDF().fit(trainingDF)
 
-    val schema = StructType(
-      List(
-        StructField("Year", IntegerType, nullable = true),
-        StructField("Month", IntegerType, nullable = true),
-        StructField("DayOfWeek", IntegerType, nullable = true),
-        StructField("UniqueCarrier", StringType, nullable = true),
-        StructField("FlightNum", IntegerType, nullable = true),
-        StructField("Origin", StringType, nullable = true),
-        StructField("Dest", StringType, nullable = true),
-        StructField("Distance", IntegerType, nullable = true),
-        StructField("IsDepDelayed", StringType, nullable = true),
-        StructField("IsArrDelayed", StringType, nullable = true)))
-
-    val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
-
-    mojo.transform(df).show(3, truncate = false)
-  }
-
-  test("BooleanColumn for mojo predictions") {
-    val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
-      "airlines_boolean.mojo")
-    val data = Seq(
-      Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, true, true),
-      Row(1987, 10, 4, "PS", 1451, "SAN", "SFO", 447, false, true),
-      Row(1987, 10, 6, "PS", 1451, "SAN", "SFO", 447, true, true))
-
-    val schema = StructType(
-      List(
-        StructField("Year", IntegerType, nullable = true),
-        StructField("Month", IntegerType, nullable = true),
-        StructField("DayOfWeek", IntegerType, nullable = true),
-        StructField("UniqueCarrier", StringType, nullable = true),
-        StructField("FlightNum", IntegerType, nullable = true),
-        StructField("Origin", StringType, nullable = true),
-        StructField("Dest", StringType, nullable = true),
-        StructField("Distance", IntegerType, nullable = true),
-        StructField("IsDepDelayed", BooleanType, nullable = true),
-        StructField("IsArrDelayed", BooleanType, nullable = true)))
-
-    val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
-
-    mojo.transform(df).show(3, truncate = false)
+    testModelReload("model_with_boolean_column", testingDF, model)
   }
 
   def compareGbmOnTwoDatasets(reference: DataFrame, tested: DataFrame) = {
@@ -284,7 +238,10 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
   }
 
   private lazy val prostateDataFrame = {
-    spark.read.option("header", "true").option("inferSchema", "true").csv("examples/smalldata/prostate/prostate.csv")
+    spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv("examples/smalldata/prostate/prostate.csv")
   }
 
   private def binomialModelFixture() = {
@@ -465,9 +422,11 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   {
     def numberOfFolds = 3
+
     lazy val gbm = configureGBMForProstateDF()
       .setNfolds(numberOfFolds)
       .setKeepCrossValidationModels(true)
+
     def trainedModel = gbm.fit(prostateDataFrame)
 
     lazy val model = {
