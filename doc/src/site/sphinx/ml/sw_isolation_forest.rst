@@ -30,10 +30,10 @@ See also :ref:`parameters_H2OIsolationForest`.
 
         .. code:: scala
 
-	        import org.apache.spark.SparkFiles
+            import org.apache.spark.SparkFiles
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/anomaly/ecg_discord_train.csv")
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/anomaly/ecg_discord_test.csv")
-	        val trainingDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("ecg_discord_train.csv"))
+            val trainingDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("ecg_discord_train.csv"))
             val testingDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("ecg_discord_test.csv"))
 
         Train the model. You can configure all the available Isolation Forest arguments using provided setters.
