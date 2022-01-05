@@ -83,8 +83,6 @@ abstract class H2OMOJOModel
     new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
   protected var cvScoringHistory =
     new NullableDataFrameArrayParam(this, "cvScoringHistory", "Cross validation scoring history.")
-  protected var reproducibilityInformationTable =
-    new NullableDataFrameArrayParam(this, "reproducibilityInformationTable", "Reproducibility Information Table.")
 
   protected final val featureImportances: NullableDataFrameParam =
     new NullableDataFrameParam(this, "featureImportances", "Feature importances.")
@@ -115,7 +113,6 @@ abstract class H2OMOJOModel
     modelCategory -> null,
     scoringHistory -> null,
     cvScoringHistory -> null,
-    reproducibilityInformationTable -> null,
     featureImportances -> null,
     numberOfCrossValidationModels -> 0,
     startTime -> 0L,
@@ -212,8 +209,6 @@ abstract class H2OMOJOModel
 
   def getCrossValidationScoringHistory(): Array[DataFrame] = $(cvScoringHistory)
 
-  def getReproducibilityInformationTable(): Array[DataFrame] = $(reproducibilityInformationTable)
-
   def getFeatureImportances(): DataFrame = $(featureImportances)
 
   def getCrossValidationModels(): Seq[this.type] = {
@@ -306,7 +301,6 @@ abstract class H2OMOJOModel
     set(this.featureImportances -> extractFeatureImportances(outputJson))
     set(this.featureTypes -> extractFeatureTypes(outputJson))
     set(this.cvScoringHistory -> extractJsonTables(outputJson, "cv_scoring_history"))
-    set(this.reproducibilityInformationTable -> extractJsonTables(outputJson, "reproducibility_information_table"))
     set(this.startTime -> extractJsonFieldValue(outputJson, "start_time", _.getAsLong(), $(startTime)))
     set(this.endTime -> extractJsonFieldValue(outputJson, "end_time", _.getAsLong(), $(endTime)))
     set(this.runTime -> extractJsonFieldValue(outputJson, "run_time", _.getAsLong(), $(runTime)))

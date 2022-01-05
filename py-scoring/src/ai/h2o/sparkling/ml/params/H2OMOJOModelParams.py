@@ -105,9 +105,6 @@ class H2OMOJOModelParams:
     def getCrossValidationScoringHistory(self):
         return H2OTypeConverters.scalaDfArrayToPythonDfArray(self._java_obj.getCrossValidationScoringHistory())
 
-    def getReproducibilityInformationTable(self):
-        return H2OTypeConverters.scalaArrayToPythonArray(self._java_obj.getReproducibilityInformationTable())
-
     def getFeatureImportances(self):
         return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getFeatureImportances())
 

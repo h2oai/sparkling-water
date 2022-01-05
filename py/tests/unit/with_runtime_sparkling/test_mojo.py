@@ -300,16 +300,3 @@ def testGetCrossValidationScoringHistoryWhenDataIsMissing():
     mojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/airlines_boolean.mojo"))
     history = mojo.getCrossValidationScoringHistory()
     assert len(history) == 0
-
-
-def testGetReproducibilityInformationTable():
-    mojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/gbm_cv.mojo"))
-    info = mojo.getReproducibilityInformationTable()
-    assert len(info) == 3
-
-
-def testGetReproducibilityInformationTableWhenDataIsMissing():
-    mojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/airlines_boolean.mojo"))
-    info = mojo.getReproducibilityInformationTable()
-    assert len(info) == 0
-
