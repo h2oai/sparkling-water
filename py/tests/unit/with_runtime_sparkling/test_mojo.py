@@ -286,17 +286,16 @@ def testGetDefaultThreshold():
     assert mojo.getDefaultThreshold() == 0.40858428648438255
 
 
-def testGetCrossValidationScoringHistory():
+def testGetCrossValidationModelsScoringHistory():
     mojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/gbm_cv.mojo"))
-    history = mojo.getCrossValidationScoringHistory()
+    history = mojo.getCrossValidationModelsScoringHistory()
     assert len(history) == 3
     for history_df in history:
-        history_df.show(truncate=False)
         assert len(history_df.columns) == 16
         assert history_df.count() == 3
 
 
-def testGetCrossValidationScoringHistoryWhenDataIsMissing():
+def testGetCrossValidationModelsScoringHistoryWhenDataIsMissing():
     mojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/airlines_boolean.mojo"))
-    history = mojo.getCrossValidationScoringHistory()
+    history = mojo.getCrossValidationModelsScoringHistory()
     assert len(history) == 0

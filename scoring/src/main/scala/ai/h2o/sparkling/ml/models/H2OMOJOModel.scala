@@ -81,8 +81,8 @@ abstract class H2OMOJOModel
     new NullableStringParam(this, "modelCategory", "H2O's model category")
   protected final val scoringHistory: NullableDataFrameParam =
     new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
-  protected var cvScoringHistory =
-    new NullableDataFrameArrayParam(this, "cvScoringHistory", "Cross validation scoring history.")
+  protected var crossValidationModelsScoringHistory =
+    new NullableDataFrameArrayParam(this, "crossValidationModelsScoringHistory", "Cross validation scoring history.")
 
   protected final val featureImportances: NullableDataFrameParam =
     new NullableDataFrameParam(this, "featureImportances", "Feature importances.")
@@ -112,7 +112,7 @@ abstract class H2OMOJOModel
     trainingParams -> Map.empty[String, String],
     modelCategory -> null,
     scoringHistory -> null,
-    cvScoringHistory -> null,
+    crossValidationModelsScoringHistory -> null,
     featureImportances -> null,
     numberOfCrossValidationModels -> 0,
     startTime -> 0L,
@@ -207,7 +207,7 @@ abstract class H2OMOJOModel
 
   def getScoringHistory(): DataFrame = $(scoringHistory)
 
-  def getCrossValidationScoringHistory(): Array[DataFrame] = $(cvScoringHistory)
+  def getCrossValidationModelsScoringHistory(): Array[DataFrame] = $(crossValidationModelsScoringHistory)
 
   def getFeatureImportances(): DataFrame = $(featureImportances)
 
@@ -300,7 +300,7 @@ abstract class H2OMOJOModel
     set(this.scoringHistory -> extractScoringHistory(outputJson))
     set(this.featureImportances -> extractFeatureImportances(outputJson))
     set(this.featureTypes -> extractFeatureTypes(outputJson))
-    set(this.cvScoringHistory -> extractJsonTables(outputJson, "cv_scoring_history"))
+    set(this.crossValidationModelsScoringHistory -> extractJsonTables(outputJson, "cv_scoring_history"))
     set(this.startTime -> extractJsonFieldValue(outputJson, "start_time", _.getAsLong(), $(startTime)))
     set(this.endTime -> extractJsonFieldValue(outputJson, "end_time", _.getAsLong(), $(endTime)))
     set(this.runTime -> extractJsonFieldValue(outputJson, "run_time", _.getAsLong(), $(runTime)))

@@ -531,16 +531,16 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val mojo =
       H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
 
-    val crossValidationScoringHistory = mojo.getCrossValidationScoringHistory()
-    crossValidationScoringHistory.length shouldBe 3
+    val crossValidationModelsScoringHistory = mojo.getCrossValidationModelsScoringHistory()
+    crossValidationModelsScoringHistory.length shouldBe 3
 
-    for (historyDF <- crossValidationScoringHistory) {
+    for (historyDF <- crossValidationModelsScoringHistory) {
       historyDF.columns.length shouldBe 16
       historyDF.count() shouldBe 3L
     }
   }
 
-  test("Cross validation scoring history should be maintained when saving and loading model") {
+  test("Cross validation models scoring history should be maintained when saving and loading model") {
     val mojo =
       H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
 
@@ -549,20 +549,20 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     mojo.write.overwrite.save(modelFolder)
     val reloadedModel = H2OMOJOModel.load(modelFolder)
 
-    reloadedModel.getCrossValidationScoringHistory().length shouldBe 3
-    for (i <- 0 until mojo.getCrossValidationScoringHistory().length) {
+    reloadedModel.getCrossValidationModelsScoringHistory().length shouldBe 3
+    for (i <- 0 until mojo.getCrossValidationModelsScoringHistory().length) {
         TestUtils.assertDataFramesAreIdentical(
-          mojo.getCrossValidationScoringHistory()(i),
-          reloadedModel.getCrossValidationScoringHistory()(i))
+          mojo.getCrossValidationModelsScoringHistory()(i),
+          reloadedModel.getCrossValidationModelsScoringHistory()(i))
     }
   }
 
-  test("getCrossValidationScoringHistory returns empty array when model doesn't contain it") {
+  test("getCrossValidationModelsScoringHistory returns empty array when model doesn't contain it") {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
       "airlines_boolean.mojo")
 
-    mojo.getCrossValidationScoringHistory().length shouldBe 0
+    mojo.getCrossValidationModelsScoringHistory().length shouldBe 0
   }
 
   {

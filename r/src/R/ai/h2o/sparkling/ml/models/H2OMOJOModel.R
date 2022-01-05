@@ -103,8 +103,8 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", methods = list(
   getDefaultThreshold = function() {
     invoke(.self$jmojo, "getDefaultThreshold")
   },
-  getCrossValidationScoringHistory = function() {
-    outputFrame <- invoke(.self$jmojo, "getCrossValidationScoringHistory")
+  getCrossValidationModelsScoringHistory = function() {
+    outputFrame <- invoke(.self$jmojo, "getCrossValidationModelsScoringHistory")
     sdf_register(outputFrame)
   }
 ))
