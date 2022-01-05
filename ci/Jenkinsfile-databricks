@@ -30,12 +30,12 @@ static String getSparklingVersion(props) {
     return "${props['version'].replace("-SNAPSHOT", "")}"
 }
 
-def shWithSWPyEnv(script, returnStdout = false) {
+def shWithSWPyEnv(script) {
     def scriptWithPrefix =  """
         . /envs/sw_env_python3.6/bin/activate
         ${script}
     """
-    return sh(script: scriptWithPrefix, returnStdout: returnStdout)
+    return sh(script: scriptWithPrefix, returnStdout: true)
 }
 
 def startCluster(dbcVersion, sparkMajorVersion) {
@@ -63,7 +63,7 @@ def startCluster(dbcVersion, sparkMajorVersion) {
             "init_scripts": []
         }'
     """
-    def jsonOutput = shWithSWPyEnv(script: script, returnStdout: true).trim()
+    def jsonOutput = shWithSWPyEnv(script).trim()
     def jsonSlurper = new JsonSlurperClassic()
     def cfg = jsonSlurper.parseText(jsonOutput)
     return cfg["cluster_id"]
@@ -72,7 +72,7 @@ def startCluster(dbcVersion, sparkMajorVersion) {
 def waitForCluster(clusterId) {
     def ready = false
     while(!ready) {
-        def json = shWithSWPyEnv(script: "databricks clusters get --cluster-id ${clusterId}", returnStdout: true).trim()
+        def json = shWithSWPyEnv("databricks clusters get --cluster-id ${clusterId}").trim()
         def jsonSlurper = new JsonSlurperClassic()
         def cfg = jsonSlurper.parseText(json)
         ready = cfg["state"] == "RUNNING"
@@ -137,7 +137,7 @@ def test(workspaceDir, clusterId, language) {
     }
     shWithSWPyEnv "databricks workspace import --language ${language} ci/databricksTests/test.${extension} ${workspaceDir}/test.${extension}"
 
-    def rawJson = shWithSWPyEnv(script: """
+    def rawJson = shWithSWPyEnv("""
         databricks runs submit --json '
             {
               "name": "Test ${language}",
@@ -148,7 +148,7 @@ def test(workspaceDir, clusterId, language) {
               "timeout_seconds": 600
             }
             '
-        """, returnStdout: true).trim()
+        """).trim()
     def parsedJson = new JsonSlurperClassic().parseText(rawJson)
     def runId = parsedJson.run_id
     waitForJobToFinish(runId, language, clusterId)
@@ -157,7 +157,7 @@ def test(workspaceDir, clusterId, language) {
 def waitForJobToFinish(jobId, language, clusterId) {
     def done = false
     while(!done) {
-        def rawJson = shWithSWPyEnv(script: "databricks runs get --run-id ${jobId}", returnStdout: true).trim()
+        def rawJson = shWithSWPyEnv("databricks runs get --run-id ${jobId}").trim()
         def parsedJson = new JsonSlurperClassic().parseText(rawJson)
         def status = parsedJson.state.result_state
         if (["FAILED", "TIMEDOUT", "CANCELLED"].contains(status)) {
