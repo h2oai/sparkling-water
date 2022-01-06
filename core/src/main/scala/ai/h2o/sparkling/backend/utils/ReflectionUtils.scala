@@ -210,7 +210,7 @@ object ReflectionUtils {
   }
 
   def isBooleanDomain(domain: Array[String]): Boolean =
-    domain.length == 2 && domain.contains("0") && domain.contains("1")
+    domain.length == 2 && domain.contains("False") && domain.contains("True")
 }
 
 import ai.h2o.sparkling.backend.utils.ReflectionUtils._
