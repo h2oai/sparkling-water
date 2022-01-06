@@ -472,8 +472,8 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   test("getDefaultThreshold returns default value if model doesn't contain the value") {
     val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
-      "airlines_boolean.mojo")
+      this.getClass.getClassLoader.getResourceAsStream("deep_learning_prostate.mojo"),
+      "deep_learning_prostate.mojo")
 
     mojo.getDefaultThreshold() shouldBe 0.0
   }
