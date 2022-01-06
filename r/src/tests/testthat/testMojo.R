@@ -203,7 +203,7 @@ test_that("test cross validation models scoring history", {
 })
 
 test_that("test unavailable cross validation models scoring history", {
-  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/airlines_boolean.mojo")))
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/deep_learning_prostate.mojo")))
   history <- model$getCrossValidationModelsScoringHistory()
   expect_equal(length(history), 0)
 })

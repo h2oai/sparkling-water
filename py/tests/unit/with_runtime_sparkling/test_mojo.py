@@ -296,6 +296,6 @@ def testGetCrossValidationModelsScoringHistory():
 
 
 def testGetCrossValidationModelsScoringHistoryWhenDataIsMissing():
-    mojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/airlines_boolean.mojo"))
+    mojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/deep_learning_prostate.mojo"))
     history = mojo.getCrossValidationModelsScoringHistory()
     assert len(history) == 0
