@@ -98,7 +98,7 @@ static def getDatabricksSparkVersions(props) {
 def waitForArtifactToAttach(clusterId, artifact, type) {
     def ready = false
     while(!ready) {
-        def rawJson = sh(script: "databricks libraries cluster-status --cluster-id ${clusterId}", returnStdout: true).trim()
+        def rawJson = shWithSWPyEnv("databricks libraries cluster-status --cluster-id ${clusterId}").trim()
         def parsedJson = new JsonSlurperClassic().parseText(rawJson)
         def status = parsedJson.library_statuses.find { it.library[type] == "dbfs:/${clusterId}/${artifact}" }.status
         ready = status == "INSTALLED"
