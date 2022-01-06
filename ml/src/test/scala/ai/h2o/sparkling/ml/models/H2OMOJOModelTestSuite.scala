@@ -17,14 +17,12 @@
 
 package ai.h2o.sparkling.ml.models
 
+import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM, H2OGLM}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.functions._
-import _root_.hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import com.google.gson.{Gson, JsonObject}
-import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -103,7 +101,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     assertEqual(mojoModel, model, inputDf)
   }
 
-  test("should not fail when handling boolean column also when loading from file") {
+  test("should not fail when handling boolean column also when loading mojo from file") {
     val prostateDFWithBooleanColumn =
       prostateDataFrame.withColumn("DCAPS", when($"DCAPS".equalTo("2"), true).otherwise(false))
     val Array(trainingDF, testingDF) = prostateDFWithBooleanColumn.randomSplit(Array(0.9, 0.1))
