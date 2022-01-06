@@ -41,7 +41,7 @@ object RowConverter {
         if (row.get(idxRow) != null) {
           f.dataType match {
             case BooleanType =>
-              put(name, row.getBoolean(idxRow).toString)
+              put(name, if (row.getBoolean(idxRow)) "1" else "0")
             case BinaryType =>
               row.getAs[Array[Byte]](idxRow).zipWithIndex.foreach {
                 case (v, idx) =>
