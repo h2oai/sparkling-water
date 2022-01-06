@@ -62,6 +62,8 @@ trait ParametersTemplateBase {
       "String"
     } else if (dataType.isArray) {
       s"Array[${resolveParameterType(dataType.getComponentType)}]"
+    } else if (dataType.getSimpleName == "TwoDimTableV3") {
+      "org.apache.spark.sql.DataFrame"
     } else if (dataType.getSimpleName == "StringPairV3") {
       "(String, String)"
     } else {
@@ -76,6 +78,8 @@ trait ParametersTemplateBase {
       s"${resolveParameterConstructorMethodType(dataType.getComponentType, defaultValue)}Array"
     } else if (dataType.getSimpleName == "StringPairV3") {
       "StringPair"
+    } else if (dataType.getSimpleName == "TwoDimTableV3") {
+      "DataFrame"
     } else {
       dataType.getSimpleName.toLowerCase
     }

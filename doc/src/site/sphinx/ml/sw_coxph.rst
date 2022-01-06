@@ -5,7 +5,7 @@ Train CoxPH Model in Sparkling Water
 
 Sparkling Water provides API for H2O CoxPH in Scala and Python.
 The following sections describe how to train the CoxPH model in Sparkling Water in both languages.
-See also :ref:`parameters_H2OCoxPH`.
+See also :ref:`parameters_H2OCoxPH` and :ref:`model_details_H2OCoxPHMOJOModel`.
 
 .. content-tabs::
 
@@ -47,17 +47,13 @@ See also :ref:`parameters_H2OCoxPH`.
                 setLabelCol("event")
             val model = estimator.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
-
-        .. code:: scala
-
-            model.getModelDetails()
-
         Run Predictions
 
         .. code:: scala
 
             model.transform(testingDF).show(false)
+
+        You can also get model details via calling methods listed in :ref:`model_details_H2OCoxPHMOJOModel`.
 
 
     .. tab-container:: Python
@@ -98,15 +94,11 @@ See also :ref:`parameters_H2OCoxPH`.
                 .setLabelCol('event')
             model = estimator.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
-
-        .. code:: python
-
-            model.getModelDetails()
-
         Run Predictions
 
         .. code:: python
 
             model.transform(testingDF).show(truncate = False)
+
+        You can also get model details via calling methods listed in :ref:`model_details_H2OCoxPHMOJOModel`.
 
