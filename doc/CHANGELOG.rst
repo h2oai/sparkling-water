@@ -1,6 +1,46 @@
 Change Log
 ==========
 
+v3.36.0.1-1 (2022-01-06)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.0.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.0.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.0.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.0.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.0.1-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.0.1-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.0.1-1-3.1/index.html>`__
+
+-  Improvement
+
+   -  `SW-2676 <https://0xdata.atlassian.net/browse/SW-2676>`__ - Change Domain Levels to "True" and "False" for Columns Originating in BooleanType
+   -  `SW-2672 <https://0xdata.atlassian.net/browse/SW-2672>`__ - Upgrade to H2O 3.36.0.1
+   -  `SW-2637 <https://0xdata.atlassian.net/browse/SW-2637>`__ - Log Progress about Trained models to stout
+   -  `SW-2634 <https://0xdata.atlassian.net/browse/SW-2634>`__ - Display Warnings Coming from ModelBuilders on stdout
+   -  `SW-2629 <https://0xdata.atlassian.net/browse/SW-2629>`__ - Rewrite H2OWord2Vec to Inherit from H2OFeatureEstimator
+   -  `SW-2611 <https://0xdata.atlassian.net/browse/SW-2611>`__ - Upgrade Sparkling Water Snapshot Version to 3.36.0.1-1-SNAPSHOT
+
+-  Bug
+
+   -  `SW-2673 <https://0xdata.atlassian.net/browse/SW-2673>`__ - ChicagoCrimeApp example not working
+   -  `SW-2671 <https://0xdata.atlassian.net/browse/SW-2671>`__ - Google Storage import test not working
+   -  `SW-2645 <https://0xdata.atlassian.net/browse/SW-2645>`__ - Target column (boolean) is treated as numeric, makes classification become regression
+
+-  Engineering Story
+
+   -  `SW-2670 <https://0xdata.atlassian.net/browse/SW-2670>`__ - Fix Databricks Smoke Tests 
+   -  `SW-2653 <https://0xdata.atlassian.net/browse/SW-2653>`__ - Snyk Security Vulnerability Scanning Integration
+   -  `SW-2527 <https://0xdata.atlassian.net/browse/SW-2527>`__ - Remove Deprecated Parameter `withDetailedPredictionCol` from MOJOSettings
+
+-  Docs
+
+   -  `SW-2665 <https://0xdata.atlassian.net/browse/SW-2665>`__ - Migrate H2ORuleFit tutorial from H2O documentation to SW
+
+-  New Feature
+
+   -  `SW-2663 <https://0xdata.atlassian.net/browse/SW-2663>`__ - Expose "start_time",   "end_time",     "run_time",     "default_threshold" on H2OMOJOModel
+   -  `SW-2639 <https://0xdata.atlassian.net/browse/SW-2639>`__ - Expose Fields of Model Output on H2OMOJOModel Classes as Getters
+
 v3.34.0.7-1 (2021-12-22)
 ------------------------
 Downloads:
