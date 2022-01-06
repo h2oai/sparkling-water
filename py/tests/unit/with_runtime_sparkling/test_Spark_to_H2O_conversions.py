@@ -69,8 +69,8 @@ def testIntegerRDDToH2OFrame(spark, hc):
 def testBooleanRDDToH2OFrame(spark, hc):
     rdd = spark.sparkContext.parallelize([True, False, True, True, False])
     h2o_frame = hc.asH2OFrame(rdd)
-    assert h2o_frame[0, 0] == '1'
-    assert h2o_frame[1, 0] == '0'
+    assert h2o_frame[0, 0] == 'True'
+    assert h2o_frame[1, 0] == 'False'
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
 
 

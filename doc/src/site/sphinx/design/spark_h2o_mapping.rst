@@ -70,4 +70,4 @@ As is specified in the table, Sparkling Water provides support for transforming 
 
 .. rubric:: Footnotes
 .. [1] The H20 type is String if cardinality is greater than 10 000 0000 or ratio of unique values to all values is 95% or higher.
-.. [2] The H20 categorical values are "1" and "0" for true and false respectively.
+.. [2] The H20 categorical values are "True" and "False" for true and false respectively.
