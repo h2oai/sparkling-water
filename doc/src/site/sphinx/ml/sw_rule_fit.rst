@@ -36,17 +36,26 @@ in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit` and 
 
         .. code:: scala
 
-	        import org.apache.spark.SparkFiles
-            spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
-	        val sparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
-            val trainingDF = sparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
+            import org.apache.spark.SparkFiles
+            spark.sparkContext.addFile("https://s3.amazonaws.com/h2o-public-test-data/smalldata/gbm_test/titanic.csv")
+            val rawSparkDF = spark.read
+                .option("header", "true")
+                .option("inferSchema", "true")
+                .csv(SparkFiles.get("titanic.csv"))
+            val Array(trainingDF, testingDF) = rawSparkDF.randomSplit(Array(0.8, 0.2), seed = 1L)
 
         Train the model. You can configure all the available RuleFit arguments using provided setters, such as the label column.
 
         .. code:: scala
 
             import ai.h2o.sparkling.ml.algos.H2ORuleFit
-            val estimator = new H2ORuleFit().setLabelCol("CAPSULE")
+            val estimator = new H2ORuleFit()
+                .setMaxRuleLength(10)
+                .setMaxNumRules(100)
+                .setSeed(1)
+                .setLabelCol("survived")
+                .setColumnsToCategorical(Array("pclass", "survived"))
+                .setFeaturesCols(Array("age", "sibsp", "parch", "fare", "sex", "pclass"))
             val model = estimator.fit(trainingDF)
 
         By default, the ``H2ORuleFit`` algorithm distinguishes between a classification and regression problem based on the type of
@@ -63,6 +72,11 @@ in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit` and 
 
         You can also get model details via calling methods listed in :ref:`model_details_H2ORuleFitMOJOModel`.
 
+        Run Predictions
+
+        .. code:: scala
+
+            model.transform(testingDF).show(false)
 
     .. tab-container:: Python
         :title: Python
@@ -85,16 +99,22 @@ in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit` and 
         .. code:: python
 
             import h2o
-            frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
+            frame = h2o.import_file("https://s3.amazonaws.com/h2o-public-test-data/smalldata/gbm_test/titanic.csv")
             sparkDF = hc.asSparkFrame(frame)
-            trainingDF = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
+            [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2], seed = 1)
 
         Train the model. You can configure all the available RuleFit arguments using provided setters or constructor parameters, such as the label column.
 
         .. code:: python
 
             from pysparkling.ml import H2ORuleFit
-            estimator = H2ORuleFit(labelCol = "CAPSULE")
+            estimator = H2ORuleFit() \
+                .setMaxRuleLength(10) \
+                .setMaxNumRules(100) \
+                .setSeed(1) \
+                .setLabelCol("survived") \
+                .setColumnsToCategorical(["pclass", "survived"]) \
+                .setFeaturesCols(["age", "sibsp", "parch", "fare", "sex", "pclass"])
             model = estimator.fit(trainingDF)
 
         By default, the ``H2ORuleFit`` algorithm distinguishes between a classification and regression problem based on the type of
@@ -109,3 +129,9 @@ in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit` and 
             model.getRuleImportance().show(truncate = False)
 
         You can also get model details via calling methods listed in :ref:`model_details_H2ORuleFitMOJOModel`.
+        
+        Run Predictions
+
+        .. code:: python
+
+            model.transform(testingDF).show(truncate = False)
