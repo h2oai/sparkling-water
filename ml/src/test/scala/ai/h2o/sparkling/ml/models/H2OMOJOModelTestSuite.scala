@@ -561,7 +561,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
   test("getCrossValidationModelsScoringHistory returns empty array when model doesn't contain it") {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("deep_learning_prostate.mojo"),
-      "airlines_boolean.mojo")
+      "deep_learning_prostate.mojo")
 
     mojo.getCrossValidationModelsScoringHistory().length shouldBe 0
   }
