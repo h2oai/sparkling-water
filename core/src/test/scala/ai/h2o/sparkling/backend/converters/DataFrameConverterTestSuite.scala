@@ -272,8 +272,8 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     val domain = h2oFrame.columns(0).domain
     domain should have size 2
-    domain should contain("0")
-    domain should contain("1")
+    domain should contain("False")
+    domain should contain("True")
     h2oFrame.delete()
   }
 
