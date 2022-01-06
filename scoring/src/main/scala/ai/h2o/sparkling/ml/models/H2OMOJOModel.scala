@@ -82,7 +82,7 @@ abstract class H2OMOJOModel
   protected final val scoringHistory: NullableDataFrameParam =
     new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
   protected var crossValidationModelsScoringHistory =
-    new NullableDataFrameArrayParam(this, "crossValidationModelsScoringHistory", "Cross validation scoring history.")
+    new NullableDataFrameArrayParam(this, "crossValidationModelsScoringHistory", "Cross validation models scoring history.")
 
   protected final val featureImportances: NullableDataFrameParam =
     new NullableDataFrameParam(this, "featureImportances", "Feature importances.")
