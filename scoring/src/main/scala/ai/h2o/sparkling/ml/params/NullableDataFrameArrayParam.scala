@@ -34,9 +34,6 @@ class NullableDataFrameArrayParam(
   def this(parent: HasDataFrameSerializer, name: String, doc: String) =
     this(parent, name, doc, _ => true)
 
-  private lazy val serializerClassName = parent.getDataFrameSerializer()
-  private lazy val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
-
   /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
   def w(value: java.util.List[DataFrame]): ParamPair[Array[DataFrame]] =
     w(value.asScala.toArray)
@@ -45,18 +42,23 @@ class NullableDataFrameArrayParam(
     val encoded = if (value == null) {
       JNull
     } else {
-      JArray(value.toList.map(jsonEncodeDF))
+      val serializerClassName = parent.getDataFrameSerializer()
+      val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
+
+      JObject(
+        JField("serializer", JString(serializerClassName)),
+        JField("dataframes", JArray(value.toList.map(jsonEncodeDF(_, serializer))))
+      )
     }
 
     compact(render(encoded))
   }
 
-  def jsonEncodeDF(dataFrame: DataFrame): JValue = {
+  def jsonEncodeDF(dataFrame: DataFrame, serializer: DataFrameSerializer): JValue = {
     if (dataFrame == null) {
       JNull
     } else {
-      val serializedValue = serializer.serialize(dataFrame)
-      JObject(JField("serializer", JString(serializerClassName)), JField("value", serializedValue))
+      serializer.serialize(dataFrame)
     }
   }
 
@@ -64,25 +66,25 @@ class NullableDataFrameArrayParam(
     parse(json) match {
       case JNull =>
         null
-      case JArray(values) =>
-        values.map(jsonDecodeDF).toArray
+      case JObject(fields) =>
+        val fieldsMap = fields.toMap[String, JValue]
+
+        val serializerClassName = fieldsMap("serializer").asInstanceOf[JString].values
+        val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
+
+        val serializedDataFrames = fieldsMap("dataframes")
+        serializedDataFrames.children.map(jsonDecodeDF(_, serializer)).toArray
       case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to Array[Double].")
+        throw new IllegalArgumentException(s"Cannot decode $json to Array[DataFrame].")
     }
   }
 
-  def jsonDecodeDF(json: JValue): DataFrame = {
+  def jsonDecodeDF(json: JValue, serializer: DataFrameSerializer): DataFrame = {
     json match {
       case JNull =>
         null
-      case JObject(fields) =>
-        val fieldsMap = fields.toMap[String, JValue]
-        val deserializerClassName = fieldsMap("serializer").asInstanceOf[JString].values
-        val deserializer = Class.forName(deserializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
-        val serializedValue = fieldsMap("value")
-        deserializer.deserialize(serializedValue)
       case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to DataFrame.")
+        serializer.deserialize(json)
     }
   }
 }
