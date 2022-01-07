@@ -47,8 +47,7 @@ class NullableDataFrameArrayParam(
 
       JObject(
         JField("serializer", JString(serializerClassName)),
-        JField("dataframes", JArray(value.toList.map(jsonEncodeDF(_, serializer))))
-      )
+        JField("dataframes", JArray(value.toList.map(jsonEncodeDF(_, serializer)))))
     }
 
     compact(render(encoded))
