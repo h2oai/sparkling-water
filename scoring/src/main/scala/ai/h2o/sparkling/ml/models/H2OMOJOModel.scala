@@ -27,13 +27,14 @@ import ai.h2o.sparkling.ml.utils.Utils
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson._
 import hex.ModelCategory
-import org.apache.spark.ml.param.{IntParam, LongParam, DoubleParam, ParamMap}
+import org.apache.spark.ml.param.{DoubleParam, IntParam, LongParam, ParamMap}
 import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import _root_.hex.genmodel.attributes.Table.ColumnType
 import ai.h2o.sparkling.api.generation.common.MetricNameConverter
 import ai.h2o.sparkling.ml.metrics.H2OMetrics
+import org.apache.spark.SparkFiles
 import org.apache.spark.expose.Logging
 import org.apache.spark.ml.Model
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
@@ -207,7 +208,7 @@ abstract class H2OMOJOModel
   def getModelSummary(): DataFrame = $(modelSummary)
 
   def getDomainValues(): Map[String, Array[String]] = {
-    val mojo = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val mojo = unwrapMojoModel()
     val columns = mojo.getNames
     columns.map(col => col -> mojo.getDomainValues(col)).toMap
   }
@@ -252,11 +253,13 @@ abstract class H2OMOJOModel
 
   def getDefaultThreshold(): Double = $(defaultThreshold)
 
+  private var h2oMojoModel: MojoModel = null
+
   /**
     * The method returns an internal H2O-3 mojo model, which can be subsequently used with
     * [[EasyPredictModelWrapper]] to perform predictions on individual rows.
     */
-  def unwrapMojoModel(): _root_.hex.genmodel.MojoModel = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+  def unwrapMojoModel(): _root_.hex.genmodel.MojoModel = h2oMojoModel
 
   protected override def applyPredictionUdfToFlatDataFrame(
       flatDataFrame: DataFrame,
@@ -265,8 +268,8 @@ abstract class H2OMOJOModel
     val relevantColumnNames = getRelevantColumnNames(flatDataFrame, inputs)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)
-    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-    predictWrapper.getModelCategory match {
+
+    unwrapMojoModel().getModelCategory match {
       case ModelCategory.Binomial | ModelCategory.Regression | ModelCategory.Multinomial | ModelCategory.Ordinal =>
         // Methods of EasyPredictModelWrapper for given prediction categories take offset as parameter.
         // Propagation of offset to EasyPredictModelWrapper was introduced with H2OSupervisedMOJOModel.
@@ -323,28 +326,48 @@ abstract class H2OMOJOModel
         _.getAsDouble(),
         $(defaultThreshold)))
     setOutputParameters(outputJson)
+    h2oMojoModel = mojoModel
   }
 
   private[sparkling] def setOutputParameters(outputSection: JsonObject): Unit = {}
 
-  private[sparkling] def setEasyPredictModelWrapperConfiguration(
-      config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
-    config.setConvertUnknownCategoricalLevelsToNa(this.getConvertUnknownCategoricalLevelsToNa())
-    config.setConvertInvalidNumbersToNa(this.getConvertInvalidNumbersToNa())
-    // always let H2O produce full output, filter later if required
-    config.setUseExtendedOutput(true)
-    config
+  private[sparkling] def getEasyPredictModelWrapperConfigurationInitializers()
+      : Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config] = {
+    val convertUnknownCategoricalLevelsToNa = this.getConvertUnknownCategoricalLevelsToNa()
+    val convertInvalidNumbersToNa = this.getConvertInvalidNumbersToNa()
+
+    ((config: EasyPredictModelWrapper.Config) =>
+      config.setConvertUnknownCategoricalLevelsToNa(convertUnknownCategoricalLevelsToNa)) ::
+      ((config: EasyPredictModelWrapper.Config) => config.setConvertInvalidNumbersToNa(convertInvalidNumbersToNa)) ::
+      ((config: EasyPredictModelWrapper.Config) => config.setUseExtendedOutput(true)) ::
+      Nil
   }
 
   private[sparkling] def loadEasyPredictModelWrapper(): EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
-    val mojo = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val mojo = H2OMOJOCache.getMojoBackend(uid, getMojo)
     config.setModel(mojo)
-    setEasyPredictModelWrapperConfiguration(config)
+    getEasyPredictModelWrapperConfigurationInitializers().foreach(_(config))
     new EasyPredictModelWrapper(config)
   }
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
+
+  val unserializableField = if (System.getProperty("spark.testing", "false") == "true") {
+    new UnserializableClass()
+  } else {
+    null
+  }
+}
+
+class UnserializableClass extends Serializable {
+  private def readObject(aInputStream: java.io.ObjectInputStream): Unit = {
+    throw new UnsupportedOperationException("Serialization is not supported!")
+  }
+
+  private def writeObject(aOutputStream: java.io.ObjectOutputStream): Unit = {
+    throw new UnsupportedOperationException("Serialization is not supported!")
+  }
 
   override def toString: String = {
     def mapToString(prefix: String, metricsMap: Map[String, Any], msgWhenEmpty: String = "") =
@@ -381,6 +404,18 @@ abstract class H2OMOJOModel
 }
 
 trait H2OMOJOModelUtils extends Logging {
+
+  private[sparkling] def loadEasyPredictModelWrapper(
+      modelUID: String,
+      mojoFileName: String,
+      configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config])
+      : EasyPredictModelWrapper = {
+    val mojo = H2OMOJOCache.getMojoBackend(modelUID, () => new File(SparkFiles.get(mojoFileName)))
+    val config = new EasyPredictModelWrapper.Config()
+    config.setModel(mojo)
+    configInitializers.foreach(_(config))
+    new EasyPredictModelWrapper(config)
+  }
 
   private def removeMetaField(json: JsonElement): JsonElement = {
     if (json.isJsonObject) {
@@ -653,6 +688,6 @@ abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojo: Cl
   }
 }
 
-object H2OMOJOCache extends H2OMOJOBaseCache[MojoModel, H2OMOJOModel] {
-  override def loadMojoBackend(mojo: File, model: H2OMOJOModel): MojoModel = Utils.getMojoModel(mojo)
+object H2OMOJOCache extends H2OMOJOBaseCache[MojoModel] {
+  override def loadMojoBackend(mojo: File): MojoModel = Utils.getMojoModel(mojo)
 }

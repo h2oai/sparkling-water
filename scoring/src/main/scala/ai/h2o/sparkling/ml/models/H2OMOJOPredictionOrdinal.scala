@@ -22,6 +22,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.col
 import ai.h2o.sparkling.sql.functions.udf
+import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
@@ -29,10 +30,18 @@ import scala.collection.mutable
 
 trait H2OMOJOPredictionOrdinal {
   self: H2OAlgorithmMOJOModel =>
-  def getOrdinalPredictionUDF(): UserDefinedFunction = {
-    val schema = getOrdinalPredictionSchema()
+
+  private val predictionColType = StringType
+  private val predictionColNullable = true
+
+  def getOrdinalPredictionUDF(
+      schema: StructType,
+      modelUID: String,
+      mojoFileName: String,
+      configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config])
+      : UserDefinedFunction = {
     val function = (r: Row, offset: Double) => {
-      val model = loadEasyPredictModelWrapper()
+      val model = H2OMOJOModel.loadEasyPredictModelWrapper(modelUID, mojoFileName, configInitializers)
       val pred = model.predictOrdinal(RowConverter.toH2ORowData(r), offset)
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.label
@@ -41,9 +50,6 @@ trait H2OMOJOPredictionOrdinal {
     }
     udf(function, schema)
   }
-
-  private val predictionColType = StringType
-  private val predictionColNullable = true
 
   def getOrdinalPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))

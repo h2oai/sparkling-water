@@ -20,6 +20,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.col
 import ai.h2o.sparkling.sql.functions.udf
+import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
@@ -28,10 +29,17 @@ import scala.collection.mutable
 trait H2OMOJOPredictionClustering {
   self: H2OAlgorithmMOJOModel =>
 
-  def getClusteringPredictionUDF(): UserDefinedFunction = {
-    val schema = getClusteringPredictionSchema()
+  private val predictionColType = IntegerType
+  private val predictionColNullable = true
+
+  def getClusteringPredictionUDF(
+      schema: StructType,
+      modelUID: String,
+      mojoFileName: String,
+      configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config])
+      : UserDefinedFunction = {
     val function = (r: Row) => {
-      val model = loadEasyPredictModelWrapper()
+      val model = H2OMOJOModel.loadEasyPredictModelWrapper(modelUID, mojoFileName, configInitializers)
       val pred = model.predictClustering(RowConverter.toH2ORowData(r))
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.cluster
@@ -41,9 +49,6 @@ trait H2OMOJOPredictionClustering {
     }
     udf(function, schema)
   }
-
-  private val predictionColType = IntegerType
-  private val predictionColNullable = true
 
   def getClusteringPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))

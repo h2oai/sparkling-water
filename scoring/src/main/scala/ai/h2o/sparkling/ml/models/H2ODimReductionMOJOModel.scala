@@ -33,8 +33,12 @@ trait H2ODimReductionMOJOModel extends H2OFeatureMOJOModel with H2ODimReductionE
 
   protected override def mojoUDF: UserDefinedFunction = {
     val schema = StructType(outputSchema)
+    val uid = this.uid
+    val mojoFileName = this.mojoFileName
+    val configInitializers = getEasyPredictModelWrapperConfigurationInitializers()
+    val reconstructedEnabled = this.reconstructedEnabled
     val function = (r: Row) => {
-      val model = loadEasyPredictModelWrapper()
+      val model = H2OMOJOModel.loadEasyPredictModelWrapper(uid, mojoFileName, configInitializers)
       val pred = model.predictDimReduction(RowConverter.toH2ORowData(r))
       val output = new DenseVector(pred.dimensions).compressed
       val rowData = if (reconstructedEnabled) {

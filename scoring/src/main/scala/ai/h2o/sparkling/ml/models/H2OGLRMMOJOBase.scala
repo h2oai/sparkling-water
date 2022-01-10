@@ -24,11 +24,14 @@ trait H2OGLRMMOJOBase extends H2ODimReductionMOJOModel with H2OGLRMExtraParams {
 
   protected override def reconstructedEnabled: Boolean = getWithReconstructedCol()
 
-  private[sparkling] override def setEasyPredictModelWrapperConfiguration(
-      config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
-    super.setEasyPredictModelWrapperConfiguration(config)
-    config.setGLRMIterNumber(getMaxScoringIterations())
-    config.setEnableGLRMReconstrut(getWithReconstructedCol())
-    config
+  private[sparkling] override def getEasyPredictModelWrapperConfigurationInitializers()
+      : Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config] = {
+    val superInitializers = super.getEasyPredictModelWrapperConfigurationInitializers()
+    val maxScoringIterations = getMaxScoringIterations()
+    val enableGLRMReconstruct = getWithReconstructedCol()
+
+    superInitializers ++
+      (((config: EasyPredictModelWrapper.Config) => config.setGLRMIterNumber(maxScoringIterations)) ::
+        ((config: EasyPredictModelWrapper.Config) => config.setEnableGLRMReconstrut(enableGLRMReconstruct)) :: Nil)
   }
 }
