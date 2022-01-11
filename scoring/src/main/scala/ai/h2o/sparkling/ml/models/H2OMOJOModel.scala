@@ -253,7 +253,7 @@ abstract class H2OMOJOModel
 
   def getDefaultThreshold(): Double = $(defaultThreshold)
 
-  private var h2oMojoModel: MojoModel = null
+  private[sparkling] var h2oMojoModel: MojoModel = null
 
   /**
     * The method returns an internal H2O-3 mojo model, which can be subsequently used with
@@ -345,7 +345,7 @@ abstract class H2OMOJOModel
 
   private[sparkling] def loadEasyPredictModelWrapper(): EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
-    val mojo = H2OMOJOCache.getMojoBackend(uid, getMojo)
+    val mojo = unwrapMojoModel()
     config.setModel(mojo)
     getEasyPredictModelWrapperConfigurationInitializers().foreach(_(config))
     new EasyPredictModelWrapper(config)
@@ -353,14 +353,14 @@ abstract class H2OMOJOModel
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
-  val unserializableField = if (System.getProperty("spark.testing", "false") == "true") {
-    new UnserializableClass()
+  val nonSerializableField = if (System.getProperty("spark.testing", "false") == "true") {
+    new NonSerializableClass()
   } else {
     null
   }
 }
 
-class UnserializableClass extends Serializable {
+class NonSerializableClass extends Serializable {
   private def readObject(aInputStream: java.io.ObjectInputStream): Unit = {
     throw new UnsupportedOperationException("Serialization is not supported!")
   }

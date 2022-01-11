@@ -35,8 +35,8 @@ trait H2OMOJOPrediction
   self: H2OAlgorithmMOJOModel =>
 
   def extractPredictionColContent(): Column = {
-    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo)
-    predictWrapper.getModelCategory match {
+    val mojoModel = unwrapMojoModel()
+    mojoModel.getModelCategory match {
       case ModelCategory.Binomial => extractBinomialPredictionColContent()
       case ModelCategory.Regression => extractRegressionPredictionColContent()
       case ModelCategory.Multinomial => extractMultinomialPredictionColContent()
@@ -46,12 +46,12 @@ trait H2OMOJOPrediction
       case ModelCategory.AnomalyDetection => extractAnomalyPredictionColContent()
       case ModelCategory.Ordinal => extractOrdinalPredictionColContent()
       case ModelCategory.CoxPH => extractCoxPHPredictionColContent()
-      case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
+      case _ => throw new RuntimeException("Unknown model category " + mojoModel.getModelCategory)
     }
   }
 
   def getPredictionUDF(): UserDefinedFunction = {
-    val mojoModel = H2OMOJOCache.getMojoBackend(uid, getMojo)
+    val mojoModel = unwrapMojoModel()
     val schema = getPredictionSchema()
     val configInitializers = getEasyPredictModelWrapperConfigurationInitializers()
     mojoModel.getModelCategory match {
@@ -70,8 +70,8 @@ trait H2OMOJOPrediction
   }
 
   def getPredictionColSchema(): Seq[StructField] = {
-    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo)
-    predictWrapper.getModelCategory match {
+    val mojoModel = unwrapMojoModel()
+    mojoModel.getModelCategory match {
       case ModelCategory.Binomial => getBinomialPredictionColSchema()
       case ModelCategory.Regression => getRegressionPredictionColSchema()
       case ModelCategory.Multinomial => getMultinomialPredictionColSchema()
@@ -81,7 +81,7 @@ trait H2OMOJOPrediction
       case ModelCategory.AnomalyDetection => getAnomalyPredictionColSchema()
       case ModelCategory.Ordinal => getOrdinalPredictionColSchema()
       case ModelCategory.CoxPH => getCoxPHPredictionColSchema()
-      case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
+      case _ => throw new RuntimeException("Unknown model category " + mojoModel.getModelCategory)
     }
   }
 
@@ -90,8 +90,8 @@ trait H2OMOJOPrediction
   }
 
   def getPredictionSchema(): StructType = {
-    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo)
-    predictWrapper.getModelCategory match {
+    val mojoModel = unwrapMojoModel()
+    mojoModel.getModelCategory match {
       case ModelCategory.Binomial => getBinomialPredictionSchema()
       case ModelCategory.Regression => getRegressionPredictionSchema()
       case ModelCategory.Multinomial => getMultinomialPredictionSchema()
@@ -101,7 +101,7 @@ trait H2OMOJOPrediction
       case ModelCategory.AnomalyDetection => getAnomalyPredictionSchema()
       case ModelCategory.Ordinal => getOrdinalPredictionSchema()
       case ModelCategory.CoxPH => getCoxPHPredictionSchema()
-      case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
+      case _ => throw new RuntimeException("Unknown model category " + mojoModel.getModelCategory)
     }
   }
 }
