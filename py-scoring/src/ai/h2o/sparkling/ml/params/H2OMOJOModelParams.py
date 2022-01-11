@@ -102,6 +102,9 @@ class H2OMOJOModelParams:
     def getScoringHistory(self):
         return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getScoringHistory())
 
+    def getCrossValidationModelsScoringHistory(self):
+        return H2OTypeConverters.scalaDfArrayToPythonDfArray(self._java_obj.getCrossValidationModelsScoringHistory())
+
     def getFeatureImportances(self):
         return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getFeatureImportances())
 

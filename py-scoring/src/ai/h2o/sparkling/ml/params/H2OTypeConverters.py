@@ -519,3 +519,12 @@ class H2OTypeConverters(object):
             return DataFrame(jdf, sqlContext)
         else:
             raise TypeError("Invalid type.")
+
+    @staticmethod
+    def scalaDfArrayToPythonDfArray(array):
+        if array is None:
+            return None
+        elif isinstance(array, JavaObject):
+            return [H2OTypeConverters.scalaToPythonDataFrame(v) for v in array]
+        else:
+            raise TypeError("Invalid type.")

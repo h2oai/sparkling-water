@@ -261,23 +261,41 @@ def testMetricObjects(prostateDataset):
     assert model.getValidationMetricsObject() is None
     assert model.getValidationMetrics() == {}
 
+
 def testGetStartTime():
     mojo = H2OMOJOModel.createFromMojo(
         "file://" + os.path.abspath("../ml/src/test/resources/multi_model_iris.mojo"))
     assert mojo.getStartTime() == 1631392711317
+
 
 def testGetEndTime():
     mojo = H2OMOJOModel.createFromMojo(
         "file://" + os.path.abspath("../ml/src/test/resources/multi_model_iris.mojo"))
     assert mojo.getEndTime() == 1631392711360
 
+
 def testGetRunTime():
     mojo = H2OMOJOModel.createFromMojo(
         "file://" + os.path.abspath("../ml/src/test/resources/multi_model_iris.mojo"))
     assert mojo.getRunTime() == 43
+
 
 def testGetDefaultThreshold():
     mojo = H2OMOJOModel.createFromMojo(
         "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
     assert mojo.getDefaultThreshold() == 0.40858428648438255
 
+
+def testGetCrossValidationModelsScoringHistory():
+    mojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/gbm_cv.mojo"))
+    history = mojo.getCrossValidationModelsScoringHistory()
+    assert len(history) == 3
+    for history_df in history:
+        assert len(history_df.columns) == 16
+        assert history_df.count() == 3
+
+
+def testGetCrossValidationModelsScoringHistoryWhenDataIsMissing():
+    mojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/deep_learning_prostate.mojo"))
+    history = mojo.getCrossValidationModelsScoringHistory()
+    assert len(history) == 0

@@ -196,4 +196,16 @@ test_that("test default threshold", {
   expect_equal(threshold, 0.40858428648438255)
 })
 
+test_that("test cross validation models scoring history", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/gbm_cv.mojo")))
+  history <- model$getCrossValidationModelsScoringHistory()
+  expect_equal(length(history), 3)
+})
+
+test_that("test unavailable cross validation models scoring history", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/deep_learning_prostate.mojo")))
+  history <- model$getCrossValidationModelsScoringHistory()
+  expect_equal(length(history), 0)
+})
+
 spark_disconnect(sc)
