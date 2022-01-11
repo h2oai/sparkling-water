@@ -484,6 +484,44 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     mojo.getDefaultThreshold() shouldBe 0.5
   }
 
+  test("getCrossValidationScoringHistory returns histories when they are available") {
+    val mojo =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
+
+    val crossValidationModelsScoringHistory = mojo.getCrossValidationModelsScoringHistory()
+    crossValidationModelsScoringHistory.length shouldBe 3
+
+    for (historyDF <- crossValidationModelsScoringHistory) {
+      historyDF.columns.length shouldBe 16
+      historyDF.count() shouldBe 3L
+    }
+  }
+
+  test("Cross validation models scoring history should be maintained when saving and loading model") {
+    val mojo =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
+
+    val name = "cv_scoring_history_reload.mojo"
+    val modelFolder = tempFolder(name)
+    mojo.write.overwrite.save(modelFolder)
+    val reloadedModel = H2OMOJOModel.load(modelFolder)
+
+    reloadedModel.getCrossValidationModelsScoringHistory().length shouldBe 3
+    for (i <- 0 until mojo.getCrossValidationModelsScoringHistory().length) {
+      TestUtils.assertDataFramesAreIdentical(
+        mojo.getCrossValidationModelsScoringHistory()(i),
+        reloadedModel.getCrossValidationModelsScoringHistory()(i))
+    }
+  }
+
+  test("getCrossValidationModelsScoringHistory returns empty array when model doesn't contain it") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("deep_learning_prostate.mojo"),
+      "deep_learning_prostate.mojo")
+
+    mojo.getCrossValidationModelsScoringHistory().length shouldBe 0
+  }
+
   {
     def numberOfFolds = 3
 
