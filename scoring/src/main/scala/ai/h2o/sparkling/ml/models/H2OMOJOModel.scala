@@ -27,7 +27,7 @@ import ai.h2o.sparkling.ml.utils.Utils
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson._
 import hex.ModelCategory
-import org.apache.spark.ml.param.{IntParam, ParamMap}
+import org.apache.spark.ml.param.{IntParam, LongParam, DoubleParam, ParamMap}
 import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
@@ -75,7 +75,7 @@ abstract class H2OMOJOModel
   protected final val crossValidationMetricsSummary: NullableDataFrameParam = new NullableDataFrameParam(
     parent = this,
     name = "crossValidationMetricsSummary",
-    doc = "Cross validation metrics summary contains information about performance of individual folds" +
+    doc = "Cross validation metrics summary contains information about performance of individual folds " +
       "according to various model metrics.")
   protected final val trainingParams: MapStringStringParam =
     new MapStringStringParam(this, "trainingParams", "Training params")
@@ -83,12 +83,27 @@ abstract class H2OMOJOModel
     new NullableStringParam(this, "modelCategory", "H2O's model category")
   protected final val scoringHistory: NullableDataFrameParam =
     new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
+  protected var crossValidationModelsScoringHistory =
+    new NullableDataFrameArrayParam(
+      this,
+      "crossValidationModelsScoringHistory",
+      "Cross validation models scoring history.")
+
   protected final val featureImportances: NullableDataFrameParam =
     new NullableDataFrameParam(this, "featureImportances", "Feature importances.")
 
   private[sparkling] final val numberOfCrossValidationModels: IntParam =
     new IntParam(this, "numberOfCrossValidationModels", "Number of cross validation models.")
   protected var crossValidationModels: Array[H2OMOJOModel] = null
+
+  protected final val startTime: LongParam =
+    new LongParam(this, "startTime", "Start time in milliseconds")
+  protected final val endTime: LongParam =
+    new LongParam(this, "endTime", "End time in milliseconds")
+  protected final val runTime: LongParam =
+    new LongParam(this, "runTime", "Runtime in milliseconds")
+  protected final val defaultThreshold: DoubleParam =
+    new DoubleParam(this, "defaultThreshold", "Default threshold used for predictions of classification models")
 
   setDefault(
     modelDetails -> null,
@@ -102,8 +117,13 @@ abstract class H2OMOJOModel
     trainingParams -> Map.empty[String, String],
     modelCategory -> null,
     scoringHistory -> null,
+    crossValidationModelsScoringHistory -> null,
     featureImportances -> null,
-    numberOfCrossValidationModels -> 0)
+    numberOfCrossValidationModels -> 0,
+    startTime -> 0L,
+    endTime -> 0L,
+    runTime -> 0L,
+    defaultThreshold -> 0.0)
 
   /**
     * Returns a map of all metrics of the Double type calculated on the training dataset.
@@ -194,6 +214,8 @@ abstract class H2OMOJOModel
 
   def getScoringHistory(): DataFrame = $(scoringHistory)
 
+  def getCrossValidationModelsScoringHistory(): Array[DataFrame] = $(crossValidationModelsScoringHistory)
+
   def getFeatureImportances(): DataFrame = $(featureImportances)
 
   def getCrossValidationModels(): Seq[this.type] = {
@@ -217,6 +239,18 @@ abstract class H2OMOJOModel
     }
     this
   }
+
+  protected def nullableDataFrameParam(name: String, doc: String): NullableDataFrameParam = {
+    new NullableDataFrameParam(this, name, doc)
+  }
+
+  def getStartTime(): Long = $(startTime)
+
+  def getEndTime(): Long = $(endTime)
+
+  def getRunTime(): Long = $(runTime)
+
+  def getDefaultThreshold(): Double = $(defaultThreshold)
 
   /**
     * The method returns an internal H2O-3 mojo model, which can be subsequently used with
@@ -278,7 +312,20 @@ abstract class H2OMOJOModel
     set(this.scoringHistory -> extractScoringHistory(outputJson))
     set(this.featureImportances -> extractFeatureImportances(outputJson))
     set(this.featureTypes -> extractFeatureTypes(outputJson))
+    set(this.crossValidationModelsScoringHistory -> extractJsonTables(outputJson, "cv_scoring_history"))
+    set(this.startTime -> extractJsonFieldValue(outputJson, "start_time", _.getAsLong(), $(startTime)))
+    set(this.endTime -> extractJsonFieldValue(outputJson, "end_time", _.getAsLong(), $(endTime)))
+    set(this.runTime -> extractJsonFieldValue(outputJson, "run_time", _.getAsLong(), $(runTime)))
+    set(
+      this.defaultThreshold -> extractJsonFieldValue(
+        outputJson,
+        "default_threshold",
+        _.getAsDouble(),
+        $(defaultThreshold)))
+    setOutputParameters(outputJson)
   }
+
+  private[sparkling] def setOutputParameters(outputSection: JsonObject): Unit = {}
 
   private[sparkling] def setEasyPredictModelWrapperConfiguration(
       config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
@@ -433,6 +480,19 @@ trait H2OMOJOModelUtils extends Logging {
     }
   }
 
+  protected def jsonFieldToDoubleArray(outputJson: JsonObject, fieldName: String): Array[Double] = {
+    if (outputJson == null || !outputJson.has(fieldName)) {
+      null
+    } else {
+      val element = outputJson.get(fieldName)
+      if (element.isJsonNull) {
+        null
+      } else {
+        element.getAsJsonArray().iterator().asScala.map(_.getAsDouble).toArray
+      }
+    }
+  }
+
   protected def jsonFieldToDataFrame(outputJson: JsonObject, fieldName: String): DataFrame = {
     if (outputJson == null || !outputJson.has(fieldName) || outputJson.get(fieldName).isJsonNull) {
       null
@@ -478,6 +538,19 @@ trait H2OMOJOModelUtils extends Logging {
     if (df != null && df.columns.contains("-")) df.drop("-") else df
   }
 
+  protected def extractJsonTables(outputJson: JsonObject, fieldName: String): Array[DataFrame] = {
+    if (outputJson == null || !outputJson.has(fieldName) || outputJson.get(fieldName).isJsonNull) {
+      Array.empty[DataFrame]
+    } else {
+      val tables = outputJson.getAsJsonArray(fieldName)
+      for (table <- tables.asScala.toArray) yield {
+        val jsonTableObject = new JsonObject()
+        jsonTableObject.add("wrapped_table", table)
+        jsonFieldToDataFrame(jsonTableObject, "wrapped_table")
+      }
+    }
+  }
+
   protected def extractFeatureImportances(outputJson: JsonObject): DataFrame = {
     jsonFieldToDataFrame(outputJson, "variable_importances")
   }
@@ -504,6 +577,18 @@ trait H2OMOJOModelUtils extends Logging {
       withSWNamesDF
     } else {
       null
+    }
+  }
+
+  protected def extractJsonFieldValue[T](
+      outputJson: JsonObject,
+      fieldName: String,
+      getValue: JsonElement => T,
+      defaultValue: T): T = {
+    if (outputJson == null || !outputJson.has(fieldName) || outputJson.get(fieldName).isJsonNull) {
+      defaultValue
+    } else {
+      getValue(outputJson.get(fieldName))
     }
   }
 

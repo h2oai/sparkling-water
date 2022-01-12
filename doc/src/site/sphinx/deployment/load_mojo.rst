@@ -327,6 +327,8 @@ We can configure the output and format of predictions via the H2OMOJOSettings. T
 Methods available on MOJO Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- See :ref:`model_details` for methods available on particular model types.
+
 Obtaining Domain Values
 ^^^^^^^^^^^^^^^^^^^^^^^
 

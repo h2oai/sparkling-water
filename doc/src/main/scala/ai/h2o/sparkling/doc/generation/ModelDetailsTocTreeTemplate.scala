@@ -15,23 +15,31 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.api.generation.common
+package ai.h2o.sparkling.doc.generation
 
-trait ConfigurationsBase {
-  val ignoredCols = ExplicitField("ignored_columns", "HasIgnoredCols", null, None, Some("HasIgnoredColsOnMOJO"))
-
-  val defaultValuesOfCommonParameters = Map(
-    "convertUnknownCategoricalLevelsToNa" -> false,
-    "convertInvalidNumbersToNa" -> false,
-    "validationDataFrame" -> null,
-    "splitRatio" -> 1.0,
-    "columnsToCategorical" -> Array.empty[String],
-    "keepBinaryModels" -> false,
-    "dataFrameSerializer" -> "ai.h2o.sparkling.utils.JSONDataFrameSerializer")
-
-  def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = Seq.empty
-
-  def parametersConfiguration: Seq[ParameterSubstitutionContext] = Seq.empty
-
-  def modelOutputConfiguration: Seq[ModelOutputSubstitutionContext] = Seq.empty
+object ModelDetailsTocTreeTemplate {
+  def apply(algorithmModels: Seq[Class[_]], featureTransformerModels: Seq[Class[_]]): String = {
+    val algorithmItems = algorithmModels.map(algorithm => s"   model_details_${algorithm.getSimpleName}").mkString("\n")
+    val featureItems =
+      featureTransformerModels.map(feature => s"   model_details_${feature.getSimpleName}").mkString("\n")
+    s""".. _model_details:
+       |
+       |Model Details
+       |=============
+       |
+       |**Algorithm Models**
+       |
+       |.. toctree::
+       |   :maxdepth: 2
+       |
+       |$algorithmItems
+       |
+       |**Feature Transformer Models**
+       |
+       |.. toctree::
+       |   :maxdepth: 2
+       |
+       |$featureItems
+    """.stripMargin
+  }
 }

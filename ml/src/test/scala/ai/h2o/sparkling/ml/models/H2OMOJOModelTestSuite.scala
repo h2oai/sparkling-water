@@ -17,13 +17,12 @@
 
 package ai.h2o.sparkling.ml.models
 
+import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM, H2OGLM}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.functions._
-import _root_.hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -102,58 +101,13 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     assertEqual(mojoModel, model, inputDf)
   }
 
-  test("BooleanColumn as String for mojo predictions") {
-    val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
-      "airlines_boolean.mojo")
-    val data = Seq(
-      Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, "true", "true"),
-      Row(1987, 10, 4, "PS", 1451, "SAN", "SFO", 447, "false", "true"),
-      Row(1987, 10, 6, "PS", 1451, "SAN", "SFO", 447, "true", "true"))
+  test("should not fail when handling boolean column also when loading mojo from file") {
+    val prostateDFWithBooleanColumn =
+      prostateDataFrame.withColumn("DCAPS", when($"DCAPS".equalTo("2"), true).otherwise(false))
+    val Array(trainingDF, testingDF) = prostateDFWithBooleanColumn.randomSplit(Array(0.9, 0.1))
+    val model = configureGBMForProstateDF().fit(trainingDF)
 
-    val schema = StructType(
-      List(
-        StructField("Year", IntegerType, nullable = true),
-        StructField("Month", IntegerType, nullable = true),
-        StructField("DayOfWeek", IntegerType, nullable = true),
-        StructField("UniqueCarrier", StringType, nullable = true),
-        StructField("FlightNum", IntegerType, nullable = true),
-        StructField("Origin", StringType, nullable = true),
-        StructField("Dest", StringType, nullable = true),
-        StructField("Distance", IntegerType, nullable = true),
-        StructField("IsDepDelayed", StringType, nullable = true),
-        StructField("IsArrDelayed", StringType, nullable = true)))
-
-    val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
-
-    mojo.transform(df).show(3, truncate = false)
-  }
-
-  test("BooleanColumn for mojo predictions") {
-    val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
-      "airlines_boolean.mojo")
-    val data = Seq(
-      Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, true, true),
-      Row(1987, 10, 4, "PS", 1451, "SAN", "SFO", 447, false, true),
-      Row(1987, 10, 6, "PS", 1451, "SAN", "SFO", 447, true, true))
-
-    val schema = StructType(
-      List(
-        StructField("Year", IntegerType, nullable = true),
-        StructField("Month", IntegerType, nullable = true),
-        StructField("DayOfWeek", IntegerType, nullable = true),
-        StructField("UniqueCarrier", StringType, nullable = true),
-        StructField("FlightNum", IntegerType, nullable = true),
-        StructField("Origin", StringType, nullable = true),
-        StructField("Dest", StringType, nullable = true),
-        StructField("Distance", IntegerType, nullable = true),
-        StructField("IsDepDelayed", BooleanType, nullable = true),
-        StructField("IsArrDelayed", BooleanType, nullable = true)))
-
-    val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
-
-    mojo.transform(df).show(3, truncate = false)
+    testModelReload("model_with_boolean_column", testingDF, model)
   }
 
   def compareGbmOnTwoDatasets(reference: DataFrame, tested: DataFrame) = {
@@ -284,7 +238,10 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
   }
 
   private lazy val prostateDataFrame = {
-    spark.read.option("header", "true").option("inferSchema", "true").csv("examples/smalldata/prostate/prostate.csv")
+    spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv("examples/smalldata/prostate/prostate.csv")
   }
 
   private def binomialModelFixture() = {
@@ -463,11 +420,115 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     }
   }
 
+  test("getStartType is exposed for loaded model") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
+      "multi_model_iris.mojo")
+
+    mojo.getStartTime() shouldBe 1631392711317L
+  }
+
+  test("getStartType is exposed for freshly trained model") {
+    val (_, mojo) = multinomialModelFixture()
+
+    mojo.getStartTime() should not be 0L
+  }
+
+  test("getEndTime is exposed for loaded model") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
+      "multi_model_iris.mojo")
+
+    mojo.getEndTime() shouldBe 1631392711360L
+  }
+
+  test("getEndTime is exposed for trained model") {
+    val (_, mojo) = multinomialModelFixture()
+
+    mojo.getEndTime() should not be 0L
+  }
+
+  test("getRunTime is exposed for loaded model") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
+      "multi_model_iris.mojo")
+
+    mojo.getRunTime() shouldBe 43L
+  }
+
+  test("getRunTime is exposed for trained model") {
+    val (_, mojo) = multinomialModelFixture()
+
+    mojo.getRunTime() should not be 0L
+  }
+
+  test("getDefaultThreshold is exposed for loaded model") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("binom_model_prostate.mojo"),
+      "binom_model_prostate.mojo")
+
+    mojo.getDefaultThreshold() shouldBe 0.40858428648438255
+  }
+
+  test("getDefaultThreshold returns default value if model doesn't contain the value") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("deep_learning_prostate.mojo"),
+      "deep_learning_prostate.mojo")
+
+    mojo.getDefaultThreshold() shouldBe 0.0
+  }
+
+  test("getDefaultThreshold is exposed for trained model") {
+    val (_, mojo) = multinomialModelFixture()
+
+    mojo.getDefaultThreshold() shouldBe 0.5
+  }
+
+  test("getCrossValidationScoringHistory returns histories when they are available") {
+    val mojo =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
+
+    val crossValidationModelsScoringHistory = mojo.getCrossValidationModelsScoringHistory()
+    crossValidationModelsScoringHistory.length shouldBe 3
+
+    for (historyDF <- crossValidationModelsScoringHistory) {
+      historyDF.columns.length shouldBe 16
+      historyDF.count() shouldBe 3L
+    }
+  }
+
+  test("Cross validation models scoring history should be maintained when saving and loading model") {
+    val mojo =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
+
+    val name = "cv_scoring_history_reload.mojo"
+    val modelFolder = tempFolder(name)
+    mojo.write.overwrite.save(modelFolder)
+    val reloadedModel = H2OMOJOModel.load(modelFolder)
+
+    reloadedModel.getCrossValidationModelsScoringHistory().length shouldBe 3
+    for (i <- 0 until mojo.getCrossValidationModelsScoringHistory().length) {
+      TestUtils.assertDataFramesAreIdentical(
+        mojo.getCrossValidationModelsScoringHistory()(i),
+        reloadedModel.getCrossValidationModelsScoringHistory()(i))
+    }
+  }
+
+  test("getCrossValidationModelsScoringHistory returns empty array when model doesn't contain it") {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("deep_learning_prostate.mojo"),
+      "deep_learning_prostate.mojo")
+
+    mojo.getCrossValidationModelsScoringHistory().length shouldBe 0
+  }
+
   {
     def numberOfFolds = 3
+
     lazy val gbm = configureGBMForProstateDF()
       .setNfolds(numberOfFolds)
       .setKeepCrossValidationModels(true)
+
     def trainedModel = gbm.fit(prostateDataFrame)
 
     lazy val model = {
