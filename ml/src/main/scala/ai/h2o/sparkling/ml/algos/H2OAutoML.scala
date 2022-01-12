@@ -103,8 +103,16 @@ class H2OAutoML(override val uid: String)
     }
 
     deleteRegisteredH2OFrames()
-    getAllModels().headOption match {
-      case Some(model) => model
+    val models = getAllModels()
+    models.headOption match {
+      case Some(model) =>
+        if (H2OContext.get().forall(_.getConf.isModelPrintAfterTrainingEnabled)) {
+          println(
+            s"${models.length} models trained. For more details use the getLeaderboard() method on the AutoML object.")
+          println("Returning leader model and printing info about it below.")
+          println(model)
+        }
+        model
       case None =>
         throw new RuntimeException(
           "No model has been trained! Try to increase the value of the maxRuntimeSecs parameter and call the method again.")

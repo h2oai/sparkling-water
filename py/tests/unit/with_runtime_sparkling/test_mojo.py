@@ -260,3 +260,34 @@ def testMetricObjects(prostateDataset):
     compareMetricValues(model.getCurrentMetricsObject(), model.getCurrentMetrics())
     assert model.getValidationMetricsObject() is None
     assert model.getValidationMetrics() == {}
+
+
+def testGetModelSummary():
+    mojo = H2OMOJOModel.createFromMojo(
+        "file://" + os.path.abspath("../ml/src/test/resources/deep_learning_prostate.mojo"))
+    summary = mojo.getModelSummary()
+
+    assert summary.count() == 4
+    assert summary.columns == ["Layer", "Units", "Type", "Dropout", "L1", "L2", "Mean Rate", "Rate RMS", "Momentum",
+                               "Mean Weight", "Weight RMS", "Mean Bias", "Bias RMS"]
+
+    collected_summary = summary.collect()
+    assert collected_summary[0].asDict() == {'Layer': 1, 'Units': 8, 'Type': 'Input', 'Dropout': 0.0, 'L1': None,
+                                             'L2': None, 'Mean Rate': None, 'Rate RMS': None, 'Momentum': None,
+                                             'Mean Weight': None, 'Weight RMS': None, 'Mean Bias': None,
+                                             'Bias RMS': None}
+    assert collected_summary[1].asDict() == {'Layer': 2, 'Units': 200, 'Type': 'Rectifier', 'Dropout': 0.0, 'L1': 0.0,
+                                             'L2': 0.0, 'Mean Rate': 0.006225864375919627,
+                                             'Rate RMS': 0.0030197836458683014, 'Momentum': 0.0,
+                                             'Mean Weight': 0.0020895117304439736, 'Weight RMS': 0.09643048048019409,
+                                             'Mean Bias': 0.42625558799512825, 'Bias RMS': 0.049144044518470764}
+    assert collected_summary[2].asDict() == {'Layer': 3, 'Units': 200, 'Type': 'Rectifier', 'Dropout': 0.0, 'L1': 0.0,
+                                             'L2': 0.0, 'Mean Rate': 0.04241905607206281,
+                                             'Rate RMS': 0.09206506609916687, 'Momentum': 0.0,
+                                             'Mean Weight': -0.008243563556700311, 'Weight RMS': 0.06984925270080566,
+                                             'Mean Bias': 0.9844640783479953, 'Bias RMS': 0.008990883827209473}
+    assert collected_summary[3].asDict() == {'Layer': 4, 'Units': 1, 'Type': 'Linear', 'Dropout': None, 'L1': 0.0,
+                                             'L2': 0.0, 'Mean Rate': 0.0006254940157668898,
+                                             'Rate RMS': 0.0009573120623826981, 'Momentum': 0.0,
+                                             'Mean Weight': 0.0009763148391539289, 'Weight RMS': 0.06601589918136597,
+                                             'Mean Bias': 0.002604305485232783, 'Bias RMS': 1.0971281125650402e-154}

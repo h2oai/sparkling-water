@@ -176,11 +176,15 @@ class H2OGridSearch(override val uid: String)
           H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId))
       }
     } else {
-      sortedGridModels.map { case (modelId, _) => H2OModel(modelId).tryDelete() }
+      sortedGridModels.foreach { case (modelId, _) => H2OModel(modelId).tryDelete() }
     }
     algo.deleteRegisteredH2OFrames()
     deleteRegisteredH2OFrames()
-    gridModels.head
+    val result: H2OMOJOModel = gridModels.head
+    if (H2OContext.get().forall(_.getConf.isModelPrintAfterTrainingEnabled)) {
+      println(result)
+    }
+    result
   }
 
   def getBinaryModel(): H2OBinaryModel = {
