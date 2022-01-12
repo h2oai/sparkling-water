@@ -43,7 +43,8 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", methods = list(
     invoke(.self$jmojo, "getModelDetails")
   },
   getModelSummary = function() {
-    invoke(.self$jmojo, "getModelSummary")
+    outputFrame <- invoke(.self$jmojo, "getModelSummary")
+    sdf_register(outputFrame)
   },
   getDomainValues = function() {
     invoke(.self$jmojo, "getDomainValues")
