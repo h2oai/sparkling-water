@@ -23,7 +23,6 @@ Downloads:
 -  Bug
 
    -  `SW-2673 <https://0xdata.atlassian.net/browse/SW-2673>`__ - ChicagoCrimeApp example not working
-   -  `SW-2671 <https://0xdata.atlassian.net/browse/SW-2671>`__ - Google Storage import test not working
    -  `SW-2645 <https://0xdata.atlassian.net/browse/SW-2645>`__ - Target column (boolean) is treated as numeric, makes classification become regression
 
 -  Engineering Story
@@ -40,6 +39,24 @@ Downloads:
 
    -  `SW-2663 <https://0xdata.atlassian.net/browse/SW-2663>`__ - Expose "start_time",   "end_time",     "run_time",     "default_threshold" on H2OMOJOModel
    -  `SW-2639 <https://0xdata.atlassian.net/browse/SW-2639>`__ - Expose Fields of Model Output on H2OMOJOModel Classes as Getters
+
+v3.34.0.8-1 (2022-01-14)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.34.0.8-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.34.0.8-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.34.0.8-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.34.0.8-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.34.0.8-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.34.0.8-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.34.0.8-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.34.0.8-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.34.0.8-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.34.0.8-1-3.1/index.html>`__
+
+-  Improvement
+
+   -  `SW-2678 <https://0xdata.atlassian.net/browse/SW-2678>`__ - Upgrade to H2O 3.34.0.8
+
+-  Bug
+
+   -  `SW-2671 <https://0xdata.atlassian.net/browse/SW-2671>`__ - Google Storage import test not working
 
 v3.34.0.7-1 (2021-12-22)
 ------------------------
