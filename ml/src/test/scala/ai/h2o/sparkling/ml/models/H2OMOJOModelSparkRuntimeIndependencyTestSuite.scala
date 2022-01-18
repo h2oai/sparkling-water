@@ -67,7 +67,7 @@ class H2OMOJOModelSparkRuntimeIndependencyTestSuite extends FunSuite with Matche
     val memoryStream = new ByteArrayOutputStream()
     val writer = new ObjectOutputStream(memoryStream)
 
-    intercept[NotSerializableException]{
+    intercept[NotSerializableException] {
       writer.writeObject(swMojoModel)
     }
   }
