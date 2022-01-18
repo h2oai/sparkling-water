@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.ml.models
 
 import java.io.{File, InputStream}
-
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
 import _root_.hex.genmodel.{MojoModel, MojoReaderBackendFactory}
@@ -32,7 +31,6 @@ import org.apache.spark.ml.param.{IntParam, LongParam, DoubleParam, ParamMap}
 import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import _root_.hex.genmodel.attributes.Table.ColumnType
 import ai.h2o.sparkling.api.generation.common.MetricNameConverter
 import ai.h2o.sparkling.ml.metrics.H2OMetrics
@@ -41,7 +39,9 @@ import org.apache.spark.ml.Model
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 
+import java.lang.System.lineSeparator
 import scala.collection.JavaConverters._
+import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag
 
 abstract class H2OMOJOModel
@@ -58,6 +58,8 @@ abstract class H2OMOJOModel
   H2OMOJOCache.startCleanupThread()
   protected final val modelDetails: NullableStringParam =
     new NullableStringParam(this, "modelDetails", "Raw details of this model.")
+  protected final val modelSummary: NullableDataFrameParam =
+    new NullableDataFrameParam(this, "modelSummary", "Short summary of this model.")
   protected final val trainingMetrics: MapStringDoubleParam =
     new MapStringDoubleParam(this, "trainingMetrics", "Training metrics represented as a map.")
   protected final val trainingMetricsObject: NullableMetricsParam =
@@ -195,6 +197,8 @@ abstract class H2OMOJOModel
 
   def getModelDetails(): String = $(modelDetails)
 
+  def getModelSummary(): DataFrame = $(modelSummary)
+
   def getDomainValues(): Map[String, Array[String]] = {
     val mojo = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
     val columns = mojo.getNames
@@ -295,6 +299,7 @@ abstract class H2OMOJOModel
     set(this.crossValidationMetricsSummary -> extractCrossValidationMetricsSummary(modelJson))
     set(this.trainingParams -> extractParams(modelJson))
     set(this.modelCategory -> modelCategory.toString)
+    set(this.modelSummary -> extractModelSummary(outputJson))
     set(this.scoringHistory -> extractScoringHistory(outputJson))
     set(this.featureImportances -> extractFeatureImportances(outputJson))
     set(this.featureTypes -> extractFeatureTypes(outputJson))
@@ -330,6 +335,39 @@ abstract class H2OMOJOModel
   }
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
+
+  override def toString: String = {
+    def mapToString(prefix: String, metricsMap: Map[String, Any], msgWhenEmpty: String = "") =
+      Option(metricsMap)
+        .filter(_.nonEmpty)
+        .map(_.map(entry => entry._1 + ": " + entry._2))
+        .map(_.mkString(start = prefix, sep = lineSeparator, end = lineSeparator))
+        .getOrElse(msgWhenEmpty)
+    val summary = Option(getModelSummary())
+    val fieldNames = summary.map(_.schema.fieldNames).getOrElse(Array.empty)
+    val collectedSummary = summary.map(_.collect()).getOrElse(Array.empty)
+    val modelSummaryRowsAsMaps = collectedSummary.map(getRowValuesMapPreservingOrder(_, fieldNames))
+    val modelName = getClass.getSimpleName.replace("MOJOModel", "")
+    s"""Model Details
+       |===============
+       |$modelName
+       |Model Key: $uid
+       |
+       |Model summary
+       |${modelSummaryRowsAsMaps.map(mapToString("", _)).mkString(lineSeparator)}
+       |""".stripMargin +
+      mapToString(s"Training metrics$lineSeparator", getTrainingMetrics()) +
+      mapToString(s"${lineSeparator}Validation metrics$lineSeparator", getValidationMetrics()) +
+      mapToString(s"${lineSeparator}Cross validation metrics$lineSeparator", getCrossValidationMetrics()) +
+      s"${lineSeparator}More info available using methods like:$lineSeparator" +
+      "getFeatureImportances(), getScoringHistory(), getCrossValidationScoringHistory()"
+  }
+
+  private def getRowValuesMapPreservingOrder[T](row: Row, fieldNames: Seq[String]) = {
+    val fieldPairs = fieldNames.map(name => (name, row.getAs[T](name)))
+    ListMap(fieldPairs: _*)
+  }
+
 }
 
 trait H2OMOJOModelUtils extends Logging {
@@ -382,6 +420,11 @@ trait H2OMOJOModelUtils extends Logging {
       }
       metrics.sorted(H2OMetricOrdering).map(pair => (pair._1.name(), pair._2)).toMap
     }
+  }
+
+  protected[models] def extractModelSummary(outputJson: JsonObject): DataFrame = {
+    val df = jsonFieldToDataFrame(outputJson, "model_summary")
+    if (df != null && df.columns.contains("-")) df.drop("-") else df
   }
 
   protected def extractMetricsObject(
