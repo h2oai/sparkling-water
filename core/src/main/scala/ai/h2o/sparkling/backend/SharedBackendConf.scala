@@ -41,6 +41,9 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def isProgressBarEnabled: Boolean = sparkConf.getBoolean(PROP_PROGRESS_BAR_ENABLED._1, PROP_PROGRESS_BAR_ENABLED._2)
 
+  def isModelPrintAfterTrainingEnabled: Boolean =
+    sparkConf.getBoolean(PROP_MODEL_PRINT_AFTER_TRAINING._1, PROP_MODEL_PRINT_AFTER_TRAINING._2)
+
   def scalaIntDefaultNum: Int = sparkConf.getInt(PROP_SCALA_INT_DEFAULT_NUM._1, PROP_SCALA_INT_DEFAULT_NUM._2)
 
   def isClusterTopologyListenerEnabled: Boolean =
@@ -192,6 +195,10 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setProgressBarEnabled(): H2OConf = set(PROP_PROGRESS_BAR_ENABLED._1, value = true)
 
   def setProgressBarDisabled(): H2OConf = set(PROP_PROGRESS_BAR_ENABLED._1, value = false)
+
+  def setModelPrintAfterTrainingEnabled(): H2OConf = set(PROP_MODEL_PRINT_AFTER_TRAINING._1, value = true)
+
+  def setModelPrintAfterTrainingDisabled(): H2OConf = set(PROP_MODEL_PRINT_AFTER_TRAINING._1, value = false)
 
   def setDefaultNumReplSessions(numSessions: Int): H2OConf = set(PROP_SCALA_INT_DEFAULT_NUM._1, numSessions.toString)
 
@@ -377,6 +384,13 @@ object SharedBackendConf {
     """setProgressBarEnabled()
       |setProgressBarDisabled()""".stripMargin,
     "Decides whether to display progress bar related to H2O jobs on stdout or not.")
+
+  val PROP_MODEL_PRINT_AFTER_TRAINING: BooleanOption = (
+    "spark.ext.h2o.model.print.after.training.enabled",
+    true,
+    """setModelPrintAfterTrainingEnabled()
+      |setModelPrintAfterTrainingDisabled()""".stripMargin,
+    "Decides whether to display model info on stdout after training or not.")
 
   val PROP_REPL_ENABLED: BooleanOption = (
     "spark.ext.h2o.repl.enabled",
