@@ -17,7 +17,6 @@
 package ai.h2o.sparkling.ml.algos
 
 import java.util
-
 import ai.h2o.sparkling.api.generation.common.IgnoredParameters
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEncodingUtils}
@@ -27,7 +26,7 @@ import ai.h2o.sparkling.ml.models.{H2OBinaryModel, H2OMOJOModel, H2OMOJOSettings
 import ai.h2o.sparkling.ml.params.H2OGridSearchParams
 import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, H2OParamsReadable}
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import ai.h2o.sparkling.{H2OContext, H2OFrame}
+import ai.h2o.sparkling.{H2OConf, H2OContext, H2OFrame}
 import hex.Model
 import hex.grid.HyperSpaceSearchCriteria
 import hex.schemas.GridSchemaV99
@@ -112,8 +111,7 @@ class H2OGridSearch(override val uid: String)
       .mkString("{", ",", "}")
   }
 
-  private def getGridModels(gridId: String, algoName: String): Array[(String, H2OMOJOModel)] = {
-    val conf = H2OContext.ensure().getConf
+  private def getGridModels(gridId: String, algoName: String, conf: H2OConf): Array[(String, H2OMOJOModel)] = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val skippedFields = Seq(
       (classOf[GridSchemaV99], "cross_validation_metrics_summary"),
@@ -160,7 +158,8 @@ class H2OGridSearch(override val uid: String)
           case _ => throw e
         }
     }
-    val unsortedGridModels = getGridModels(gridId, algoName)
+    val conf = H2OContext.ensure().getConf
+    val unsortedGridModels = getGridModels(gridId, algoName, conf)
     if (unsortedGridModels.isEmpty) {
       throw new RuntimeException(
         "No model has been trained! Review the defined hyper-parameter space or try to increase " +
@@ -181,7 +180,7 @@ class H2OGridSearch(override val uid: String)
     algo.deleteRegisteredH2OFrames()
     deleteRegisteredH2OFrames()
     val result: H2OMOJOModel = gridModels.head
-    if (H2OContext.get().forall(_.getConf.isModelPrintAfterTrainingEnabled)) {
+    if (conf.isModelPrintAfterTrainingEnabled) {
       println(result)
     }
     result

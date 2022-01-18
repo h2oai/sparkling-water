@@ -624,7 +624,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     }
   }
 
-  test("should return model summary") {
+  test("H2ODeepLearningMOJOModel should return model summary") {
     val (_, mojoModel) = savedDeepLearningModel()
 
     val summary = mojoModel.getModelSummary()
@@ -704,6 +704,37 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
           "L2" -> 0.0,
           "Weight RMS" -> 0.06601589918136597,
           "Type" -> "Linear"))
+  }
+
+  test("H2OGBMMOJOModel should return model summary") {
+    val (_, mojoModel) = savedBinomialModel()
+
+    val summary = mojoModel.getModelSummary()
+    val summaryCollected = summary.collect()
+
+    summaryCollected should have size 1
+    val expectedFields = Array(
+      "Number of Trees",
+      "Number of Internal Trees",
+      "Model Size in Bytes",
+      "Min. Depth",
+      "Max. Depth",
+      "Mean Depth",
+      "Min. Leaves",
+      "Max. Leaves",
+      "Mean Leaves")
+    summary.schema.fieldNames should contain theSameElementsAs expectedFields
+    summaryCollected.map(_.getValuesMap(expectedFields)).head should contain theSameElementsAs
+      Map(
+        "Min. Depth" -> 5,
+        "Max. Leaves" -> 24,
+        "Number of Internal Trees" -> 2,
+        "Min. Leaves" -> 22,
+        "Mean Depth" -> 5.0,
+        "Number of Trees" -> 2,
+        "Model Size in Bytes" -> 694,
+        "Max. Depth" -> 5,
+        "Mean Leaves" -> 23.0)
   }
 
   test("should return formatted model description with all the deep learning layers included") {

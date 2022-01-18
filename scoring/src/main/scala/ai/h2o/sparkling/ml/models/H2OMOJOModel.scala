@@ -351,7 +351,7 @@ abstract class H2OMOJOModel
       Option(metricsMap)
         .filter(_.nonEmpty)
         .map(_.map(entry => entry._1 + ": " + entry._2))
-        .map(metrics => s"${metrics.mkString(start = prefix, sep = lineSeparator, end = lineSeparator)}")
+        .map(_.mkString(start = prefix, sep = lineSeparator, end = lineSeparator))
         .getOrElse(msgWhenEmpty)
     val summary = Option(getModelSummary())
     val fieldNames = summary.map(_.schema.fieldNames).getOrElse(Array.empty)
