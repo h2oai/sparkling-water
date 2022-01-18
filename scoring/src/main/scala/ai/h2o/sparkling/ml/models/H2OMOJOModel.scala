@@ -332,15 +332,14 @@ abstract class H2OMOJOModel
   private[sparkling] def setOutputParameters(outputSection: JsonObject): Unit = {}
 
   private[sparkling] def getEasyPredictModelWrapperConfigurationInitializers()
-      : Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config] = {
+      : Seq[EasyPredictModelWrapperConfigurationInitializer] = {
     val convertUnknownCategoricalLevelsToNa = this.getConvertUnknownCategoricalLevelsToNa()
     val convertInvalidNumbersToNa = this.getConvertInvalidNumbersToNa()
 
-    ((config: EasyPredictModelWrapper.Config) =>
-      config.setConvertUnknownCategoricalLevelsToNa(convertUnknownCategoricalLevelsToNa)) ::
-      ((config: EasyPredictModelWrapper.Config) => config.setConvertInvalidNumbersToNa(convertInvalidNumbersToNa)) ::
-      ((config: EasyPredictModelWrapper.Config) => config.setUseExtendedOutput(true)) ::
-      Nil
+    Seq[EasyPredictModelWrapperConfigurationInitializer](
+      _.setConvertUnknownCategoricalLevelsToNa(convertUnknownCategoricalLevelsToNa),
+      _.setConvertInvalidNumbersToNa(convertInvalidNumbersToNa),
+      _.setUseExtendedOutput(true))
   }
 
   private[sparkling] def loadEasyPredictModelWrapper(): EasyPredictModelWrapper = {
@@ -353,20 +352,10 @@ abstract class H2OMOJOModel
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
-  val nonSerializableField = if (System.getProperty("spark.testing", "false") == "true") {
-    new NonSerializableClass()
+  val nonSerializableField = if (System.getProperty("spark.testing", "false").toBoolean) {
+    new Object() // Object is not serializable.
   } else {
     null
-  }
-}
-
-class NonSerializableClass extends Serializable {
-  private def readObject(aInputStream: java.io.ObjectInputStream): Unit = {
-    throw new UnsupportedOperationException("Serialization is not supported!")
-  }
-
-  private def writeObject(aOutputStream: java.io.ObjectOutputStream): Unit = {
-    throw new UnsupportedOperationException("Serialization is not supported!")
   }
 
   override def toString: String = {
@@ -405,11 +394,13 @@ class NonSerializableClass extends Serializable {
 
 trait H2OMOJOModelUtils extends Logging {
 
+  private[sparkling] type EasyPredictModelWrapperConfigurationInitializer =
+    (EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config
+
   private[sparkling] def loadEasyPredictModelWrapper(
       modelUID: String,
       mojoFileName: String,
-      configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config])
-      : EasyPredictModelWrapper = {
+      configInitializers: Seq[EasyPredictModelWrapperConfigurationInitializer]): EasyPredictModelWrapper = {
     val mojo = H2OMOJOCache.getMojoBackend(modelUID, () => new File(SparkFiles.get(mojoFileName)))
     val config = new EasyPredictModelWrapper.Config()
     config.setModel(mojo)

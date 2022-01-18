@@ -17,20 +17,21 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.io.ObjectInputStream
+import java.io.{ByteArrayOutputStream, NotSerializableException, ObjectOutputStream}
 
-import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
+import org.apache.spark.sql.SparkSession
 import org.scalatest.{FunSuite, Matchers}
 
 class H2OMOJOModelSparkRuntimeIndependencyTestSuite extends FunSuite with Matchers {
+  def createSparkSession(): SparkSession = SparkSession.builder().master("local[*]").getOrCreate()
+
   test("Score with internal MOJO without Spark runtime") {
-    val swMojoModel =
-      withResource(this.getClass.getClassLoader.getResourceAsStream("SerializedH2OMOJOModel")) { inputStream =>
-        withResource(new ObjectInputStream(inputStream)) { objectInputStream =>
-          objectInputStream.readObject().asInstanceOf[H2OMOJOModel]
-        }
-      }
+    val spark = createSparkSession
+    val swMojoModel = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("binom_model_prostate.mojo"),
+      "binom_model_prostate.mojo")
+    spark.stop()
 
     val h2oMojoModel = swMojoModel.unwrapMojoModel()
 
@@ -54,6 +55,20 @@ class H2OMOJOModelSparkRuntimeIndependencyTestSuite extends FunSuite with Matche
 
     val domainValues = swMojoModel.getDomainValues()
     domainValues.size shouldBe >(0)
-    domainValues.get("CAPSULE").get shouldEqual Array("0", "1")
+    domainValues.get("capsule").get shouldEqual Array("0", "1")
+  }
+
+  test("H2OMOJOModel throws exception if serialized in tests") {
+    System.setProperty("spark.testing", "true")
+    createSparkSession()
+    val swMojoModel = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("binom_model_prostate.mojo"),
+      "binom_model_prostate.mojo")
+    val memoryStream = new ByteArrayOutputStream()
+    val writer = new ObjectOutputStream(memoryStream)
+
+    intercept[NotSerializableException]{
+      writer.writeObject(swMojoModel)
+    }
   }
 }
