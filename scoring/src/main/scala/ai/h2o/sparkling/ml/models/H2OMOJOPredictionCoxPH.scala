@@ -18,6 +18,7 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.utils.Utils
 import ai.h2o.sparkling.sql.functions.udf
+import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.col
@@ -29,10 +30,17 @@ import scala.collection.mutable
 trait H2OMOJOPredictionCoxPH {
   self: H2OAlgorithmMOJOModel =>
 
-  def getCoxPHPredictionUDF(): UserDefinedFunction = {
-    val schema = getCoxPHPredictionSchema()
+  private val predictionColType = DoubleType
+  private val predictionColNullable = true
+
+  def getCoxPHPredictionUDF(
+      schema: StructType,
+      modelUID: String,
+      mojoFileName: String,
+      configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config])
+      : UserDefinedFunction = {
     val function = (r: Row) => {
-      val model = loadEasyPredictModelWrapper()
+      val model = H2OMOJOModel.loadEasyPredictModelWrapper(modelUID, mojoFileName, configInitializers)
       val pred = model.predictCoxPH(RowConverter.toH2ORowData(r))
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.value
@@ -40,9 +48,6 @@ trait H2OMOJOPredictionCoxPH {
     }
     udf(function, schema)
   }
-
-  private val predictionColType = DoubleType
-  private val predictionColNullable = true
 
   def getCoxPHPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))

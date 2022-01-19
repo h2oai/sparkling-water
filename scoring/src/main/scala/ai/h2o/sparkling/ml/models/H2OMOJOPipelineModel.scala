@@ -53,9 +53,7 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   def getOutputSubCols(): Array[String] = $ { outputSubCols }
 
-  @transient private lazy val mojoPipeline: MojoPipeline = {
-    H2OMOJOPipelineCache.getMojoBackend(uid, getMojo, this)
-  }
+  @transient private lazy val mojoPipeline: MojoPipeline = H2OMOJOPipelineCache.getMojoBackend(uid, getMojo)
 
   private def prepareBooleans(colType: Type, colData: Any): Any = {
     if (colData == null) {
@@ -205,8 +203,6 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
   }
 }
 
-private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline, H2OMOJOPipelineModel] {
-  override def loadMojoBackend(mojo: File, model: H2OMOJOPipelineModel): MojoPipeline = {
-    MojoPipelineService.loadPipeline(mojo)
-  }
+private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline] {
+  override def loadMojoBackend(mojo: File): MojoPipeline = MojoPipelineService.loadPipeline(mojo)
 }

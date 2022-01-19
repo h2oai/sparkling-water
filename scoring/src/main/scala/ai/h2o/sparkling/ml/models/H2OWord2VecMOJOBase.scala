@@ -37,9 +37,13 @@ trait H2OWord2VecMOJOBase extends H2OFeatureMOJOModel with H2OWord2VecExtraParam
 
   protected override def mojoUDF: UserDefinedFunction = {
     val schema = StructType(outputSchema)
+    val uid = this.uid
+    val mojoFileName = this.mojoFileName
+    val configInitializers = this.getEasyPredictModelWrapperConfigurationInitializers()
+    val inputCol = getInputCol()
     val function = (r: Row) => {
-      val model = loadEasyPredictModelWrapper()
-      val colIdx = model.m.getColIdx(getInputCol())
+      val model = H2OMOJOModel.loadEasyPredictModelWrapper(uid, mojoFileName, configInitializers)
+      val colIdx = model.m.getColIdx(inputCol)
       val pred = if (r.isNullAt(colIdx)) {
         null
       } else {

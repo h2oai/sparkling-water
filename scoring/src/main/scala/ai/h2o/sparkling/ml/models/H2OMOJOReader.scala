@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.ml.models
 
 import org.apache.hadoop.fs.Path
-import ai.h2o.sparkling.ml.utils.H2OReaderBase
+import ai.h2o.sparkling.ml.utils.{H2OReaderBase, Utils}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.utils.ScalaUtils._
 
@@ -32,6 +32,7 @@ private[models] class H2OMOJOReader[T <: HasMojo] extends H2OReaderBase[T] {
     }
     if (model.isInstanceOf[H2OMOJOModel]) {
       val mojoModel = model.asInstanceOf[H2OMOJOModel]
+      mojoModel.h2oMojoModel = Utils.getMojoModel(mojoModel.getMojo())
       val numberOfCVModels = mojoModel.getOrDefault(mojoModel.numberOfCrossValidationModels)
       if (numberOfCVModels > 0) {
         val cvModels = (0 until numberOfCVModels).map { i =>

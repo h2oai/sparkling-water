@@ -64,19 +64,18 @@ class H2OAlgorithmMOJOModel(override val uid: String)
     set(this.withStageResults -> settings.withStageResults)
   }
 
-  private[sparkling] override def setEasyPredictModelWrapperConfiguration(
-      config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
-    super.setEasyPredictModelWrapperConfiguration(config)
-    if (this.getWithContributions() && canGenerateContributions(config.getModel)) {
-      config.setEnableContributions(true)
-    }
-    if (this.getWithLeafNodeAssignments() && canGenerateLeafNodeAssignments(config.getModel)) {
-      config.setEnableLeafAssignment(true)
-    }
-    if (this.getWithStageResults() && canGenerateStageResults(config.getModel)) {
-      config.setEnableStagedProbabilities(true)
-    }
-    config
+  private[sparkling] override def getEasyPredictModelWrapperConfigurationInitializers()
+      : Seq[EasyPredictModelWrapperConfigurationInitializer] = {
+    val superInitializers = super.getEasyPredictModelWrapperConfigurationInitializers()
+    val mojoModel = unwrapMojoModel()
+    val enableContributions = this.getWithContributions() && canGenerateContributions(mojoModel)
+    val enableLeafNodeAssignments = this.getWithLeafNodeAssignments() && canGenerateLeafNodeAssignments(mojoModel)
+    val enableStagedProbabilities = this.getWithStageResults() && canGenerateStageResults(mojoModel)
+
+    superInitializers ++ Seq[EasyPredictModelWrapperConfigurationInitializer](
+      _.setEnableContributions(enableContributions),
+      _.setEnableLeafAssignment(enableLeafNodeAssignments),
+      _.setEnableStagedProbabilities(enableStagedProbabilities))
   }
 
   private def canGenerateContributions(model: GenModel): Boolean = {

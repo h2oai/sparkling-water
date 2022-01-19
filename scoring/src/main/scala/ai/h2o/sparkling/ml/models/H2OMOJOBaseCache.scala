@@ -24,7 +24,7 @@ import org.apache.spark.expose.Logging
 
 import scala.collection.mutable
 
-trait H2OMOJOBaseCache[B, M] extends Logging {
+trait H2OMOJOBaseCache[B] extends Logging {
 
   private object Lock
 
@@ -73,13 +73,13 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
     }
   }
 
-  def getMojoBackend(uid: String, mojoGetter: () => File, model: M): B = Lock.synchronized {
+  def getMojoBackend(uid: String, mojoGetter: () => File): B = Lock.synchronized {
     if (!pipelineCache.contains(uid)) {
-      pipelineCache.put(uid, loadMojoBackend(mojoGetter(), model))
+      pipelineCache.put(uid, loadMojoBackend(mojoGetter()))
     }
     lastAccessMap.put(uid, System.currentTimeMillis())
     pipelineCache(uid)
   }
 
-  def loadMojoBackend(mojo: File, model: M): B
+  def loadMojoBackend(mojo: File): B
 }
