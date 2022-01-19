@@ -30,42 +30,17 @@ import scala.collection.mutable
 trait H2OMOJOPredictionBinomial extends PredictionWithContributions with PredictionWithStageProbabilities {
   self: H2OAlgorithmMOJOModel =>
 
-  private def supportsCalibratedProbabilities(predictWrapper: EasyPredictModelWrapper): Boolean = {
-    // calibrateClassProbabilities returns false if model does not support calibrated probabilities,
-    // however it also accepts array of probabilities to calibrate. We are not interested in calibration,
-    // but to call this method, we need to pass dummy array of size 2 with default values to 0.
-    predictWrapper.m.calibrateClassProbabilities(Array.fill[Double](3)(0))
-  }
-
-  def getBinomialPredictionUDF(): UserDefinedFunction = {
-    val schema = getBinomialPredictionSchema()
-    val function = (r: Row, offset: Double) => {
-      val model = self.loadEasyPredictModelWrapper()
-      val resultBuilder = mutable.ArrayBuffer[Any]()
-      val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
-      resultBuilder += pred.label
-      resultBuilder += Utils.arrayToRow(pred.classProbabilities)
-      if (model.getEnableContributions()) {
-        resultBuilder += Utils.arrayToRow(pred.contributions)
-      }
-      if (supportsCalibratedProbabilities(model)) {
-        resultBuilder += Utils.arrayToRow(pred.calibratedClassProbabilities)
-      }
-      if (model.getEnableLeafAssignment()) {
-        resultBuilder += pred.leafNodeAssignments
-      }
-      if (model.getEnableStagedProbabilities()) {
-        val p0Array = pred.stageProbabilities
-        val p1Array = p0Array.map(1 - _)
-        resultBuilder += new GenericRow(Array[Any](p0Array, p1Array))
-      }
-      new GenericRowWithSchema(resultBuilder.toArray, schema)
-    }
-    udf(function, schema)
-  }
-
   private val predictionColType = StringType
   private val predictionColNullable = true
+
+  def getBinomialPredictionUDF(
+      schema: StructType,
+      modelUID: String,
+      mojoFileName: String,
+      configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config])
+      : UserDefinedFunction = {
+    BinomialPredictionUDFClosure.getBinomialPredictionUDF(schema, modelUID, mojoFileName, configInitializers)
+  }
 
   def getBinomialPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
@@ -103,7 +78,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
       assignmentFields
     }
 
-    val fields = if (supportsCalibratedProbabilities(model)) {
+    val fields = if (BinomialPredictionUDFClosure.supportsCalibratedProbabilities(model)) {
       val calibratedProbabilitiesField =
         StructField("calibratedProbabilities", StructType(classFields), nullable = false)
       stageProbabilityFields :+ calibratedProbabilitiesField
@@ -116,5 +91,45 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
 
   def extractBinomialPredictionColContent(): Column = {
     col(s"${getDetailedPredictionCol()}.label")
+  }
+}
+
+object BinomialPredictionUDFClosure {
+  def getBinomialPredictionUDF(
+      schema: StructType,
+      modelUID: String,
+      mojoFileName: String,
+      configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config])
+      : UserDefinedFunction = {
+    val function = (r: Row, offset: Double) => {
+      val model = H2OMOJOModel.loadEasyPredictModelWrapper(modelUID, mojoFileName, configInitializers)
+      val resultBuilder = mutable.ArrayBuffer[Any]()
+      val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
+      resultBuilder += pred.label
+      resultBuilder += Utils.arrayToRow(pred.classProbabilities)
+      if (model.getEnableContributions()) {
+        resultBuilder += Utils.arrayToRow(pred.contributions)
+      }
+      if (supportsCalibratedProbabilities(model)) {
+        resultBuilder += Utils.arrayToRow(pred.calibratedClassProbabilities)
+      }
+      if (model.getEnableLeafAssignment()) {
+        resultBuilder += pred.leafNodeAssignments
+      }
+      if (model.getEnableStagedProbabilities()) {
+        val p0Array = pred.stageProbabilities
+        val p1Array = p0Array.map(1 - _)
+        resultBuilder += new GenericRow(Array[Any](p0Array, p1Array))
+      }
+      new GenericRowWithSchema(resultBuilder.toArray, schema)
+    }
+    udf(function, schema)
+  }
+
+  def supportsCalibratedProbabilities(predictWrapper: EasyPredictModelWrapper): Boolean = {
+    // calibrateClassProbabilities returns false if model does not support calibrated probabilities,
+    // however it also accepts array of probabilities to calibrate. We are not interested in calibration,
+    // but to call this method, we need to pass dummy array of size 2 with default values to 0.
+    predictWrapper.m.calibrateClassProbabilities(Array.fill[Double](3)(0))
   }
 }

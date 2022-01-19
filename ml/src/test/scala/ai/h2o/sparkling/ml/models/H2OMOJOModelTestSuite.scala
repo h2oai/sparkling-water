@@ -376,7 +376,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   test("Exposed hex mojo model gives the same prediction as SW model") {
     val gbm = configureGBMForProstateDF()
-
+    System.setProperty("spark.testing", "false")
     val model = gbm.fit(prostateDataFrame)
     val h2o3model = model.unwrapMojoModel()
     val config = new EasyPredictModelWrapper.Config()
