@@ -191,7 +191,9 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     val model = new H2OMOJOPipelineModel(uid)
     model.setMojo(mojo, uid)
     val pipelineMojo = MojoPipelineService.loadPipeline(model.getMojo())
-    pipelineMojo.setShapPredictContrib(settings.withContributions)
+    if (settings.withContributions) {
+      pipelineMojo.setShapPredictContribOriginal(settings.withContributions)
+    }
     val inputCols = pipelineMojo.getInputMeta.getColumns.asScala
     val featureCols = inputCols.map(_.getColumnName).toArray
     model.set(model.featuresCols, featureCols)
@@ -202,13 +204,17 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     model.set(model.outputSubCols, outputCols.map(_.getColumnName).toArray)
     model.set(model.outputSubTypes, outputCols.map(_.getColumnType.toString).toArray)
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
-    model.set(model.withContributions -> settings.withContributions)
+    model.set(model.withContributions, settings.withContributions)
     model
   }
 }
 
 private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline, H2OMOJOPipelineModel] {
   override def loadMojoBackend(mojo: File, model: H2OMOJOPipelineModel): MojoPipeline = {
-    MojoPipelineService.loadPipeline(mojo)
+    val pipelineMojo = MojoPipelineService.loadPipeline(model.getMojo())
+    if (model.getWithContributions()) {
+      pipelineMojo.setShapPredictContribOriginal(model.getWithContributions())
+    }
+    pipelineMojo
   }
 }
