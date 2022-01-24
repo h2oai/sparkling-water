@@ -35,22 +35,6 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
-  test("Mojo pipeline can expose SHAP values") {
-
-    val mojoSettings = H2OMOJOSettings(withContributions = true)
-    val pipeline = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapley/pipeline.mojo"),
-      "pipeline.mojo",
-      mojoSettings)
-
-    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
-    val shap = pipeline.transform(df)
-
-    val shapRow = shap.take(1)
-
-    // TODO shap/shapRow assertion
-  }
-
   test("Mojo pipeline can be instantiated") {
 
     H2OMOJOPipelineModel.createFromMojo(
@@ -306,5 +290,28 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
   test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is enabled") {
     val settings = H2OMOJOSettings()
     testTransformAndTransformSchemaAreAligned(settings)
+  }
+
+  test("Mojo pipeline can expose contribution (SHAP) values") {
+
+    val mojoSettings = H2OMOJOSettings(withContributions = true)
+    val pipeline = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapley/pipeline.mojo"),
+      "pipeline.mojo",
+      mojoSettings)
+
+    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
+    val transformed = pipeline.transform(df)
+    val predictionsAndContributions = transformed.select("prediction.*")
+
+    val featureColumns = 1
+    val predictionColumns = 4
+    val bias = 1
+    val contributionColumns = predictionColumns * (featureColumns + bias)
+
+    assert(predictionColumns + contributionColumns == predictionsAndContributions.columns.length)
+
+    val contributions = predictionsAndContributions.columns.filter(_.startsWith("contrib_"))
+    assert(contributionColumns  == contributions.length)
   }
 }

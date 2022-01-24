@@ -208,4 +208,30 @@ test_that("test unavailable cross validation models scoring history", {
   expect_equal(length(history), 0)
 })
 
+test_that("test MOJO contribution (SHAP) values", {
+  mojo_path <- paste0("file://", normalizePath("../../../../../ml/src/test/resources/daiMojoShapley/pipeline.mojo"))
+  data_path <- paste0("file://", normalizePath("../../../../../ml/src/test/resources/daiMojoShapley/example.csv"))
+  dataset <- spark_read_csv(sc, path = data_path, infer_schema = TRUE, header = TRUE)
+  # request contributions
+  settings <- H2OMOJOSettings(withContributions = TRUE)
+  mojo <- H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
+  mojoOutput <- mojo$transform(dataset)
+
+  flattened <- sdf_unnest_wider(mojoOutput, "prediction")
+  expect_equal(colnames(flattened), c(
+    "ChangeTemp1",                  # input feature
+    "ChangeWindDirect_c",           # output prediction
+    "ChangeWindDirect_l",           # output prediction
+    "ChangeWindDirect_n",           # output prediction
+    "ChangeWindDirect_s",           # output prediction
+    "contrib_ChangeTemp===1_c",     # output contribution
+    "contrib_bias_c",               # output contribution
+    "contrib_ChangeTemp===1_l",     # output contribution
+    "contrib_bias_l",               # output contribution
+    "contrib_ChangeTemp===1_n",     # output contribution
+    "contrib_bias_n",               # output contribution
+    "contrib_ChangeTemp===1_s",     # output contribution
+    "contrib_bias_s"))              # output contribution
+})
+
 spark_disconnect(sc)
