@@ -18,10 +18,10 @@
 package ai.h2o.sparkling.ml.models
 
 import java.io._
-
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.api.MojoPipelineService
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
+import ai.h2o.mojos.runtime.frame.MojoFrame
 import ai.h2o.sparkling.ml.params.{H2OAlgorithmMOJOParams, H2OBaseMOJOParams, HasFeatureTypesOnMOJO}
 import org.apache.spark.ml.param._
 import org.apache.spark.sql._
@@ -51,11 +51,26 @@ class H2OMOJOPipelineModel(override val uid: String)
   protected final val outputSubTypes: StringArrayParam =
     new StringArrayParam(this, "outputSubTypes", "Types of sub-columns under the output column")
 
+  // MOJO output columns describing contributions
+  protected final val outputSubColsContributions: StringArrayParam =
+    new StringArrayParam(this, "outputSubColsContributions", "Names of contribution sub-columns under the output column")
+  protected final val outputSubTypesContributions: StringArrayParam =
+    new StringArrayParam(this, "outputSubTypesContributions", "Types of contribution sub-columns under the output column")
+
   def getOutputSubCols(): Array[String] = $ { outputSubCols }
 
   @transient private lazy val mojoPipeline: MojoPipeline = {
     H2OMOJOPipelineCache.getMojoBackend(uid, getMojo, this)
   }
+
+  // As the mojoPipeline can't provide predictions and contributions at the same time, then
+  // if contributions are requested, there is utilized a second pipeline setup the way to calculate contributions
+  @transient private lazy val mojoPipelineContributions: MojoPipeline = {
+    val pipeline = H2OMOJOPipelineCache.getMojoBackend(uid + ".contributions", getMojo, this)
+    pipeline.setShapPredictContribOriginal(true)
+    pipeline
+  }
+
 
   private def prepareBooleans(colType: Type, colData: Any): Any = {
     if (colData == null) {
@@ -120,17 +135,35 @@ class H2OMOJOPipelineModel(override val uid: String)
           }
       }
 
-      builder.addRow(rowBuilder)
-      val output = mojoPipeline.transform(builder.toMojoFrame)
-      val predictions = output.getColumnNames.zipWithIndex.map {
-        case (_, i) =>
-          val columnData = output.getColumnData(i).asInstanceOf[Array[_]]
-          if (columnData.length != 1) {
-            throw new RuntimeException("Invalid state, we predict on each row by row, independently at this moment.")
-          }
-          columnData(0)
+      def mojoFrameToArray(mf : MojoFrame) = {
+        mf.getColumnNames.zipWithIndex.map {
+          case (_, i) =>
+            val columnData = mf.getColumnData(i).asInstanceOf[Array[_]]
+            if (columnData.length != 1) {
+              throw new RuntimeException("Invalid state, we predict on each row by row, independently at this moment.")
+            }
+            columnData(0)
+        }
       }
-      val content = if (getNamedMojoOutputColumns()) predictions else Array[Any](predictions)
+
+      builder.addRow(rowBuilder)
+      val inputMojoFrame = builder.toMojoFrame
+
+      val outputPredictions = mojoPipeline.transform(inputMojoFrame)
+      val predictions = mojoFrameToArray(outputPredictions)
+
+      val contributions = if (getWithContributions()) {
+        val outputContributions = mojoPipelineContributions.transform(inputMojoFrame)
+        mojoFrameToArray(outputContributions)
+      } else {
+        Array[Any]()
+      }
+
+      val content = if (getNamedMojoOutputColumns()) {
+        predictions ++ contributions
+      } else {
+        Array[Any](predictions ++ contributions)
+      }
       new GenericRowWithSchema(content, schema)
     }
     swudf(function, schema)
@@ -152,7 +185,9 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   private def getPredictionColSchemaInternal(): StructType = {
     if (getNamedMojoOutputColumns()) {
-      val output = getOutputSubCols().zip($(outputSubTypes))
+      val outputPredictions = getOutputSubCols().zip($(outputSubTypes))
+      val outputContributions = $(outputSubColsContributions).zip($(outputSubTypesContributions))
+      val output = outputPredictions ++ outputContributions
       StructType(output.map { case (cn, ct) => StructField(cn, toSparkType(Type.valueOf(ct)), nullable = true) })
     } else {
       StructType(StructField("preds", ArrayType(DoubleType, containsNull = false), nullable = true) :: Nil)
@@ -190,10 +225,21 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
   override def createFromMojo(mojo: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
     val model = new H2OMOJOPipelineModel(uid)
     model.setMojo(mojo, uid)
+
+    setGeneralParameterrs(settings, model)
+    setPredictionPipelineParameterrs(model)
+    setContributionPipelineParameters(settings, model)
+
+    model
+  }
+
+  private def setGeneralParameterrs(settings: H2OMOJOSettings, model: H2OMOJOPipelineModel) = {
+    model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
+    model.set(model.withContributions, settings.withContributions)
+  }
+
+  private def setPredictionPipelineParameterrs(model: H2OMOJOPipelineModel) = {
     val pipelineMojo = MojoPipelineService.loadPipeline(model.getMojo())
-    if (settings.withContributions) {
-      pipelineMojo.setShapPredictContribOriginal(settings.withContributions)
-    }
     val inputCols = pipelineMojo.getInputMeta.getColumns.asScala
     val featureCols = inputCols.map(_.getColumnName).toArray
     model.set(model.featuresCols, featureCols)
@@ -203,18 +249,24 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     model.set(model.featureTypes, featureTypesMap)
     model.set(model.outputSubCols, outputCols.map(_.getColumnName).toArray)
     model.set(model.outputSubTypes, outputCols.map(_.getColumnType.toString).toArray)
-    model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
-    model.set(model.withContributions, settings.withContributions)
-    model
+  }
+
+  private def setContributionPipelineParameters(settings: H2OMOJOSettings, model: H2OMOJOPipelineModel) = {
+    if (settings.withContributions) {
+      val pipelineMojoContributions = MojoPipelineService.loadPipeline(model.getMojo())
+      pipelineMojoContributions.setShapPredictContribOriginal(settings.withContributions)
+      val outputColsContributions = pipelineMojoContributions.getOutputMeta.getColumns.asScala
+      model.set(model.outputSubColsContributions, outputColsContributions.map(_.getColumnName).toArray)
+      model.set(model.outputSubTypesContributions, outputColsContributions.map(_.getColumnType.toString).toArray)
+    } else {
+      model.set(model.outputSubColsContributions, Array[String]())
+      model.set(model.outputSubTypesContributions, Array[String]())
+    }
   }
 }
 
 private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline, H2OMOJOPipelineModel] {
   override def loadMojoBackend(mojo: File, model: H2OMOJOPipelineModel): MojoPipeline = {
-    val pipelineMojo = MojoPipelineService.loadPipeline(model.getMojo())
-    if (model.getWithContributions()) {
-      pipelineMojo.setShapPredictContribOriginal(model.getWithContributions())
-    }
-    pipelineMojo
+    MojoPipelineService.loadPipeline(model.getMojo())
   }
 }
