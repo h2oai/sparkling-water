@@ -226,14 +226,14 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     val model = new H2OMOJOPipelineModel(uid)
     model.setMojo(mojo, uid)
 
-    setGeneralParameterrs(settings, model)
+    setGeneralParameterrs(model, settings)
     setPredictionPipelineParameterrs(model)
-    setContributionPipelineParameters(settings, model)
+    setContributionPipelineParameters(model, settings)
 
     model
   }
 
-  private def setGeneralParameterrs(settings: H2OMOJOSettings, model: H2OMOJOPipelineModel) = {
+  private def setGeneralParameterrs(model: H2OMOJOPipelineModel, settings: H2OMOJOSettings): Any = {
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     model.set(model.withContributions, settings.withContributions)
   }
@@ -251,7 +251,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     model.set(model.outputSubTypes, outputCols.map(_.getColumnType.toString).toArray)
   }
 
-  private def setContributionPipelineParameters(settings: H2OMOJOSettings, model: H2OMOJOPipelineModel) = {
+  private def setContributionPipelineParameters(model: H2OMOJOPipelineModel, settings: H2OMOJOSettings): Any = {
     if (settings.withContributions) {
       val pipelineMojoContributions = MojoPipelineService.loadPipeline(model.getMojo())
       pipelineMojoContributions.setShapPredictContribOriginal(settings.withContributions)
