@@ -267,6 +267,6 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
 
 private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline, H2OMOJOPipelineModel] {
   override def loadMojoBackend(mojo: File, model: H2OMOJOPipelineModel): MojoPipeline = {
-    MojoPipelineService.loadPipeline(model.getMojo())
+    MojoPipelineService.loadPipeline(mojo)
   }
 }
