@@ -48,6 +48,9 @@ abstract class H2OEstimator[P <: Model.Parameters: ClassTag]
     }
 
     val result = model.toMOJOModel(createMOJOUID(), createMOJOSettings(), withCrossValidationModels)
+    if (H2OContext.get().forall(_.getConf.isModelPrintAfterTrainingEnabled)) {
+      println(result)
+    }
     deleteRegisteredH2OFrames()
     if (getKeepBinaryModels()) {
       val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)

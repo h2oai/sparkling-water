@@ -25,7 +25,7 @@ import org.apache.spark.SparkFiles
 
 private[models] trait HasMojo {
 
-  private var mojoFileName: String = _
+  private[sparkling] var mojoFileName: String = _
 
   def setMojo(mojo: InputStream): this.type = setMojo(mojo, mojoName = "mojoData")
 

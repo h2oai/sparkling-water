@@ -208,6 +208,16 @@ test_that("test unavailable cross validation models scoring history", {
   expect_equal(length(history), 0)
 })
 
+test_that("test getModelSummary", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/deep_learning_prostate.mojo")))
+  modelSummary <- model$getModelSummary()
+
+  numberOfRecordsFrame <- dplyr::tally(modelSummary)
+  count <- as.double(dplyr::collect(numberOfRecordsFrame)[[1]])
+
+  expect_equal(count, 4)
+})
+
 test_that("test MOJO contribution (SHAP) values", {
   mojo_path <- paste0("file://", normalizePath("../../../../../ml/src/test/resources/daiMojoShapley/pipeline.mojo"))
   data_path <- paste0("file://", normalizePath("../../../../../ml/src/test/resources/daiMojoShapley/example.csv"))

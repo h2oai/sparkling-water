@@ -376,7 +376,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   test("Exposed hex mojo model gives the same prediction as SW model") {
     val gbm = configureGBMForProstateDF()
-
+    System.setProperty("spark.testing", "false")
     val model = gbm.fit(prostateDataFrame)
     val h2o3model = model.unwrapMojoModel()
     val config = new EasyPredictModelWrapper.Config()
@@ -623,4 +623,250 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       cvModels should be(null)
     }
   }
+
+  test("H2ODeepLearningMOJOModel should return model summary") {
+    val (_, mojoModel) = savedDeepLearningModel()
+
+    val summary = mojoModel.getModelSummary()
+    val summaryCollected = summary.collect()
+
+    summaryCollected should have size 4
+    val expectedFields = Seq(
+      "Layer",
+      "Units",
+      "Type",
+      "Dropout",
+      "L1",
+      "L2",
+      "Mean Rate",
+      "Rate RMS",
+      "Momentum",
+      "Mean Weight",
+      "Weight RMS",
+      "Mean Bias",
+      "Bias RMS")
+    summary.schema.fieldNames should contain theSameElementsAs expectedFields
+    summaryCollected.map(_.getValuesMap(expectedFields)) should contain theSameElementsAs
+      Seq(
+        Map(
+          "Layer" -> 1,
+          "Units" -> 8,
+          "L1" -> null,
+          "Bias RMS" -> null,
+          "Mean Bias" -> null,
+          "Mean Weight" -> null,
+          "Momentum" -> null,
+          "Rate RMS" -> null,
+          "Mean Rate" -> null,
+          "Dropout" -> 0.0,
+          "L2" -> null,
+          "Weight RMS" -> null,
+          "Type" -> "Input"),
+        Map(
+          "Layer" -> 2,
+          "Units" -> 200,
+          "L1" -> 0.0,
+          "Bias RMS" -> 0.049144044518470764,
+          "Mean Bias" -> 0.42625558799512825,
+          "Mean Weight" -> 0.0020895117304439736,
+          "Momentum" -> 0.0,
+          "Rate RMS" -> 0.0030197836458683014,
+          "Mean Rate" -> 0.006225864375919627,
+          "Dropout" -> 0.0,
+          "L2" -> 0.0,
+          "Weight RMS" -> 0.09643048048019409,
+          "Type" -> "Rectifier"),
+        Map(
+          "Layer" -> 3,
+          "Units" -> 200,
+          "L1" -> 0.0,
+          "Bias RMS" -> 0.008990883827209473,
+          "Mean Bias" -> 0.9844640783479953,
+          "Mean Weight" -> -0.008243563556700311,
+          "Momentum" -> 0.0,
+          "Rate RMS" -> 0.09206506609916687,
+          "Mean Rate" -> 0.04241905607206281,
+          "Dropout" -> 0.0,
+          "L2" -> 0.0,
+          "Weight RMS" -> 0.06984925270080566,
+          "Type" -> "Rectifier"),
+        Map(
+          "Layer" -> 4,
+          "Units" -> 1,
+          "L1" -> 0.0,
+          "Bias RMS" -> 1.0971281125650402e-154,
+          "Mean Bias" -> 0.002604305485232783,
+          "Mean Weight" -> 9.763148391539289e-4,
+          "Momentum" -> 0.0,
+          "Rate RMS" -> 9.573120623826981e-4,
+          "Mean Rate" -> 6.254940157668898e-4,
+          "Dropout" -> null,
+          "L2" -> 0.0,
+          "Weight RMS" -> 0.06601589918136597,
+          "Type" -> "Linear"))
+  }
+
+  test("H2OGBMMOJOModel should return model summary") {
+    val (_, mojoModel) = savedBinomialModel()
+
+    val summary = mojoModel.getModelSummary()
+    val summaryCollected = summary.collect()
+
+    summaryCollected should have size 1
+    val expectedFields = Array(
+      "Number of Trees",
+      "Number of Internal Trees",
+      "Model Size in Bytes",
+      "Min. Depth",
+      "Max. Depth",
+      "Mean Depth",
+      "Min. Leaves",
+      "Max. Leaves",
+      "Mean Leaves")
+    summary.schema.fieldNames should contain theSameElementsAs expectedFields
+    summaryCollected.map(_.getValuesMap(expectedFields)).head should contain theSameElementsAs
+      Map(
+        "Min. Depth" -> 5,
+        "Max. Leaves" -> 24,
+        "Number of Internal Trees" -> 2,
+        "Min. Leaves" -> 22,
+        "Mean Depth" -> 5.0,
+        "Number of Trees" -> 2,
+        "Model Size in Bytes" -> 694,
+        "Max. Depth" -> 5,
+        "Mean Leaves" -> 23.0)
+  }
+
+  test("should return formatted model description with all the deep learning layers included") {
+    val (_, mojoModel) = savedDeepLearningModel()
+
+    val mojoStringSummary = mojoModel.toString
+
+    mojoStringSummary should startWith("""Model Details
+      |===============
+      |H2ODeepLearning
+      |Model Key: deep_learning_prostate.mojo""".stripMargin)
+
+    mojoStringSummary should include("""Model summary
+      |Layer: 1
+      |Units: 8
+      |Type: Input
+      |Dropout: 0.0
+      |L1: null
+      |L2: null
+      |Mean Rate: null
+      |Rate RMS: null
+      |Momentum: null
+      |Mean Weight: null
+      |Weight RMS: null
+      |Mean Bias: null
+      |Bias RMS: null
+      |
+      |Layer: 2
+      |Units: 200
+      |Type: Rectifier
+      |Dropout: 0.0
+      |L1: 0.0
+      |L2: 0.0
+      |Mean Rate: 0.006225864375919627
+      |Rate RMS: 0.0030197836458683014
+      |Momentum: 0.0
+      |Mean Weight: 0.0020895117304439736
+      |Weight RMS: 0.09643048048019409
+      |Mean Bias: 0.42625558799512825
+      |Bias RMS: 0.049144044518470764
+      |
+      |Layer: 3
+      |Units: 200
+      |Type: Rectifier
+      |Dropout: 0.0
+      |L1: 0.0
+      |L2: 0.0
+      |Mean Rate: 0.04241905607206281
+      |Rate RMS: 0.09206506609916687
+      |Momentum: 0.0
+      |Mean Weight: -0.008243563556700311
+      |Weight RMS: 0.06984925270080566
+      |Mean Bias: 0.9844640783479953
+      |Bias RMS: 0.008990883827209473
+      |
+      |Layer: 4
+      |Units: 1
+      |Type: Linear
+      |Dropout: null
+      |L1: 0.0
+      |L2: 0.0
+      |Mean Rate: 6.254940157668898E-4
+      |Rate RMS: 9.573120623826981E-4
+      |Momentum: 0.0
+      |Mean Weight: 9.763148391539289E-4
+      |Weight RMS: 0.06601589918136597
+      |Mean Bias: 0.002604305485232783
+      |Bias RMS: 1.0971281125650402E-154""".stripMargin)
+
+    mojoStringSummary should include("""Training metrics
+      |RMSLE: 0.28540432947505806
+      |Nobs: 380.0
+      |RMSE: 0.3988910324498237
+      |MAE: 0.3341350756077194
+      |MeanResidualDeviance: 0.1591140557688863
+      |ScoringTime: 1.513802166234E12
+      |MSE: 0.1591140557688863
+      |R2: 0.33845643220675536""".stripMargin)
+
+    mojoStringSummary should endWith(
+      """More info available using methods like:
+        |getFeatureImportances(), getScoringHistory(), getCrossValidationScoringHistory()""".stripMargin)
+  }
+
+  test("should return standard formatted model description with available metrics") {
+    val mojoModel =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
+
+    val mojoStringSummary = mojoModel.toString
+    mojoStringSummary should startWith("""Model Details
+      |===============
+      |H2OGBM
+      |Model Key: gbm_cv.mojo""".stripMargin)
+
+    mojoStringSummary should include("""Model summary
+      |Number of Trees: 2
+      |Number of Internal Trees: 2
+      |Model Size in Bytes: 694
+      |Min. Depth: 5
+      |Max. Depth: 5
+      |Mean Depth: 5.0
+      |Min. Leaves: 22
+      |Max. Leaves: 24
+      |Mean Leaves: 23.0""".stripMargin)
+
+    mojoStringSummary should include("""Training metrics
+      |PRAUC: 0.8638163431669145
+      |Nobs: 380.0
+      |Logloss: 0.5972755287156798
+      |Gini: 0.7937577380438225
+      |RMSE: 0.4511854642769045
+      |ScoringTime: 1.628871831383E12
+      |MSE: 0.20356832317476586
+      |R2: 0.15363030530545652
+      |MeanPerClassError: 0.1926089084679393
+      |AUC: 0.8968788690219113""".stripMargin)
+
+    mojoStringSummary should include("""Cross validation metrics
+      |PRAUC: 0.6255892513115805
+      |Nobs: 380.0
+      |Logloss: 0.6365971538694172
+      |Gini: 0.42688088451239525
+      |RMSE: 0.4717010343761202
+      |ScoringTime: 1.628871831395E12
+      |MSE: 0.22250186583150172
+      |R2: 0.07491090305292536
+      |MeanPerClassError: 0.32341424087990556
+      |AUC: 0.7134404422561976""".stripMargin)
+
+    mojoStringSummary should endWith(
+      """More info available using methods like:
+      |getFeatureImportances(), getScoringHistory(), getCrossValidationScoringHistory()""".stripMargin)
+  }
+
 }

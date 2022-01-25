@@ -21,6 +21,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.col
 import ai.h2o.sparkling.sql.functions.udf
+import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField, StructType}
 import org.apache.spark.sql.{Column, Row}
 
@@ -28,10 +29,18 @@ import scala.collection.mutable
 
 trait H2OMOJOPredictionDimReduction {
   self: H2OAlgorithmMOJOModel =>
-  def getDimReductionPredictionUDF(): UserDefinedFunction = {
-    val schema = getDimReductionPredictionSchema()
+
+  private val predictionColType = ArrayType(DoubleType, containsNull = false)
+  private val predictionColNullable = true
+
+  def getDimReductionPredictionUDF(
+      schema: StructType,
+      modelUID: String,
+      mojoFileName: String,
+      configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config])
+      : UserDefinedFunction = {
     val function = (r: Row) => {
-      val model = loadEasyPredictModelWrapper()
+      val model = H2OMOJOModel.loadEasyPredictModelWrapper(modelUID, mojoFileName, configInitializers)
       val pred = model.predictDimReduction(RowConverter.toH2ORowData(r))
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.dimensions
@@ -39,9 +48,6 @@ trait H2OMOJOPredictionDimReduction {
     }
     udf(function, schema)
   }
-
-  private val predictionColType = ArrayType(DoubleType, containsNull = false)
-  private val predictionColNullable = true
 
   def getDimReductionPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))

@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.ml.models
 
 import java.io.{File, InputStream}
-
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
 import _root_.hex.genmodel.{MojoModel, MojoReaderBackendFactory}
@@ -28,20 +27,22 @@ import ai.h2o.sparkling.ml.utils.Utils
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson._
 import hex.ModelCategory
-import org.apache.spark.ml.param.{IntParam, LongParam, DoubleParam, ParamMap}
+import org.apache.spark.ml.param.{DoubleParam, IntParam, LongParam, ParamMap}
 import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import _root_.hex.genmodel.attributes.Table.ColumnType
 import ai.h2o.sparkling.api.generation.common.MetricNameConverter
 import ai.h2o.sparkling.ml.metrics.H2OMetrics
+import org.apache.spark.SparkFiles
 import org.apache.spark.expose.Logging
 import org.apache.spark.ml.Model
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 
+import java.lang.System.lineSeparator
 import scala.collection.JavaConverters._
+import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag
 
 abstract class H2OMOJOModel
@@ -58,6 +59,8 @@ abstract class H2OMOJOModel
   H2OMOJOCache.startCleanupThread()
   protected final val modelDetails: NullableStringParam =
     new NullableStringParam(this, "modelDetails", "Raw details of this model.")
+  protected final val modelSummary: NullableDataFrameParam =
+    new NullableDataFrameParam(this, "modelSummary", "Short summary of this model.")
   protected final val trainingMetrics: MapStringDoubleParam =
     new MapStringDoubleParam(this, "trainingMetrics", "Training metrics represented as a map.")
   protected final val trainingMetricsObject: NullableMetricsParam =
@@ -202,8 +205,10 @@ abstract class H2OMOJOModel
 
   def getModelDetails(): String = $(modelDetails)
 
+  def getModelSummary(): DataFrame = $(modelSummary)
+
   def getDomainValues(): Map[String, Array[String]] = {
-    val mojo = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val mojo = unwrapMojoModel()
     val columns = mojo.getNames
     columns.map(col => col -> mojo.getDomainValues(col)).toMap
   }
@@ -248,11 +253,13 @@ abstract class H2OMOJOModel
 
   def getDefaultThreshold(): Double = $(defaultThreshold)
 
+  private[sparkling] var h2oMojoModel: MojoModel = null
+
   /**
     * The method returns an internal H2O-3 mojo model, which can be subsequently used with
     * [[EasyPredictModelWrapper]] to perform predictions on individual rows.
     */
-  def unwrapMojoModel(): _root_.hex.genmodel.MojoModel = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+  def unwrapMojoModel(): _root_.hex.genmodel.MojoModel = h2oMojoModel
 
   protected override def applyPredictionUdfToFlatDataFrame(
       flatDataFrame: DataFrame,
@@ -261,8 +268,8 @@ abstract class H2OMOJOModel
     val relevantColumnNames = getRelevantColumnNames(flatDataFrame, inputs)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)
-    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-    predictWrapper.getModelCategory match {
+
+    unwrapMojoModel().getModelCategory match {
       case ModelCategory.Binomial | ModelCategory.Regression | ModelCategory.Multinomial | ModelCategory.Ordinal =>
         // Methods of EasyPredictModelWrapper for given prediction categories take offset as parameter.
         // Propagation of offset to EasyPredictModelWrapper was introduced with H2OSupervisedMOJOModel.
@@ -304,6 +311,7 @@ abstract class H2OMOJOModel
     set(this.crossValidationMetricsSummary -> extractCrossValidationMetricsSummary(modelJson))
     set(this.trainingParams -> extractParams(modelJson))
     set(this.modelCategory -> modelCategory.toString)
+    set(this.modelSummary -> extractModelSummary(outputJson))
     set(this.scoringHistory -> extractScoringHistory(outputJson))
     set(this.featureImportances -> extractFeatureImportances(outputJson))
     set(this.featureTypes -> extractFeatureTypes(outputJson))
@@ -318,31 +326,87 @@ abstract class H2OMOJOModel
         _.getAsDouble(),
         $(defaultThreshold)))
     setOutputParameters(outputJson)
+    h2oMojoModel = mojoModel
   }
 
   private[sparkling] def setOutputParameters(outputSection: JsonObject): Unit = {}
 
-  private[sparkling] def setEasyPredictModelWrapperConfiguration(
-      config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
-    config.setConvertUnknownCategoricalLevelsToNa(this.getConvertUnknownCategoricalLevelsToNa())
-    config.setConvertInvalidNumbersToNa(this.getConvertInvalidNumbersToNa())
-    // always let H2O produce full output, filter later if required
-    config.setUseExtendedOutput(true)
-    config
+  private[sparkling] def getEasyPredictModelWrapperConfigurationInitializers()
+      : Seq[EasyPredictModelWrapperConfigurationInitializer] = {
+    val convertUnknownCategoricalLevelsToNa = this.getConvertUnknownCategoricalLevelsToNa()
+    val convertInvalidNumbersToNa = this.getConvertInvalidNumbersToNa()
+
+    Seq[EasyPredictModelWrapperConfigurationInitializer](
+      _.setConvertUnknownCategoricalLevelsToNa(convertUnknownCategoricalLevelsToNa),
+      _.setConvertInvalidNumbersToNa(convertInvalidNumbersToNa),
+      _.setUseExtendedOutput(true))
   }
 
   private[sparkling] def loadEasyPredictModelWrapper(): EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
-    val mojo = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val mojo = unwrapMojoModel()
     config.setModel(mojo)
-    setEasyPredictModelWrapperConfiguration(config)
+    getEasyPredictModelWrapperConfigurationInitializers().foreach(_(config))
     new EasyPredictModelWrapper(config)
   }
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
+
+  val nonSerializableField = if (System.getProperty("spark.testing", "false").toBoolean) {
+    new Object() // Object is not serializable.
+  } else {
+    null
+  }
+
+  override def toString: String = {
+    def mapToString(prefix: String, metricsMap: Map[String, Any], msgWhenEmpty: String = "") =
+      Option(metricsMap)
+        .filter(_.nonEmpty)
+        .map(_.map(entry => entry._1 + ": " + entry._2))
+        .map(_.mkString(start = prefix, sep = lineSeparator, end = lineSeparator))
+        .getOrElse(msgWhenEmpty)
+    val summary = Option(getModelSummary())
+    val fieldNames = summary.map(_.schema.fieldNames).getOrElse(Array.empty)
+    val collectedSummary = summary.map(_.collect()).getOrElse(Array.empty)
+    val modelSummaryRowsAsMaps = collectedSummary.map(getRowValuesMapPreservingOrder(_, fieldNames))
+    val modelName = getClass.getSimpleName.replace("MOJOModel", "")
+    s"""Model Details
+       |===============
+       |$modelName
+       |Model Key: $uid
+       |
+       |Model summary
+       |${modelSummaryRowsAsMaps.map(mapToString("", _)).mkString(lineSeparator)}
+       |""".stripMargin +
+      mapToString(s"Training metrics$lineSeparator", getTrainingMetrics()) +
+      mapToString(s"${lineSeparator}Validation metrics$lineSeparator", getValidationMetrics()) +
+      mapToString(s"${lineSeparator}Cross validation metrics$lineSeparator", getCrossValidationMetrics()) +
+      s"${lineSeparator}More info available using methods like:$lineSeparator" +
+      "getFeatureImportances(), getScoringHistory(), getCrossValidationScoringHistory()"
+  }
+
+  private def getRowValuesMapPreservingOrder[T](row: Row, fieldNames: Seq[String]) = {
+    val fieldPairs = fieldNames.map(name => (name, row.getAs[T](name)))
+    ListMap(fieldPairs: _*)
+  }
+
 }
 
 trait H2OMOJOModelUtils extends Logging {
+
+  private[sparkling] type EasyPredictModelWrapperConfigurationInitializer =
+    (EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config
+
+  private[sparkling] def loadEasyPredictModelWrapper(
+      modelUID: String,
+      mojoFileName: String,
+      configInitializers: Seq[EasyPredictModelWrapperConfigurationInitializer]): EasyPredictModelWrapper = {
+    val mojo = H2OMOJOCache.getMojoBackend(modelUID, () => new File(SparkFiles.get(mojoFileName)))
+    val config = new EasyPredictModelWrapper.Config()
+    config.setModel(mojo)
+    configInitializers.foreach(_(config))
+    new EasyPredictModelWrapper(config)
+  }
 
   private def removeMetaField(json: JsonElement): JsonElement = {
     if (json.isJsonObject) {
@@ -392,6 +456,11 @@ trait H2OMOJOModelUtils extends Logging {
       }
       metrics.sorted(H2OMetricOrdering).map(pair => (pair._1.name(), pair._2)).toMap
     }
+  }
+
+  protected[models] def extractModelSummary(outputJson: JsonObject): DataFrame = {
+    val df = jsonFieldToDataFrame(outputJson, "model_summary")
+    if (df != null && df.columns.contains("-")) df.drop("-") else df
   }
 
   protected def extractMetricsObject(
@@ -610,6 +679,6 @@ abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojo: Cl
   }
 }
 
-object H2OMOJOCache extends H2OMOJOBaseCache[MojoModel, H2OMOJOModel] {
-  override def loadMojoBackend(mojo: File, model: H2OMOJOModel): MojoModel = Utils.getMojoModel(mojo)
+object H2OMOJOCache extends H2OMOJOBaseCache[MojoModel] {
+  override def loadMojoBackend(mojo: File): MojoModel = Utils.getMojoModel(mojo)
 }

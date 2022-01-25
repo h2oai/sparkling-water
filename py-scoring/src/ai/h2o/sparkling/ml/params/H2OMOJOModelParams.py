@@ -27,6 +27,9 @@ class H2OMOJOModelParams:
     def getModelDetails(self):
         return self._java_obj.getModelDetails()
 
+    def getModelSummary(self):
+        return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getModelSummary())
+
     def getDomainValues(self):
         return H2OTypeConverters.scalaMapStringDictStringToStringDictString(self._java_obj.getDomainValues())
 
