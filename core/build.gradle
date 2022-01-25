@@ -82,11 +82,7 @@ dependencies {
   api("ai.h2o:h2o-automl:${h2oVersion}")
   api("ai.h2o:h2o-ext-mojo-pipeline:${h2oVersion}")
 
-  api("io.fabric8:kubernetes-client:${fabricK8sClientVersion}") {
-    exclude(group: "com.fasterxml.jackson.core")
-    exclude(group: "com.fasterxml.jackson.module")
-  }
-
+  compileOnly("io.fabric8:kubernetes-client:${fabricK8sClientVersion}") // Available via Spark
   compileOnly(project(':sparkling-water-macros'))
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
   compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
