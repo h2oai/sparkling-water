@@ -64,7 +64,7 @@ class H2OMOJOPipelineModel(override val uid: String)
   // As the mojoPipeline can't provide predictions and contributions at the same time, then
   // if contributions are requested, there is utilized a second pipeline setup the way to calculate contributions
   @transient private lazy val mojoPipelineContributions: MojoPipeline = {
-    val pipeline = H2OMOJOPipelineCache.getMojoBackend(uid + ".contributions", getMojo, this)
+    val pipeline = H2OMOJOPipelineCache.getMojoBackend(uid + ".contributions", getMojo)
     pipeline.setShapPredictContribOriginal(true)
     pipeline
   }
