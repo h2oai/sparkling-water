@@ -316,7 +316,7 @@ We can configure the output and format of predictions via the H2OMOJOSettings. T
 - ``convertUnknownCategoricalLevelsToNa`` - Enables or disables conversion of unseen categoricals to NAs. By default, it is disabled.
 - ``convertInvalidNumbersToNa`` - Enables or disables conversion of invalid numbers to NAs. By default, it is disabled.
 - ``withContributions`` - Enables or disables computing Shapley values. Shapley values are generated as a sub-column for the
-  detailed prediction column.
+  detailed prediction column. Shapley values are supported only by tree-based binomial and regression models.
 - ``withLeafNodeAssignments`` - When enabled, a user can obtain the leaf node assignments after the model training
   has finished. By default, it is disabled.
 - ``withStageResults`` - When enabled, a user can obtain the stage results for tree-based models. By default,
