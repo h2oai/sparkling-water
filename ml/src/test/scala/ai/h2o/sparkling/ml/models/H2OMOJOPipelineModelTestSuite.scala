@@ -301,17 +301,32 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
       mojoSettings)
 
     val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
-    val transformed = pipeline.transform(df)
-    val predictionsAndContributions = transformed.select("prediction.*")
+    val predictionsAndContributions = pipeline.transform(df)
+    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionCol()}.*")
 
     val featureColumns = 1
     val predictionColumns = 4
     val bias = 1
     val contributionColumns = predictionColumns * (featureColumns + bias)
 
-    assert(predictionColumns + contributionColumns == predictionsAndContributions.columns.length)
-
-    val contributions = predictionsAndContributions.columns.filter(_.startsWith("contrib_"))
-    assert(contributionColumns  == contributions.length)
+    assert(contributionColumns == onlyContributions.columns.length)
+    assert(onlyContributions.columns.forall(_.startsWith("contrib_")))
   }
+
+  test("Transform and transformSchema methods are aligned when (SHAP) contributions are enabled") {
+    val mojoSettings = H2OMOJOSettings(withContributions = true)
+    val pipeline = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapley/pipeline.mojo"),
+      "pipeline.mojo",
+      mojoSettings)
+
+    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
+
+    val outputSchema = pipeline.transform(df).schema
+    val transformedSchema = pipeline.transformSchema(df.schema)
+
+    assert(transformedSchema === outputSchema)
+  }
+
+
 }

@@ -59,6 +59,10 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   def getOutputSubCols(): Array[String] = $ { outputSubCols }
 
+  def getContributionCol(): String = "contribution"
+
+  def getTransportCol():String = "transport"
+
   @transient private lazy val mojoPipeline: MojoPipeline = H2OMOJOPipelineCache.getMojoBackend(uid, getMojo)
 
   // As the mojoPipeline can't provide predictions and contributions at the same time, then
@@ -90,7 +94,9 @@ class H2OMOJOPipelineModel(override val uid: String)
   }
 
   private val modelUdf = (names: Array[String]) => {
-    val schema = getPredictionColSchemaInternal()
+    val combinedSchema = StructType(getPredictionColSchema() ++ getContributionColSchema())
+    val schemaPredict = getPredictionColSchemaInternal()
+    val schemaContrib = getContributionColSchemaInternal()
     val function = (r: Row) => {
       val builder = mojoPipeline.getInputFrameBuilder
       val rowBuilder = builder.getMojoRowBuilder
@@ -157,19 +163,25 @@ class H2OMOJOPipelineModel(override val uid: String)
         Array[Any]()
       }
 
-      val content = if (getNamedMojoOutputColumns()) {
-        predictions ++ contributions
-      } else {
-        Array[Any](predictions ++ contributions)
-      }
-      new GenericRowWithSchema(content, schema)
+      val content = Array[Any](
+        new GenericRowWithSchema(predictions, schemaPredict),
+        new GenericRowWithSchema(contributions, schemaContrib)
+      )
+      new GenericRowWithSchema(content, combinedSchema)
     }
-    swudf(function, schema)
+    swudf(function, combinedSchema)
   }
 
   override def copy(extra: ParamMap): H2OMOJOPipelineModel = defaultCopy(extra)
 
-  override def transform(dataset: Dataset[_]): DataFrame = applyPredictionUdf(dataset, modelUdf)
+  override def transform(dataset: Dataset[_]): DataFrame = {
+    val baseDf = applyPredictionUdf(dataset, modelUdf)
+
+    baseDf
+      .withColumn(getPredictionCol(), col(s"${getTransportCol()}.${getPredictionCol()}"))
+      .withColumn(getContributionCol(), col(s"${getTransportCol()}.${getContributionCol()}"))
+      .drop(getTransportCol())
+  }
 
   private def toSparkType(t: Type): DataType = t match {
     case Type.Bool => BooleanType
@@ -184,9 +196,7 @@ class H2OMOJOPipelineModel(override val uid: String)
   private def getPredictionColSchemaInternal(): StructType = {
     if (getNamedMojoOutputColumns()) {
       val outputPredictions = getOutputSubCols().zip($(outputSubTypes))
-      val outputContributions = $(outputSubColsContributions).zip($(outputSubTypesContributions))
-      val output = outputPredictions ++ outputContributions
-      StructType(output.map { case (cn, ct) => StructField(cn, toSparkType(Type.valueOf(ct)), nullable = true) })
+      StructType(outputPredictions.map { case (cn, ct) => StructField(cn, toSparkType(Type.valueOf(ct)), nullable = true) })
     } else {
       StructType(StructField("preds", ArrayType(DoubleType, containsNull = false), nullable = true) :: Nil)
     }
@@ -195,6 +205,20 @@ class H2OMOJOPipelineModel(override val uid: String)
   protected def getPredictionColSchema(): Seq[StructField] = {
     val predictionType = getPredictionColSchemaInternal()
     Seq(StructField(getPredictionCol(), predictionType, nullable = true))
+  }
+
+  private def getContributionColSchemaInternal(): StructType = {
+    if (getNamedMojoOutputColumns()) {
+      val outputContributions = $(outputSubColsContributions).zip($(outputSubTypesContributions))
+      StructType(outputContributions.map { case (cn, ct) => StructField(cn, toSparkType(Type.valueOf(ct)), nullable = true) })
+    } else {
+      StructType(StructField("contribs", ArrayType(DoubleType, containsNull = false), nullable = true) :: Nil)
+    }
+  }
+
+  protected def getContributionColSchema(): Seq[StructField] = {
+    val contributionType = getContributionColSchemaInternal()
+    Seq(StructField(getContributionCol(), contributionType, nullable = true))
   }
 
   def selectPredictionUDF(column: String): Column = {
@@ -211,11 +235,11 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   override protected def inputColumnNames: Array[String] = getFeaturesCols()
 
-  override protected def outputColumnName: String = getPredictionCol()
+  override protected def outputColumnName: String = getTransportCol()
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    StructType(schema.fields ++ getPredictionColSchema())
+    StructType(schema.fields ++ getPredictionColSchema() ++ getContributionColSchema())
   }
 }
 
