@@ -247,7 +247,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
         } else {
           RestApiUtils.shutdownCluster(conf)
           if (conf.externalAutoStartBackend == ExternalBackendConf.KUBERNETES_BACKEND) {
-            stopExternalH2OOnKubernetes(conf)
+            K8sExternalBackendClient.stopExternalH2OOnKubernetes(conf)
           }
         }
       }

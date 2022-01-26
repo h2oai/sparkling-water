@@ -31,7 +31,6 @@ dependencies {
   compileOnly(project(":sparkling-water-macros"))
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
-  compileOnly("io.fabric8:kubernetes-client:${fabricK8sClientVersion}") // Available via Spark
 
   testImplementation(project(":sparkling-water-macros"))
   testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")

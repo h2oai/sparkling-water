@@ -8,7 +8,6 @@ dependencies {
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
   compileOnly("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
-  compileOnly("io.fabric8:kubernetes-client:${fabricK8sClientVersion}") // Available via Spark
 
   integTestImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
   integTestImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")

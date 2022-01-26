@@ -30,14 +30,14 @@ import org.apache.spark.SparkFiles
 
 import scala.io.Source
 
-class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ShellUtils with K8sExternalBackendClient {
+class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ShellUtils {
 
   override def startH2OCluster(conf: H2OConf): Unit = {
     if (conf.isAutoClusterStartUsed) {
       if (conf.externalAutoStartBackend == ExternalBackendConf.YARN_BACKEND) {
         launchExternalH2OOnYarn(conf)
       } else if (conf.externalAutoStartBackend == ExternalBackendConf.KUBERNETES_BACKEND) {
-        startExternalH2OOnKubernetes(conf)
+        K8sExternalBackendClient.startExternalH2OOnKubernetes(conf)
       } else {
         throw new RuntimeException(s"Invalid backend type for auto cluster start - ${conf.externalAutoStartBackend}")
       }
