@@ -66,7 +66,8 @@ class H2OMOJOPipelineModel(override val uid: String)
   @transient private lazy val mojoPipeline: MojoPipeline = H2OMOJOPipelineCache.getMojoBackend(uid, getMojo)
 
   // As the mojoPipeline can't provide predictions and contributions at the same time, then
-  // if contributions are requested, there is utilized a second pipeline setup the way to calculate contributions
+  // if contributions are requested, there is utilized a second pipeline
+  // that's setup the way to calculate contributions
   @transient private lazy val mojoPipelineContributions: MojoPipeline = {
     val pipeline = H2OMOJOPipelineCache.getMojoBackend(uid + ".contributions", getMojo)
     pipeline.setShapPredictContribOriginal(true)
@@ -94,9 +95,40 @@ class H2OMOJOPipelineModel(override val uid: String)
   }
 
   private val modelUdf = (names: Array[String]) => {
-    val combinedSchema = StructType(getPredictionColSchema() ++ getContributionColSchema())
+    val schemaTransport = getTransportSchema()
     val schemaPredict = getPredictionColSchemaInternal()
     val schemaContrib = getContributionColSchemaInternal()
+
+    def transformDataAccordingToTransportSchema(inputMojoFrame: MojoFrame) = {
+
+      def mojoFrameToArray(mf: MojoFrame) = {
+        mf.getColumnNames.zipWithIndex.map {
+          case (_, i) =>
+            val columnData = mf.getColumnData(i).asInstanceOf[Array[_]]
+            if (columnData.length != 1) {
+              throw new RuntimeException("Invalid state, we predict on each row by row, independently at this moment.")
+            }
+            columnData(0)
+        }
+      }
+
+      val outputPredictions = mojoPipeline.transform(inputMojoFrame)
+      val predictions = mojoFrameToArray(outputPredictions)
+
+      val contributions = if (getWithContributions()) {
+        val outputContributions = mojoPipelineContributions.transform(inputMojoFrame)
+        mojoFrameToArray(outputContributions)
+      } else {
+        Array[Any]()
+      }
+
+      val content = Array[Any](
+        new GenericRowWithSchema(if (getNamedMojoOutputColumns()) predictions else Array[Any](predictions), schemaPredict),
+        new GenericRowWithSchema(if (getNamedMojoOutputColumns()) contributions else Array[Any](contributions), schemaContrib)
+      )
+      new GenericRowWithSchema(content, schemaTransport)
+    }
+
     val function = (r: Row) => {
       val builder = mojoPipeline.getInputFrameBuilder
       val rowBuilder = builder.getMojoRowBuilder
@@ -139,37 +171,12 @@ class H2OMOJOPipelineModel(override val uid: String)
           }
       }
 
-      def mojoFrameToArray(mf : MojoFrame) = {
-        mf.getColumnNames.zipWithIndex.map {
-          case (_, i) =>
-            val columnData = mf.getColumnData(i).asInstanceOf[Array[_]]
-            if (columnData.length != 1) {
-              throw new RuntimeException("Invalid state, we predict on each row by row, independently at this moment.")
-            }
-            columnData(0)
-        }
-      }
-
       builder.addRow(rowBuilder)
       val inputMojoFrame = builder.toMojoFrame
 
-      val outputPredictions = mojoPipeline.transform(inputMojoFrame)
-      val predictions = mojoFrameToArray(outputPredictions)
-
-      val contributions = if (getWithContributions()) {
-        val outputContributions = mojoPipelineContributions.transform(inputMojoFrame)
-        mojoFrameToArray(outputContributions)
-      } else {
-        Array[Any]()
-      }
-
-      val content = Array[Any](
-        new GenericRowWithSchema(predictions, schemaPredict),
-        new GenericRowWithSchema(contributions, schemaContrib)
-      )
-      new GenericRowWithSchema(content, combinedSchema)
+      transformDataAccordingToTransportSchema(inputMojoFrame)
     }
-    swudf(function, combinedSchema)
+    swudf(function, schemaTransport)
   }
 
   override def copy(extra: ParamMap): H2OMOJOPipelineModel = defaultCopy(extra)
@@ -203,8 +210,7 @@ class H2OMOJOPipelineModel(override val uid: String)
   }
 
   protected def getPredictionColSchema(): Seq[StructField] = {
-    val predictionType = getPredictionColSchemaInternal()
-    Seq(StructField(getPredictionCol(), predictionType, nullable = true))
+    Seq(StructField(getPredictionCol(), getPredictionColSchemaInternal(), nullable = true))
   }
 
   private def getContributionColSchemaInternal(): StructType = {
@@ -217,8 +223,11 @@ class H2OMOJOPipelineModel(override val uid: String)
   }
 
   protected def getContributionColSchema(): Seq[StructField] = {
-    val contributionType = getContributionColSchemaInternal()
-    Seq(StructField(getContributionCol(), contributionType, nullable = true))
+    Seq(StructField(getContributionCol(), getContributionColSchemaInternal(), nullable = true))
+  }
+
+  private def getTransportSchema() = {
+    StructType(getPredictionColSchema() ++ getContributionColSchema())
   }
 
   def selectPredictionUDF(column: String): Column = {
