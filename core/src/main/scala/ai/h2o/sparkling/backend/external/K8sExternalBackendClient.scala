@@ -21,7 +21,7 @@ import ai.h2o.sparkling.H2OConf
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import org.apache.spark.expose.Logging
 
-trait K8sExternalBackendClient extends K8sHeadlessService with K8sH2OStatefulSet with Logging {
+object K8sExternalBackendClient extends K8sHeadlessService with K8sH2OStatefulSet with Logging {
 
   def stopExternalH2OOnKubernetes(conf: H2OConf): Unit = {
     val client = new DefaultKubernetesClient
