@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+v3.36.0.2-1 (2022-01-27)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.0.2-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.0.2-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.0.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.0.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.0.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.0.2-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.0.2-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.0.2-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.0.2-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.0.2-1-3.1/index.html>`__
+
+-  Improvement
+
+   -  `SW-2685 <https://0xdata.atlassian.net/browse/SW-2685>`__ - Upgrade to H2O 3.36.0.2
+   -  `SW-2677 <https://0xdata.atlassian.net/browse/SW-2677>`__ - Make unwrapMojoModel() Independent on Spark Runtime
+   -  `SW-2635 <https://0xdata.atlassian.net/browse/SW-2635>`__ - Display Model After Its training Phase on stdout
+
+-  Docs
+
+   -  `SW-2681 <https://0xdata.atlassian.net/browse/SW-2681>`__ - Add Comment to Documentation about Contributions Support only in Binomial and Regression Models
+
+-  New Feature
+
+   -  `SW-2664 <https://0xdata.atlassian.net/browse/SW-2664>`__ - Expose "cv_scoring_history",     "reproducibility_information_table" on H2OMOJOModel
+
 v3.36.0.1-1 (2022-01-06)
 ------------------------
 Downloads:
