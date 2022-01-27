@@ -17,12 +17,15 @@
 
 package ai.h2o.sparkling.ml.models
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM, H2OGLM}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -55,6 +58,35 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       first.getCrossValidationMetricsSummary(),
       second.getCrossValidationMetricsSummary())
     first.getTrainingMetrics().-("ScoringTime") shouldEqual second.getTrainingMetrics().-("ScoringTime")
+  }
+
+  test("H2OMOJOModel is Java seriazable and deseriazable for information retrieval") {
+
+    val model = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"),
+      "gbm_cv.mojo")
+
+    val serialized = withResource(new ByteArrayOutputStream()) { byteStream =>
+      withResource(new ObjectOutputStream(byteStream)) { objectStream =>
+        objectStream.writeObject(model)
+        byteStream.flush()
+        byteStream.toByteArray
+      }
+    }
+    val deserializedModel = withResource(new ByteArrayInputStream(serialized)) { byteStream =>
+      withResource(new ObjectInputStream(byteStream)) { objectStream =>
+        objectStream.readObject().asInstanceOf[H2OMOJOModel]
+      }
+    }
+    val expectedCrossValidationSummary = model.getCrossValidationMetricsSummary().show()
+    val expectedFeatureImportances = model.getFeatureImportances().show()
+    val expectedScoringHistory = model.getScoringHistory().show()
+
+    val crossValidationSummary = deserializedModel.getCrossValidationMetricsSummary().show()
+    val featureImportances = deserializedModel.getFeatureImportances().show()
+    val scoringHistory = deserializedModel.getScoringHistory().show()
+
+    deserializedModel shouldNot be (null)
   }
 
   test("[MOJO] Export and Import - binomial model") {

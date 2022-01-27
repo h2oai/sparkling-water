@@ -39,6 +39,7 @@ import org.apache.spark.expose.Logging
 import org.apache.spark.ml.Model
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
+import ai.h2o.sparkling.ml.params.DataFrameSerializationWrapper._
 
 import java.lang.System.lineSeparator
 import scala.collection.JavaConverters._

@@ -17,16 +17,9 @@
 
 package ai.h2o.sparkling.ml.params
 
-import java.io.ByteArrayInputStream
-import java.util.Base64
-
-import ai.h2o.sparkling.utils.ScalaUtils.withResource
-import ai.h2o.sparkling.utils.{CompatibilityObjectInputStream, DataFrameSerializer, SparkSessionUtils}
-import org.apache.spark.ml.param.{Param, Params}
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Row}
-import org.json4s.JsonAST.{JField, JNull, JObject, JString, JValue}
-import org.json4s.jackson.JsonMethods.{compact, parse, render}
+import ai.h2o.sparkling.utils.{DataFrameJsonSerialization, DataFrameSerializer}
+import org.apache.spark.ml.param.Param
+import org.apache.spark.sql.DataFrame
 
 class NullableDataFrameParam(parent: HasDataFrameSerializer, name: String, doc: String, isValid: DataFrame => Boolean)
   extends Param[DataFrame](parent, name, doc, isValid) {
@@ -35,38 +28,10 @@ class NullableDataFrameParam(parent: HasDataFrameSerializer, name: String, doc: 
     this(parent, name, doc, (_: DataFrame) => true)
 
   override def jsonEncode(dataFrame: DataFrame): String = {
-    val ast = if (dataFrame == null) {
-      JNull
-    } else {
-      val serializerClassName = parent.getDataFrameSerializer()
-      val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
-      val serializedValue = serializer.serialize(dataFrame)
-      JObject(JField("serializer", JString(serializerClassName)), JField("value", serializedValue))
-    }
-    compact(render(ast))
+    val serializerClassName = parent.getDataFrameSerializer()
+    val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
+    DataFrameJsonSerialization.encodeDataFrame(dataFrame, serializer)
   }
 
-  override def jsonDecode(json: String): DataFrame = {
-    parse(json) match {
-      case JNull =>
-        null
-      case JObject(fields) =>
-        val fieldsMap = fields.toMap[String, JValue]
-        val serializerClassName = fieldsMap("serializer").asInstanceOf[JString].values
-        val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
-        val serializedValue = fieldsMap("value")
-        serializer.deserialize(serializedValue)
-      case JString(data) =>
-        val bytes = Base64.getDecoder().decode(data)
-        withResource(new ByteArrayInputStream(bytes)) { byteStream =>
-          withResource(new CompatibilityObjectInputStream(byteStream)) { objectStream =>
-            val schema = objectStream.readObject().asInstanceOf[StructType]
-            val rows = objectStream.readObject().asInstanceOf[java.util.List[Row]]
-            SparkSessionUtils.active.createDataFrame(rows, schema)
-          }
-        }
-      case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to DataFrame.")
-    }
-  }
+  override def jsonDecode(json: String): DataFrame = DataFrameJsonSerialization.decodeDataFrame(json)
 }

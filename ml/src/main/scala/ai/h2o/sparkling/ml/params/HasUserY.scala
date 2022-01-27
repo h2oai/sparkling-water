@@ -19,6 +19,7 @@ package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.sql.DataFrame
+import ai.h2o.sparkling.ml.params.DataFrameSerializationWrapper._
 
 trait HasUserY extends H2OAlgoParamsBase with HasDataFrameSerializer {
 
@@ -28,7 +29,7 @@ trait HasUserY extends H2OAlgoParamsBase with HasDataFrameSerializer {
 
   def getUserY(): DataFrame = $(userY)
 
-  def setUserY(value: DataFrame): this.type = set(userY, value)
+  def setUserY(value: DataFrame): this.type = set(userY, toWrapper(value))
 
   private[sparkling] def getUserYParam(trainingFrame: H2OFrame): Map[String, Any] = {
     Map("user_y" -> convertDataFrameToH2OFrameKey(getUserY()))
