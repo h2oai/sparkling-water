@@ -33,6 +33,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 class H2OMOJOPipelineModel(override val uid: String)
   extends Model[H2OMOJOPipelineModel]
@@ -61,7 +62,7 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   def getContributionCol(): String = "contribution"
 
-  def getTransportCol():String = "transport"
+  def getTransportCol():String = "SparklingWater_transport"
 
   @transient private lazy val mojoPipeline: MojoPipeline = H2OMOJOPipelineCache.getMojoBackend(uid, getMojo)
 
@@ -112,21 +113,23 @@ class H2OMOJOPipelineModel(override val uid: String)
         }
       }
 
-      val outputPredictions = mojoPipeline.transform(inputMojoFrame)
-      val predictions = mojoFrameToArray(outputPredictions)
-
-      val contributions = if (getWithContributions()) {
-        val outputContributions = mojoPipelineContributions.transform(inputMojoFrame)
-        mojoFrameToArray(outputContributions)
-      } else {
-        Array[Any]()
+      def arrayToOutputType(content: Array[Any]) = {
+        if (getNamedMojoOutputColumns()) content else Array[Any](content)
       }
 
-      val content = Array[Any](
-        new GenericRowWithSchema(if (getNamedMojoOutputColumns()) predictions else Array[Any](predictions), schemaPredict),
-        new GenericRowWithSchema(if (getNamedMojoOutputColumns()) contributions else Array[Any](contributions), schemaContrib)
-      )
-      new GenericRowWithSchema(content, schemaTransport)
+      val contentBuilder = mutable.ArrayBuffer[Any]()
+
+      val outputPredictions = mojoPipeline.transform(inputMojoFrame)
+      val predictions = mojoFrameToArray(outputPredictions)
+      contentBuilder += new GenericRowWithSchema(arrayToOutputType(predictions), schemaPredict)
+
+      if (getWithContributions()) {
+        val outputContributions = mojoPipelineContributions.transform(inputMojoFrame)
+        val contributions = mojoFrameToArray(outputContributions)
+        contentBuilder +=  new GenericRowWithSchema(arrayToOutputType(contributions), schemaContrib)
+      }
+
+      new GenericRowWithSchema(contentBuilder.toArray, schemaTransport)
     }
 
     val function = (r: Row) => {
@@ -184,10 +187,16 @@ class H2OMOJOPipelineModel(override val uid: String)
   override def transform(dataset: Dataset[_]): DataFrame = {
     val baseDf = applyPredictionUdf(dataset, modelUdf)
 
-    baseDf
-      .withColumn(getPredictionCol(), col(s"${getTransportCol()}.${getPredictionCol()}"))
-      .withColumn(getContributionCol(), col(s"${getTransportCol()}.${getContributionCol()}"))
-      .drop(getTransportCol())
+    if (getWithContributions()) {
+      baseDf
+        .withColumn(getPredictionCol(), col(s"${getTransportCol()}.${getPredictionCol()}"))
+        .withColumn(getContributionCol(), col(s"${getTransportCol()}.${getContributionCol()}"))
+        .drop(getTransportCol())
+    } else {
+      baseDf
+        .withColumn(getPredictionCol(), col(s"${getTransportCol()}.${getPredictionCol()}"))
+        .drop(getTransportCol())
+    }
   }
 
   private def toSparkType(t: Type): DataType = t match {
@@ -223,7 +232,11 @@ class H2OMOJOPipelineModel(override val uid: String)
   }
 
   protected def getContributionColSchema(): Seq[StructField] = {
-    Seq(StructField(getContributionCol(), getContributionColSchemaInternal(), nullable = true))
+    if (getWithContributions()) {
+      Seq(StructField(getContributionCol(), getContributionColSchemaInternal(), nullable = true))
+    } else {
+      Seq[StructField]()
+    }
   }
 
   private def getTransportSchema() = {
