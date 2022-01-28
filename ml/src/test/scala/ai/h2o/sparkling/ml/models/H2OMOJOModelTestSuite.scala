@@ -61,7 +61,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       }
     }
 
-    def assertDataframesOnMOJOModels(expected: H2OMOJOModel, deserialized: H2OMOJOModel) : Unit = {
+    def assertDataframesOnMOJOModels(expected: H2OMOJOModel, deserialized: H2OMOJOModel): Unit = {
       deserialized shouldNot be(null)
 
       val expectedFeatureImportances = expected.getFeatureImportances()
@@ -80,12 +80,12 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       val gainsLiftTable = expectedTrainingMetrics.getGainsLiftTable()
       val confusionMatrix = expectedTrainingMetrics.getConfusionMatrix()
 
-      featureImportances shouldNot be (null)
-      scoringHistory shouldNot be (null)
-      thresholdsAndMetricScores shouldNot be (null)
-      maxCriteriaAndMetricScores shouldNot be (null)
-      gainsLiftTable shouldNot be (null)
-      confusionMatrix shouldNot be (null)
+      featureImportances shouldNot be(null)
+      scoringHistory shouldNot be(null)
+      thresholdsAndMetricScores shouldNot be(null)
+      maxCriteriaAndMetricScores shouldNot be(null)
+      gainsLiftTable shouldNot be(null)
+      confusionMatrix shouldNot be(null)
 
       TestUtils.assertDataFramesAreIdentical(expectedFeatureImportances, featureImportances)
       TestUtils.assertDataFramesAreIdentical(expectedScoringHistory, scoringHistory)
@@ -107,7 +107,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     var i = 0
     while (i < expectedCVModels.length) {
       assertDataframesOnMOJOModels(expectedCVModels(i), deserializedCVModels(i))
-      deserializedCVScoringHistory(i) shouldNot be (null)
+      deserializedCVScoringHistory(i) shouldNot be(null)
       TestUtils.assertDataFramesAreIdentical(expectedCVScoringHistory(i), deserializedCVScoringHistory(i))
       i += 1
     }
