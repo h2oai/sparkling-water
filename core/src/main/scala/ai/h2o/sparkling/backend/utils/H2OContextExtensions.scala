@@ -33,7 +33,7 @@ import water.api.schemas3.{CloudLockV3, JobV3}
 
 import scala.reflect.runtime.universe._
 
-trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils with K8sExternalBackendClient {
+trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils {
   _: H2OContext =>
 
   def downloadH2OLogs(destinationDir: String, logContainer: String): String = {
@@ -186,7 +186,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       case ExternalBackendConf.YARN_BACKEND =>
         val yarnAppId = conf.getOption(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_YARN_APP_ID._1)
         launchShellCommand(Seq[String]("yarn", "application", "-kill", yarnAppId.get))
-      case ExternalBackendConf.KUBERNETES_BACKEND => stopExternalH2OOnKubernetes(conf)
+      case ExternalBackendConf.KUBERNETES_BACKEND => K8sExternalBackendClient.stopExternalH2OOnKubernetes(conf)
       case _ => throw new RuntimeException("Invalid auto cluster start backend!")
     }
   }
