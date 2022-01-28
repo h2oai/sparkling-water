@@ -36,4 +36,36 @@ object DataFrameSerializationWrappers {
       objectOutputStream.writeUTF(json)
     }
   }
+
+  implicit def toWrapper(dataFrame: DataFrame): DataFrameSerializationWrapper = {
+    if (dataFrame==null) {
+      null
+    } else {
+      new DataFrameSerializationWrapper(dataFrame)
+    }
+  }
+
+  implicit def toWrapper(dataFrames: Array[DataFrame]): DataFrameArraySerializationWrapper = {
+    if (dataFrames==null) {
+      null
+    } else {
+      new DataFrameArraySerializationWrapper(dataFrames)
+    }
+  }
+
+  implicit def toDataFrame(wrapper: DataFrameSerializationWrapper): DataFrame = {
+    if (wrapper==null) {
+      null
+    } else {
+      wrapper.getDataFrame()
+    }
+  }
+
+  implicit def toDataFrame(wrapper: DataFrameArraySerializationWrapper): Array[DataFrame] = {
+    if (wrapper == null) {
+      null
+    } else {
+      wrapper.getDataFrames()
+    }
+  }
 }

@@ -18,7 +18,6 @@ package ai.h2o.sparkling.ml.params
 
 import org.apache.spark.ml.param._
 import org.apache.spark.sql.DataFrame
-import ai.h2o.sparkling.ml.params.DataFrameSerializationWrapper._
 
 import scala.collection.JavaConverters._
 
@@ -70,7 +69,7 @@ trait H2OCommonParams extends H2OBaseMOJOParams {
   //
   // Setters
   //
-  def setValidationDataFrame(dataFrame: DataFrame): this.type = set(validationDataFrame, toWrapper(dataFrame))
+  def setValidationDataFrame(dataFrame: DataFrame): this.type = set(validationDataFrame, dataFrame)
 
   def setSplitRatio(ratio: Double): this.type = set(splitRatio, ratio)
 

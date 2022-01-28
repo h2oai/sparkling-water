@@ -37,31 +37,8 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   import spark.implicits._
 
-  test("H2OMOJOModel saved with scala 2.11 behaves the same way as H2OMOJOModel saved with scala 2.12") {
-    val model11 = H2OMOJOModel.load("ml/src/test/resources/sw_mojo_scala_2.11_df_java_serde")
-    val model12 = H2OMOJOModel.load("ml/src/test/resources/sw_mojo_scala_2.12_df_java_serde")
-    compareMOJOModels(model11, model12)
-  }
-
-  test("H2OMOJOModel saved with current serialization behaves the same way as old models") {
-    val model11 = H2OMOJOModel.load("ml/src/test/resources/sw_mojo_scala_2.11_df_java_serde")
-    val path = "ml/build/mojo_model_serialization_compatibility"
-    model11.write.overwrite.save(path)
-    val currentModel = H2OMOJOModel.load(path)
-    compareMOJOModels(model11, currentModel)
-  }
-
-  private def compareMOJOModels(first: H2OMOJOModel, second: H2OMOJOModel) = {
-    TestUtils.assertDataFramesAreIdentical(first.transform(prostateDataFrame), second.transform(prostateDataFrame))
-    TestUtils.assertDataFramesAreIdentical(first.getFeatureImportances(), second.getFeatureImportances())
-    TestUtils.assertDataFramesAreIdentical(
-      first.getCrossValidationMetricsSummary(),
-      second.getCrossValidationMetricsSummary())
-    first.getTrainingMetrics().-("ScoringTime") shouldEqual second.getTrainingMetrics().-("ScoringTime")
-  }
-
   test("H2OMOJOModel is Java seriazable and deseriazable for information retrieval") {
-
+    System.setProperty("spark.testing", "false")
     val model = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"),
       "gbm_cv.mojo")
@@ -87,6 +64,29 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val scoringHistory = deserializedModel.getScoringHistory().show()
 
     deserializedModel shouldNot be (null)
+  }
+
+  test("H2OMOJOModel saved with scala 2.11 behaves the same way as H2OMOJOModel saved with scala 2.12") {
+    val model11 = H2OMOJOModel.load("ml/src/test/resources/sw_mojo_scala_2.11_df_java_serde")
+    val model12 = H2OMOJOModel.load("ml/src/test/resources/sw_mojo_scala_2.12_df_java_serde")
+    compareMOJOModels(model11, model12)
+  }
+
+  test("H2OMOJOModel saved with current serialization behaves the same way as old models") {
+    val model11 = H2OMOJOModel.load("ml/src/test/resources/sw_mojo_scala_2.11_df_java_serde")
+    val path = "ml/build/mojo_model_serialization_compatibility"
+    model11.write.overwrite.save(path)
+    val currentModel = H2OMOJOModel.load(path)
+    compareMOJOModels(model11, currentModel)
+  }
+
+  private def compareMOJOModels(first: H2OMOJOModel, second: H2OMOJOModel) = {
+    TestUtils.assertDataFramesAreIdentical(first.transform(prostateDataFrame), second.transform(prostateDataFrame))
+    TestUtils.assertDataFramesAreIdentical(first.getFeatureImportances(), second.getFeatureImportances())
+    TestUtils.assertDataFramesAreIdentical(
+      first.getCrossValidationMetricsSummary(),
+      second.getCrossValidationMetricsSummary())
+    first.getTrainingMetrics().-("ScoringTime") shouldEqual second.getTrainingMetrics().-("ScoringTime")
   }
 
   test("[MOJO] Export and Import - binomial model") {

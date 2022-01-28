@@ -16,31 +16,27 @@
  */
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.utils.DataFrameSerializationWrappers._
 import ai.h2o.sparkling.utils.{DataFrameJsonSerialization, DataFrameSerializer}
-import org.apache.spark.ml.param.{Param, ParamPair}
-import org.apache.spark.sql.DataFrame
-
-import scala.collection.JavaConverters._
+import org.apache.spark.ml.param.Param
 
 class NullableDataFrameArrayParam(
     parent: HasDataFrameSerializer,
     name: String,
     doc: String,
-    isValid: Array[DataFrame] => Boolean)
-  extends Param[Array[DataFrame]](parent, name, doc, isValid) {
+    isValid: DataFrameArraySerializationWrapper => Boolean)
+  extends Param[DataFrameArraySerializationWrapper](parent, name, doc, isValid) {
 
   def this(parent: HasDataFrameSerializer, name: String, doc: String) =
     this(parent, name, doc, _ => true)
 
-  /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
-  def w(value: java.util.List[DataFrame]): ParamPair[Array[DataFrame]] =
-    w(value.asScala.toArray)
-
-  override def jsonEncode(dataFrames: Array[DataFrame]): String = {
+  override def jsonEncode(dataFrames: DataFrameArraySerializationWrapper): String = {
     val serializerClassName = parent.getDataFrameSerializer()
     val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
     DataFrameJsonSerialization.encodeDataFrames(dataFrames, serializer)
   }
 
-  override def jsonDecode(json: String): Array[DataFrame] = DataFrameJsonSerialization.decodeDataFrames(json)
+  override def jsonDecode(json: String): DataFrameArraySerializationWrapper = {
+    DataFrameJsonSerialization.decodeDataFrames(json)
+  }
 }

@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.sql.DataFrame
-import ai.h2o.sparkling.ml.params.DataFrameSerializationWrapper._
+import ai.h2o.sparkling.utils.DataFrameSerializationWrappers._
 
 trait HasUserY extends H2OAlgoParamsBase with HasDataFrameSerializer {
 

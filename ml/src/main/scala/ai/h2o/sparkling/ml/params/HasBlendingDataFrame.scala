@@ -20,7 +20,6 @@ package ai.h2o.sparkling.ml.params
 import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.expose.Logging
 import org.apache.spark.sql.DataFrame
-import ai.h2o.sparkling.ml.params.DataFrameSerializationWrapper._
 
 trait HasBlendingDataFrame extends H2OAlgoParamsBase with Logging with HasDataFrameSerializer {
 
@@ -38,7 +37,7 @@ trait HasBlendingDataFrame extends H2OAlgoParamsBase with Logging with HasDataFr
 
   def getBlendingDataFrame(): DataFrame = $(blendingDataFrame)
 
-  def setBlendingDataFrame(value: DataFrame): this.type = set(blendingDataFrame, toWrapper(value))
+  def setBlendingDataFrame(value: DataFrame): this.type = set(blendingDataFrame, value)
 
   private[sparkling] def getBlendingDataFrameParam(trainingFrame: H2OFrame): Map[String, Any] = {
     Map("blending_frame" -> convertDataFrameToH2OFrameKey(getBlendingDataFrame()))
