@@ -19,7 +19,6 @@ package ai.h2o.sparkling.ml.models
 
 import java.sql.{Date, Timestamp}
 
-import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import ai.h2o.sparkling.SparkTestContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
@@ -28,6 +27,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.Inspectors._
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
@@ -306,10 +306,23 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val featureColumns = 1
     val predictionColumns = 4
     val bias = 1
-    val contributionColumns = predictionColumns * (featureColumns + bias)
+    val contributionColumnsNo = predictionColumns * (featureColumns + bias)
 
-    assert(contributionColumns == onlyContributions.columns.length)
-    assert(onlyContributions.columns.forall(_.startsWith("contrib_")))
+    onlyContributions.columns should have length contributionColumnsNo
+    forAll(onlyContributions.columns) { _ should startWith("contrib_") }
+
+    assertContributionValues(onlyContributions.take(1))
+  }
+
+  private def assertContributionValues(contributions: Array[Row]): Unit = {
+    contributions(0).getDouble(0) shouldBe 0.0
+    contributions(0).getDouble(1) shouldBe -2.3025851249694824
+    contributions(0).getDouble(2) shouldBe 0.0
+    contributions(0).getDouble(3) shouldBe -1.3470736742019653
+    contributions(0).getDouble(4) shouldBe 0.0
+    contributions(0).getDouble(5) shouldBe -2.263364315032959
+    contributions(0).getDouble(6) shouldBe 0.0
+    contributions(0).getDouble(7) shouldBe -0.6236211061477661
   }
 
   test("Mojo pipeline can expose unnamed contribution (SHAP) values") {
@@ -328,9 +341,9 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val featureColumns = 1
     val predictionColumns = 4
     val bias = 1
-    val contributionColumns = predictionColumns * (featureColumns + bias)
+    val contributionColumnsNo = predictionColumns * (featureColumns + bias)
 
-    assert(contributionColumns == onlyContributions.head().getSeq(0).length)
+    onlyContributions.head().getSeq(0) should have length contributionColumnsNo
   }
 
   test("Transform and transformSchema methods are aligned when (SHAP) contributions are enabled") {
@@ -344,6 +357,6 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val outputSchema = pipeline.transform(df).schema
     val transformedSchema = pipeline.transformSchema(df.schema)
 
-    assert(transformedSchema === outputSchema)
+    transformedSchema should equal(outputSchema)
   }
 }

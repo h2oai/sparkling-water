@@ -232,7 +232,7 @@ class H2OMOJOPipelineModel(override val uid: String)
     if (getWithContributions()) {
       Seq(StructField(getContributionCol(), getContributionColSchemaInternal(), nullable = true))
     } else {
-      Seq[StructField]()
+      Seq.empty[StructField]
     }
   }
 
