@@ -19,8 +19,10 @@ package ai.h2o.sparkling.ml.models
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
+import ai.h2o.sparkling.ml.algos.classification.H2OGBMClassifier
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM, H2OGLM}
+import ai.h2o.sparkling.ml.metrics.H2OBinomialMetrics
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.functions._
@@ -37,10 +39,14 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   import spark.implicits._
 
-  test("H2OMOJOModel is Java seriazable and deseriazable for information retrieval") {
-    System.setProperty("spark.testing", "false")
-    val model =
-      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
+  test("DataFrame-based parameters on H2OMOJOModel are Java serializable") {
+    System.setProperty("spark.testing", "false") // To enable serialization on H2OMOJOModel
+    val estimator = new H2OGBMClassifier()
+      .setSeed(1)
+      .setNfolds(3)
+      .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("CAPSULE")
+    val model = estimator.fit(prostateDataFrame)
 
     val serialized = withResource(new ByteArrayOutputStream()) { byteStream =>
       withResource(new ObjectOutputStream(byteStream)) { objectStream =>
@@ -54,15 +60,57 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
         objectStream.readObject().asInstanceOf[H2OMOJOModel]
       }
     }
-    val expectedCrossValidationSummary = model.getCrossValidationMetricsSummary().show()
-    val expectedFeatureImportances = model.getFeatureImportances().show()
-    val expectedScoringHistory = model.getScoringHistory().show()
 
-    val crossValidationSummary = deserializedModel.getCrossValidationMetricsSummary().show()
-    val featureImportances = deserializedModel.getFeatureImportances().show()
-    val scoringHistory = deserializedModel.getScoringHistory().show()
+    def assertDataframesOnMOJOModels(expected: H2OMOJOModel, deserialized: H2OMOJOModel) : Unit = {
+      deserialized shouldNot be(null)
 
-    deserializedModel shouldNot be(null)
+      val expectedFeatureImportances = expected.getFeatureImportances()
+      val expectedScoringHistory = expected.getScoringHistory()
+      val expectedTrainingMetrics = expected.getTrainingMetricsObject().asInstanceOf[H2OBinomialMetrics]
+      val expectedThresholdsAndMetricScores = expectedTrainingMetrics.getThresholdsAndMetricScores()
+      val expectedMaxCriteriaAndMetricScores = expectedTrainingMetrics.getMaxCriteriaAndMetricScores()
+      val expectedGainsLiftTable = expectedTrainingMetrics.getGainsLiftTable()
+      val expectedConfusionMatrix = expectedTrainingMetrics.getConfusionMatrix()
+
+      val featureImportances = deserialized.getFeatureImportances()
+      val scoringHistory = deserialized.getScoringHistory()
+      val trainingMetrics = expected.getTrainingMetricsObject().asInstanceOf[H2OBinomialMetrics]
+      val thresholdsAndMetricScores = trainingMetrics.getThresholdsAndMetricScores()
+      val maxCriteriaAndMetricScores = trainingMetrics.getMaxCriteriaAndMetricScores()
+      val gainsLiftTable = expectedTrainingMetrics.getGainsLiftTable()
+      val confusionMatrix = expectedTrainingMetrics.getConfusionMatrix()
+
+      featureImportances shouldNot be (null)
+      scoringHistory shouldNot be (null)
+      thresholdsAndMetricScores shouldNot be (null)
+      maxCriteriaAndMetricScores shouldNot be (null)
+      gainsLiftTable shouldNot be (null)
+      confusionMatrix shouldNot be (null)
+
+      TestUtils.assertDataFramesAreIdentical(expectedFeatureImportances, featureImportances)
+      TestUtils.assertDataFramesAreIdentical(expectedScoringHistory, scoringHistory)
+      TestUtils.assertDataFramesAreIdentical(expectedThresholdsAndMetricScores, thresholdsAndMetricScores)
+      TestUtils.assertDataFramesAreIdentical(expectedMaxCriteriaAndMetricScores, maxCriteriaAndMetricScores)
+      TestUtils.assertDataFramesAreIdentical(expectedGainsLiftTable, gainsLiftTable)
+      TestUtils.assertDataFramesAreIdentical(expectedConfusionMatrix, confusionMatrix)
+    }
+
+    val expectedCVModels = model.getCrossValidationModels()
+    val expectedCVScoringHistory = model.getCrossValidationModelsScoringHistory()
+    val expectedCrossValidationSummary = model.getCrossValidationMetricsSummary()
+
+    val crossValidationSummary = deserializedModel.getCrossValidationMetricsSummary()
+    val deserializedCVModels = deserializedModel.getCrossValidationModels()
+    val deserializedCVScoringHistory = deserializedModel.getCrossValidationModelsScoringHistory()
+    TestUtils.assertDataFramesAreIdentical(expectedCrossValidationSummary, crossValidationSummary)
+    assertDataframesOnMOJOModels(model, deserializedModel)
+    var i = 0
+    while (i < expectedCVModels.length) {
+      assertDataframesOnMOJOModels(expectedCVModels(i), deserializedCVModels(i))
+      deserializedCVScoringHistory(i) shouldNot be (null)
+      TestUtils.assertDataFramesAreIdentical(expectedCVScoringHistory(i), deserializedCVScoringHistory(i))
+      i += 1
+    }
   }
 
   test("H2OMOJOModel saved with scala 2.11 behaves the same way as H2OMOJOModel saved with scala 2.12") {
