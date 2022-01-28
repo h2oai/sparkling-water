@@ -38,7 +38,7 @@ object DataFrameSerializationWrappers {
   }
 
   implicit def toWrapper(dataFrame: DataFrame): DataFrameSerializationWrapper = {
-    if (dataFrame==null) {
+    if (dataFrame == null) {
       null
     } else {
       new DataFrameSerializationWrapper(dataFrame)
@@ -46,7 +46,7 @@ object DataFrameSerializationWrappers {
   }
 
   implicit def toWrapper(dataFrames: Array[DataFrame]): DataFrameArraySerializationWrapper = {
-    if (dataFrames==null) {
+    if (dataFrames == null) {
       null
     } else {
       new DataFrameArraySerializationWrapper(dataFrames)
@@ -54,7 +54,7 @@ object DataFrameSerializationWrappers {
   }
 
   implicit def toDataFrame(wrapper: DataFrameSerializationWrapper): DataFrame = {
-    if (wrapper==null) {
+    if (wrapper == null) {
       null
     } else {
       wrapper.getDataFrame()

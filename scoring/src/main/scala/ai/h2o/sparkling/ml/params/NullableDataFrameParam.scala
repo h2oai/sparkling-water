@@ -21,7 +21,11 @@ import ai.h2o.sparkling.utils.DataFrameSerializationWrappers._
 import ai.h2o.sparkling.utils.{DataFrameJsonSerialization, DataFrameSerializer}
 import org.apache.spark.ml.param.Param
 
-class NullableDataFrameParam(parent: HasDataFrameSerializer, name: String, doc: String, isValid: DataFrameSerializationWrapper => Boolean)
+class NullableDataFrameParam(
+    parent: HasDataFrameSerializer,
+    name: String,
+    doc: String,
+    isValid: DataFrameSerializationWrapper => Boolean)
   extends Param[DataFrameSerializationWrapper](parent, name, doc, isValid) {
 
   def this(parent: HasDataFrameSerializer, name: String, doc: String) = this(parent, name, doc, _ => true)
@@ -32,5 +36,6 @@ class NullableDataFrameParam(parent: HasDataFrameSerializer, name: String, doc: 
     DataFrameJsonSerialization.encodeDataFrame(dataFrameWrapper, serializer)
   }
 
-  override def jsonDecode(json: String): DataFrameSerializationWrapper = DataFrameJsonSerialization.decodeDataFrame(json)
+  override def jsonDecode(json: String): DataFrameSerializationWrapper =
+    DataFrameJsonSerialization.decodeDataFrame(json)
 }

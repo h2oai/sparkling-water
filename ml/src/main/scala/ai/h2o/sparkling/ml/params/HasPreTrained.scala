@@ -21,7 +21,6 @@ import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.sql.DataFrame
 import ai.h2o.sparkling.utils.DataFrameSerializationWrappers._
 
-
 trait HasPreTrained extends H2OAlgoParamsBase with HasDataFrameSerializer {
   private val preTrained = new NullableDataFrameParam(
     this,

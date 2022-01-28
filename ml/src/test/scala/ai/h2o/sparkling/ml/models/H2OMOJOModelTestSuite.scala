@@ -39,9 +39,8 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   test("H2OMOJOModel is Java seriazable and deseriazable for information retrieval") {
     System.setProperty("spark.testing", "false")
-    val model = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"),
-      "gbm_cv.mojo")
+    val model =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("gbm_cv.mojo"), "gbm_cv.mojo")
 
     val serialized = withResource(new ByteArrayOutputStream()) { byteStream =>
       withResource(new ObjectOutputStream(byteStream)) { objectStream =>
@@ -63,7 +62,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val featureImportances = deserializedModel.getFeatureImportances().show()
     val scoringHistory = deserializedModel.getScoringHistory().show()
 
-    deserializedModel shouldNot be (null)
+    deserializedModel shouldNot be(null)
   }
 
   test("H2OMOJOModel saved with scala 2.11 behaves the same way as H2OMOJOModel saved with scala 2.12") {
