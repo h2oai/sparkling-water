@@ -136,14 +136,12 @@ def test_h2o_mojo_pipeline_contributions(spark):
     mojo = H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
 
     df = spark.read.csv(data_path, header=True, inferSchema=True)
-    predictions_and_contributions = mojo.transform(df).select("prediction.*")
+    contributions = mojo.transform(df).select("contribution.*")
 
     feature_columns = 1
     prediction_columns = 4
     bias = 1
     contribution_columns = prediction_columns * (feature_columns + bias)
 
-    assert prediction_columns + contribution_columns == len(predictions_and_contributions.columns)
-
-    contributions = [c for c in predictions_and_contributions.columns if c.startswith("contrib_")]
-    assert contribution_columns == len(contributions)
+    assert contribution_columns == len(contributions.columns)
+    assert all(c.startswith("contrib_") for c in contributions.columns)

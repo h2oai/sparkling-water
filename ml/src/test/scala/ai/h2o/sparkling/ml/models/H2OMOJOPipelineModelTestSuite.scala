@@ -107,7 +107,6 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     assert(udfSelection.schema.head.dataType == normalSelection.schema.head.dataType)
     assert(udfSelection.first() == normalSelection.first())
 
-    println("Predictions:")
     assertPredictedValuesForNamedCols(udfSelection.take(5))
   }
 
@@ -347,6 +346,4 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
 
     assert(transformedSchema === outputSchema)
   }
-
-
 }

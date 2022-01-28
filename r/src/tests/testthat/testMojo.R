@@ -227,13 +227,10 @@ test_that("test MOJO contribution (SHAP) values", {
   mojo <- H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
   mojoOutput <- mojo$transform(dataset)
 
-  flattened <- sdf_unnest_wider(mojoOutput, "prediction")
-  expect_equal(colnames(flattened), c(
+  flattenedContributions <- sdf_unnest_wider(mojoOutput, "contribution")
+  expect_equal(colnames(flattenedContributions), c(
     "ChangeTemp1",                  # input feature
-    "ChangeWindDirect_c",           # output prediction
-    "ChangeWindDirect_l",           # output prediction
-    "ChangeWindDirect_n",           # output prediction
-    "ChangeWindDirect_s",           # output prediction
+    "prediction",                   # output prediction
     "contrib_ChangeTemp===1_c",     # output contribution
     "contrib_bias_c",               # output contribution
     "contrib_ChangeTemp===1_l",     # output contribution

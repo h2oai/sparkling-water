@@ -100,10 +100,10 @@ class H2OMOJOPipelineModel(override val uid: String)
     val schemaPredict = getPredictionColSchemaInternal()
     val schemaContrib = getContributionColSchemaInternal()
 
-    def transformDataAccordingToTransportSchema(inputMojoFrame: MojoFrame) = {
+    def transformData(inputMojoFrame: MojoFrame) = {
 
       def mojoFrameToArray(mf: MojoFrame) = {
-        mf.getColumnNames.zipWithIndex.map {
+        val content = mf.getColumnNames.zipWithIndex.map {
           case (_, i) =>
             val columnData = mf.getColumnData(i).asInstanceOf[Array[_]]
             if (columnData.length != 1) {
@@ -111,9 +111,6 @@ class H2OMOJOPipelineModel(override val uid: String)
             }
             columnData(0)
         }
-      }
-
-      def arrayToOutputType(content: Array[Any]) = {
         if (getNamedMojoOutputColumns()) content else Array[Any](content)
       }
 
@@ -121,12 +118,12 @@ class H2OMOJOPipelineModel(override val uid: String)
 
       val outputPredictions = mojoPipeline.transform(inputMojoFrame)
       val predictions = mojoFrameToArray(outputPredictions)
-      contentBuilder += new GenericRowWithSchema(arrayToOutputType(predictions), schemaPredict)
+      contentBuilder += new GenericRowWithSchema(predictions, schemaPredict)
 
       if (getWithContributions()) {
         val outputContributions = mojoPipelineContributions.transform(inputMojoFrame)
         val contributions = mojoFrameToArray(outputContributions)
-        contentBuilder +=  new GenericRowWithSchema(arrayToOutputType(contributions), schemaContrib)
+        contentBuilder +=  new GenericRowWithSchema(contributions, schemaContrib)
       }
 
       new GenericRowWithSchema(contentBuilder.toArray, schemaTransport)
@@ -177,7 +174,7 @@ class H2OMOJOPipelineModel(override val uid: String)
       builder.addRow(rowBuilder)
       val inputMojoFrame = builder.toMojoFrame
 
-      transformDataAccordingToTransportSchema(inputMojoFrame)
+      transformData(inputMojoFrame)
     }
     swudf(function, schemaTransport)
   }
