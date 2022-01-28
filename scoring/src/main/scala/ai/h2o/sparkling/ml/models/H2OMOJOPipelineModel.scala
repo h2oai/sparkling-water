@@ -54,15 +54,21 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   // MOJO output columns describing contributions
   protected final val outputSubColsContributions: StringArrayParam =
-    new StringArrayParam(this, "outputSubColsContributions", "Names of contribution sub-columns under the output column")
+    new StringArrayParam(
+      this,
+      "outputSubColsContributions",
+      "Names of contribution sub-columns under the output column")
   protected final val outputSubTypesContributions: StringArrayParam =
-    new StringArrayParam(this, "outputSubTypesContributions", "Types of contribution sub-columns under the output column")
+    new StringArrayParam(
+      this,
+      "outputSubTypesContributions",
+      "Types of contribution sub-columns under the output column")
 
   def getOutputSubCols(): Array[String] = $ { outputSubCols }
 
   def getContributionCol(): String = "contribution"
 
-  def getTransportCol():String = "SparklingWater_transport"
+  def getTransportCol(): String = "SparklingWater_transport"
 
   @transient private lazy val mojoPipeline: MojoPipeline = H2OMOJOPipelineCache.getMojoBackend(uid, getMojo)
 
@@ -74,7 +80,6 @@ class H2OMOJOPipelineModel(override val uid: String)
     pipeline.setShapPredictContribOriginal(true)
     pipeline
   }
-
 
   private def prepareBooleans(colType: Type, colData: Any): Any = {
     if (colData == null) {
@@ -123,7 +128,7 @@ class H2OMOJOPipelineModel(override val uid: String)
       if (getWithContributions()) {
         val outputContributions = mojoPipelineContributions.transform(inputMojoFrame)
         val contributions = mojoFrameToArray(outputContributions)
-        contentBuilder +=  new GenericRowWithSchema(contributions, schemaContrib)
+        contentBuilder += new GenericRowWithSchema(contributions, schemaContrib)
       }
 
       new GenericRowWithSchema(contentBuilder.toArray, schemaTransport)
@@ -209,7 +214,9 @@ class H2OMOJOPipelineModel(override val uid: String)
   private def getPredictionColSchemaInternal(): StructType = {
     if (getNamedMojoOutputColumns()) {
       val outputPredictions = getOutputSubCols().zip($(outputSubTypes))
-      StructType(outputPredictions.map { case (cn, ct) => StructField(cn, toSparkType(Type.valueOf(ct)), nullable = true) })
+      StructType(outputPredictions.map {
+        case (cn, ct) => StructField(cn, toSparkType(Type.valueOf(ct)), nullable = true)
+      })
     } else {
       StructType(StructField("preds", ArrayType(DoubleType, containsNull = false), nullable = true) :: Nil)
     }
@@ -222,7 +229,9 @@ class H2OMOJOPipelineModel(override val uid: String)
   private def getContributionColSchemaInternal(): StructType = {
     if (getNamedMojoOutputColumns()) {
       val outputContributions = $(outputSubColsContributions).zip($(outputSubTypesContributions))
-      StructType(outputContributions.map { case (cn, ct) => StructField(cn, toSparkType(Type.valueOf(ct)), nullable = true) })
+      StructType(outputContributions.map {
+        case (cn, ct) => StructField(cn, toSparkType(Type.valueOf(ct)), nullable = true)
+      })
     } else {
       StructType(StructField("contribs", ArrayType(DoubleType, containsNull = false), nullable = true) :: Nil)
     }
