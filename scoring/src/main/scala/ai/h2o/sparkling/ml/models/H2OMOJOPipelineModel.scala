@@ -108,7 +108,7 @@ class H2OMOJOPipelineModel(override val uid: String)
     def transformData(inputMojoFrame: MojoFrame) = {
 
       def mojoFrameToArray(mf: MojoFrame) = {
-        val content = mf.getColumnNames.zipWithIndex.map {
+        mf.getColumnNames.zipWithIndex.map {
           case (_, i) =>
             val columnData = mf.getColumnData(i).asInstanceOf[Array[_]]
             if (columnData.length != 1) {
@@ -116,14 +116,14 @@ class H2OMOJOPipelineModel(override val uid: String)
             }
             columnData(0)
         }
-        if (getNamedMojoOutputColumns()) content else Array[Any](content)
       }
 
       val contentBuilder = mutable.ArrayBuffer[Any]()
 
       val outputPredictions = mojoPipeline.transform(inputMojoFrame)
       val predictions = mojoFrameToArray(outputPredictions)
-      contentBuilder += new GenericRowWithSchema(predictions, schemaPredict)
+      val content = if (getNamedMojoOutputColumns()) predictions else Array[Any](predictions)
+      contentBuilder += new GenericRowWithSchema(content, schemaPredict)
 
       if (getWithContributions()) {
         val outputContributions = mojoPipelineContributions.transform(inputMojoFrame)
@@ -227,14 +227,10 @@ class H2OMOJOPipelineModel(override val uid: String)
   }
 
   private def getContributionsColSchemaInternal(): StructType = {
-    if (getNamedMojoOutputColumns()) {
-      val outputContributions = $(outputSubColsContributions).zip($(outputSubTypesContributions))
-      StructType(outputContributions.map {
-        case (cn, ct) => StructField(cn, toSparkType(Type.valueOf(ct)), nullable = true)
-      })
-    } else {
-      StructType(StructField("contribs", ArrayType(DoubleType, containsNull = false), nullable = true) :: Nil)
-    }
+    val outputContributions = $(outputSubColsContributions).zip($(outputSubTypesContributions))
+    StructType(outputContributions.map {
+      case (cn, ct) => StructField(cn, toSparkType(Type.valueOf(ct)), nullable = true)
+    })
   }
 
   protected def getContributionsColSchema(): Seq[StructField] = {

@@ -325,7 +325,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     contributions(0).getDouble(7) shouldBe -0.6236211061477661
   }
 
-  test("Mojo pipeline can expose unnamed contribution (SHAP) values") {
+  test("Mojo pipeline outputs named contribution values even if namedMojoOutputColumns was set to false") {
 
     val mojoSettings = H2OMOJOSettings(withContributions = true, namedMojoOutputColumns = false)
     val pipeline = H2OMOJOPipelineModel.createFromMojo(
@@ -336,14 +336,15 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
     val predictionsAndContributions = pipeline.transform(df)
 
-    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.contribs")
+    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.*")
 
     val featureColumns = 1
     val predictionColumns = 4
     val bias = 1
     val contributionColumnsNo = predictionColumns * (featureColumns + bias)
 
-    onlyContributions.head().getSeq(0) should have length contributionColumnsNo
+    onlyContributions.columns should have length contributionColumnsNo
+    forAll(onlyContributions.columns) { _ should startWith("contrib_") }
   }
 
   test("Transform and transformSchema methods are aligned when (SHAP) contributions are enabled") {
