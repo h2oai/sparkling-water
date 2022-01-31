@@ -80,6 +80,8 @@ class H2OAlgorithmMOJOParams(H2OBaseMOJOParams):
         return self.getOrDefault(self.featuresCols)
 
     def getNamedMojoOutputColumns(self):
+        warnings.warn("The method will be removed without replacement in the version 3.40."
+        "Named output columns will be alway used.", DeprecationWarning)
         return self.getOrDefault(self.namedMojoOutputColumns)
 
     def getWithLeafNodeAssignments(self):
