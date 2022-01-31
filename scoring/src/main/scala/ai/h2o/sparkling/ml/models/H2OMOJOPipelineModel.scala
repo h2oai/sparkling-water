@@ -103,7 +103,7 @@ class H2OMOJOPipelineModel(override val uid: String)
   private val modelUdf = (names: Array[String]) => {
     val schemaTransport = getTransportSchema()
     val schemaPredict = getPredictionColSchemaInternal()
-    val schemaContrib = getContributionColSchemaInternal()
+    val schemaContrib = getContributionsColSchemaInternal()
 
     def transformData(inputMojoFrame: MojoFrame) = {
 
@@ -226,7 +226,7 @@ class H2OMOJOPipelineModel(override val uid: String)
     Seq(StructField(getPredictionCol(), getPredictionColSchemaInternal(), nullable = true))
   }
 
-  private def getContributionColSchemaInternal(): StructType = {
+  private def getContributionsColSchemaInternal(): StructType = {
     if (getNamedMojoOutputColumns()) {
       val outputContributions = $(outputSubColsContributions).zip($(outputSubTypesContributions))
       StructType(outputContributions.map {
@@ -237,16 +237,16 @@ class H2OMOJOPipelineModel(override val uid: String)
     }
   }
 
-  protected def getContributionColSchema(): Seq[StructField] = {
+  protected def getContributionsColSchema(): Seq[StructField] = {
     if (getWithContributions()) {
-      Seq(StructField(getContributionsCol(), getContributionColSchemaInternal(), nullable = true))
+      Seq(StructField(getContributionsCol(), getContributionsColSchemaInternal(), nullable = true))
     } else {
       Seq.empty[StructField]
     }
   }
 
   private def getTransportSchema() = {
-    StructType(getPredictionColSchema() ++ getContributionColSchema())
+    StructType(getPredictionColSchema() ++ getContributionsColSchema())
   }
 
   def selectPredictionUDF(column: String): Column = {
@@ -267,7 +267,7 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    StructType(schema.fields ++ getPredictionColSchema() ++ getContributionColSchema())
+    StructType(schema.fields ++ getPredictionColSchema() ++ getContributionsColSchema())
   }
 }
 
