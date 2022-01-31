@@ -301,7 +301,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
 
     val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
     val predictionsAndContributions = pipeline.transform(df)
-    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionCol()}.*")
+    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.*")
 
     val featureColumns = 1
     val predictionColumns = 4
@@ -336,7 +336,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
     val predictionsAndContributions = pipeline.transform(df)
 
-    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionCol()}.contribs")
+    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.contribs")
 
     val featureColumns = 1
     val predictionColumns = 4

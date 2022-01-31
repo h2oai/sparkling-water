@@ -136,7 +136,7 @@ def test_h2o_mojo_pipeline_contributions(spark):
     mojo = H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
 
     df = spark.read.csv(data_path, header=True, inferSchema=True)
-    contributions = mojo.transform(df).select("contribution.*")
+    contributions = mojo.transform(df).select("contributions.*")
 
     feature_columns = 1
     prediction_columns = 4

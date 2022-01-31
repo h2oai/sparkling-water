@@ -57,16 +57,16 @@ class H2OMOJOPipelineModel(override val uid: String)
     new StringArrayParam(
       this,
       "outputSubColsContributions",
-      "Names of contribution sub-columns under the output column")
+      "Names of contribution sub-columns under the contributions column")
   protected final val outputSubTypesContributions: StringArrayParam =
     new StringArrayParam(
       this,
       "outputSubTypesContributions",
-      "Types of contribution sub-columns under the output column")
+      "Types of contribution sub-columns under the contributions column")
 
   def getOutputSubCols(): Array[String] = $ { outputSubCols }
 
-  def getContributionCol(): String = "contribution"
+  def getContributionsCol(): String = "contributions"
 
   def getTransportCol(): String = "SparklingWater_transport"
 
@@ -74,7 +74,7 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   // As the mojoPipeline can't provide predictions and contributions at the same time, then
   // if contributions are requested, there is utilized a second pipeline
-  // that's setup the way to calculate contributions
+  // that's setup the way to calculate contributions.
   @transient private lazy val mojoPipelineContributions: MojoPipeline = {
     val pipeline = H2OMOJOPipelineCache.getMojoBackend(uid + ".contributions", getMojo)
     pipeline.setShapPredictContribOriginal(true)
@@ -192,7 +192,7 @@ class H2OMOJOPipelineModel(override val uid: String)
     if (getWithContributions()) {
       baseDf
         .withColumn(getPredictionCol(), col(s"${getTransportCol()}.${getPredictionCol()}"))
-        .withColumn(getContributionCol(), col(s"${getTransportCol()}.${getContributionCol()}"))
+        .withColumn(getContributionsCol(), col(s"${getTransportCol()}.${getContributionsCol()}"))
         .drop(getTransportCol())
     } else {
       baseDf
@@ -239,7 +239,7 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   protected def getContributionColSchema(): Seq[StructField] = {
     if (getWithContributions()) {
-      Seq(StructField(getContributionCol(), getContributionColSchemaInternal(), nullable = true))
+      Seq(StructField(getContributionsCol(), getContributionColSchemaInternal(), nullable = true))
     } else {
       Seq.empty[StructField]
     }
