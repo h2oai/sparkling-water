@@ -48,7 +48,7 @@ H2OAlgorithmMOJOModelBase <- setRefClass("H2OAlgorithmMOJOModelBase", contains =
     invoke(.self$jmojo, "getFeaturesCols")
   },
   getNamedMojoOutputColumns = function() {
-    warning("The method 'getNamedMojoOutputColumns' is deprecated will be removed without replacement in the version 3.40.
+    warning("The method 'getNamedMojoOutputColumns' is deprecated and will be removed without replacement in the version 3.40.
              Named output columns will be always used.")
     invoke(.self$jmojo, "getNamedMojoOutputColumns")
   },
