@@ -69,16 +69,15 @@ def test_feature_types_on_h2o_mojo_pipeline():
         "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
     types = mojo.getFeatureTypes()
 
-    types["DPROS"] == "Int32"
-    types["GLEASON"] == "Int32"
-    types["VOL"] == "Float64"
-    types["DCAPS"] == "Int32"
-    types["PSA"] == "Float64"
-    types["VOL"] == "Float64"
-    types["CAPSULE"] == "Int32"
-    types["RACE"] == "Int32"
-    types["ID"] == "Int32"
-    len(types) == 9
+    assert types["DPROS"] == "Int32"
+    assert types["GLEASON"] == "Int32"
+    assert types["VOL"] == "Float64"
+    assert types["DCAPS"] == "Int32"
+    assert types["PSA"] == "Float64"
+    assert types["CAPSULE"] == "Int32"
+    assert types["RACE"] == "Int32"
+    assert types["ID"] == "Int32"
+    assert len(types) == 8
 
 
 def test_mojo_dai_pipeline_serialize(prostateDataset):
@@ -125,3 +124,24 @@ def testMojoPipelineProtoBackendWithoutError(spark):
     df = spark.createDataFrame(rdd, ['pclass', 'sex', 'age', 'ticket', 'fare', 'cabin'])
     prediction = mojo.transform(df)
     prediction.collect()
+
+
+def test_h2o_mojo_pipeline_contributions(spark):
+    test_folder = "daiMojoShapley"
+    mojo_path = "file://" + os.path.abspath("../ml/src/test/resources/" + test_folder + "/pipeline.mojo")
+    data_path = "file://" + os.path.abspath("../ml/src/test/resources/" + test_folder + "/example.csv")
+
+    # request pipeline to provide contribution (SHAP) values
+    settings = H2OMOJOSettings(withContributions=True)
+    mojo = H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
+
+    df = spark.read.csv(data_path, header=True, inferSchema=True)
+    contributions = mojo.transform(df).select("contributions.*")
+
+    feature_columns = 1
+    prediction_columns = 4
+    bias = 1
+    contribution_columns = prediction_columns * (feature_columns + bias)
+
+    assert contribution_columns == len(contributions.columns)
+    assert all(c.startswith("contrib_") for c in contributions.columns)
