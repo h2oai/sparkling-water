@@ -104,12 +104,11 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val deserializedCVScoringHistory = deserializedModel.getCrossValidationModelsScoringHistory()
     TestUtils.assertDataFramesAreIdentical(expectedCrossValidationSummary, crossValidationSummary)
     assertDataframesOnMOJOModels(model, deserializedModel)
-    var i = 0
-    while (i < expectedCVModels.length) {
+
+    for (i <- expectedCVModels.indices) {
       assertDataframesOnMOJOModels(expectedCVModels(i), deserializedCVModels(i))
       deserializedCVScoringHistory(i) shouldNot be(null)
       TestUtils.assertDataFramesAreIdentical(expectedCVScoringHistory(i), deserializedCVScoringHistory(i))
-      i += 1
     }
   }
 
