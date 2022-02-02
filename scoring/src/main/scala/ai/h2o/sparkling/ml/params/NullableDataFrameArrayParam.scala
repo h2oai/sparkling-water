@@ -16,74 +16,33 @@
  */
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.utils.DataFrameSerializer
+import ai.h2o.sparkling.utils.DataFrameSerializationWrappers._
+import ai.h2o.sparkling.utils.{DataFrameJsonSerialization, DataFrameSerializer}
 import org.apache.spark.ml.param.{Param, ParamPair}
 import org.apache.spark.sql.DataFrame
-import org.json4s.JsonAST.{JArray, JField, JNull, JObject, JString, JValue}
-import org.json4s.jackson.JsonMethods.{compact, parse, render}
-
 import scala.collection.JavaConverters._
 
 class NullableDataFrameArrayParam(
     parent: HasDataFrameSerializer,
     name: String,
     doc: String,
-    isValid: Array[DataFrame] => Boolean)
-  extends Param[Array[DataFrame]](parent, name, doc, isValid) {
+    isValid: DataFrameArraySerializationWrapper => Boolean)
+  extends Param[DataFrameArraySerializationWrapper](parent, name, doc, isValid) {
 
   def this(parent: HasDataFrameSerializer, name: String, doc: String) =
     this(parent, name, doc, _ => true)
 
-  /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
-  def w(value: java.util.List[DataFrame]): ParamPair[Array[DataFrame]] =
-    w(value.asScala.toArray)
-
-  override def jsonEncode(value: Array[DataFrame]): String = {
-    val encoded = if (value == null) {
-      JNull
-    } else {
-      val serializerClassName = parent.getDataFrameSerializer()
-      val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
-
-      JObject(
-        JField("serializer", JString(serializerClassName)),
-        JField("dataframes", JArray(value.toList.map(jsonEncodeDF(_, serializer)))))
-    }
-
-    compact(render(encoded))
+  def w(value: java.util.List[DataFrame]): ParamPair[DataFrameArraySerializationWrapper] = {
+    w(toWrapper(value.asScala.toArray))
   }
 
-  def jsonEncodeDF(dataFrame: DataFrame, serializer: DataFrameSerializer): JValue = {
-    if (dataFrame == null) {
-      JNull
-    } else {
-      serializer.serialize(dataFrame)
-    }
+  override def jsonEncode(dataFrames: DataFrameArraySerializationWrapper): String = {
+    val serializerClassName = parent.getDataFrameSerializer()
+    val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
+    DataFrameJsonSerialization.encodeDataFrames(dataFrames, serializer)
   }
 
-  override def jsonDecode(json: String): Array[DataFrame] = {
-    parse(json) match {
-      case JNull =>
-        null
-      case JObject(fields) =>
-        val fieldsMap = fields.toMap[String, JValue]
-
-        val serializerClassName = fieldsMap("serializer").asInstanceOf[JString].values
-        val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
-
-        val serializedDataFrames = fieldsMap("dataframes")
-        serializedDataFrames.children.map(jsonDecodeDF(_, serializer)).toArray
-      case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to Array[DataFrame].")
-    }
-  }
-
-  def jsonDecodeDF(json: JValue, serializer: DataFrameSerializer): DataFrame = {
-    json match {
-      case JNull =>
-        null
-      case _ =>
-        serializer.deserialize(json)
-    }
+  override def jsonDecode(json: String): DataFrameArraySerializationWrapper = {
+    DataFrameJsonSerialization.decodeDataFrames(json)
   }
 }

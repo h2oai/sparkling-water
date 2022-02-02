@@ -19,6 +19,7 @@ package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.sql.DataFrame
+import ai.h2o.sparkling.utils.DataFrameSerializationWrappers._
 
 trait HasCalibrationDataFrame extends H2OAlgoParamsBase with HasDataFrameSerializer {
 
@@ -32,7 +33,7 @@ trait HasCalibrationDataFrame extends H2OAlgoParamsBase with HasDataFrameSeriali
 
   def getCalibrationDataFrame(): DataFrame = $(calibrationDataFrame)
 
-  def setCalibrationDataFrame(value: DataFrame): this.type = set(calibrationDataFrame, value)
+  def setCalibrationDataFrame(value: DataFrame): this.type = set(calibrationDataFrame, toWrapper(value))
 
   private[sparkling] def getCalibrationDataFrameParam(trainingFrame: H2OFrame): Map[String, Any] = {
     Map("calibration_frame" -> convertDataFrameToH2OFrameKey(getCalibrationDataFrame()))

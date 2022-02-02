@@ -31,7 +31,8 @@ object ModelMetricsTemplate
       "com.google.gson.JsonObject",
       "org.apache.spark.sql.DataFrame",
       "org.apache.spark.ml.param.ParamMap",
-      "org.apache.spark.ml.util.Identifiable")
+      "org.apache.spark.ml.util.Identifiable",
+      "ai.h2o.sparkling.utils.DataFrameSerializationWrappers._")
     val parameters = "(override val uid: String)"
 
     val annotations = Seq(s"""@MetricsDescription(description = "${substitutionContext.classDescription}")""")
@@ -123,9 +124,9 @@ object ModelMetricsTemplate
     case x if x.isPrimitive => s"""json.get("${metric.h2oName}").getAs${x.getSimpleName.capitalize}()"""
     case x if x.getSimpleName == "String" =>
       s"""if (json.get("${metric.h2oName}").isJsonNull) null else json.get("${metric.h2oName}").getAsString()"""
-    case x if x.getSimpleName == "TwoDimTableV3" => s"""jsonFieldToDataFrame(json, "${metric.h2oName}")"""
+    case x if x.getSimpleName == "TwoDimTableV3" => s"""toWrapper(jsonFieldToDataFrame(json, "${metric.h2oName}"))"""
     case x if x.getSimpleName == "ConfusionMatrixV3" =>
-      s"""jsonFieldToDataFrame(json.getAsJsonObject("${metric.h2oName}"), "table")"""
+      s"""toWrapper(jsonFieldToDataFrame(json.getAsJsonObject("${metric.h2oName}"), "table"))"""
   }
 
   private def generateValueAssignments(metrics: Seq[Metric]): String = {
