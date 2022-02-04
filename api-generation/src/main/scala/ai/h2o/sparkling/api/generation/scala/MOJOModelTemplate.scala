@@ -47,7 +47,8 @@ object MOJOModelTemplate
       "com.google.gson.JsonObject",
       "ai.h2o.sparkling.ml.params.ParameterConstructorMethods",
       "hex.genmodel.MojoModel",
-      "org.apache.spark.expose.Logging") ++
+      "org.apache.spark.expose.Logging",
+      "ai.h2o.sparkling.utils.DataFrameSerializationWrappers._") ++
       explicitFieldImplementations.map(explicitField => s"ai.h2o.sparkling.ml.params.$explicitField") ++
       algorithmSubstitutionContext.specificMetricsClass.map(metrics => s"ai.h2o.sparkling.ml.metrics.$metrics")
 
@@ -171,7 +172,7 @@ object MOJOModelTemplate
           case "float" => s"""outputSection.get("$h2oName").getAsFloat()"""
           case "double" => s"""outputSection.get("$h2oName").getAsDouble()"""
           case "double[]" => s"""jsonFieldToDoubleArray(outputSection, "$h2oName")"""
-          case "TwoDimTableV3" => s"""jsonFieldToDataFrame(outputSection, "$h2oName")"""
+          case "TwoDimTableV3" => s"""toWrapper(jsonFieldToDataFrame(outputSection, "$h2oName"))"""
         }
         s"""      if (outputSection.has("$h2oName")) {
            |        try {

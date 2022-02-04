@@ -19,7 +19,6 @@ package ai.h2o.sparkling.ml.models
 
 import java.sql.{Date, Timestamp}
 
-import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import ai.h2o.sparkling.SparkTestContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
@@ -28,6 +27,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.Inspectors._
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
@@ -35,44 +35,38 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
-  test("Test columns names and numbers") {
-    val df =
-      spark.read
-        .option("header", "true")
-        .option("inferSchema", value = true)
-        .csv("examples/smalldata/prostate/prostate.csv")
+  test("Mojo pipeline can be instantiated") {
 
-    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
     H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
+      "prostate_pipeline.mojo")
+  }
+
+  test("Mojo pipeline can be saved and loaded") {
+    // Test data
+    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+
+    // Test mojo
+    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo",
       mojoSettings)
 
-    val dfTypes = df.dtypes.filter(_._1 != "AGE").map { case (_, typ) => sparkTypeToMojoType(typ) }.toSeq
+    // Test also writing and loading the pipeline
+    val pipeline = new Pipeline().setStages(Array(mojo))
+    pipeline.write.overwrite().save("ml/build/pipeline")
+    val loadedPipeline = Pipeline.load("ml/build/pipeline")
 
-    assert(8 == df.columns.length - 1) // response column is not on the input
-    assert(
-      Seq("ID", "CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON") == df.columns.filter(_ != "AGE").toSeq)
-    assert(
-      Seq(
-        MojoColumn.Type.Int32,
-        MojoColumn.Type.Int32,
-        MojoColumn.Type.Int32,
-        MojoColumn.Type.Int32,
-        MojoColumn.Type.Int32,
-        MojoColumn.Type.Float64,
-        MojoColumn.Type.Float64,
-        MojoColumn.Type.Int32) == dfTypes)
+    val model = loadedPipeline.fit(df)
+
+    model.write.overwrite().save("ml/build/pipeline_model")
+    val loadedModel = PipelineModel.load("ml/build/pipeline_model")
+
+    loadedModel.transform(df).take(1)
   }
 
-  private def sparkTypeToMojoType(sparkType: String): MojoColumn.Type = {
-    sparkType match {
-      case "IntegerType" => MojoColumn.Type.Int32
-      case "DoubleType" => MojoColumn.Type.Float64
-    }
-  }
-
-  test("Basic Mojo Pipeline Prediction") {
+  test("Basic mojo pipeline prediction for unnamed column") {
     // Test data
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
@@ -86,29 +80,12 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val udfSelection = transDf.select(mojo.selectPredictionUDF("AGE"))
     val normalSelection = transDf.select("prediction.preds")
 
-    println(s"\n\nSpark Transformer Output:\n${transDf.dtypes.map { case (n, t) => s"$n[$t]" }.mkString(" ")}")
-
-    println("Predictions from normal selection:")
     val valuesNormalSelection = normalSelection.take(5)
     assertPredictedValues(valuesNormalSelection)
-    println(valuesNormalSelection.mkString("\n"))
 
     // Verify also output of the udf prediction method. The UDF method always returns one column with correct name
-    println("Predictions from udf selection:")
     val valuesUdfSelection = udfSelection.take(5)
     assertPredictedValuesForNamedCols(valuesUdfSelection)
-    println(valuesUdfSelection.mkString("\n"))
-
-    // Test also writing and loading the pipeline
-    val pipeline = new Pipeline().setStages(Array(mojo))
-    pipeline.write.overwrite().save("ml/build/pipeline")
-    val loadedPipeline = Pipeline.load("ml/build/pipeline")
-    val model = loadedPipeline.fit(df)
-
-    model.write.overwrite().save("ml/build/pipeline_model")
-    val loadedModel = PipelineModel.load("ml/build/pipeline_model")
-
-    loadedModel.transform(df).take(1)
   }
 
   test("Verify that output columns are correct when using the named columns") {
@@ -130,7 +107,6 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     assert(udfSelection.schema.head.dataType == normalSelection.schema.head.dataType)
     assert(udfSelection.first() == normalSelection.first())
 
-    println("Predictions:")
     assertPredictedValuesForNamedCols(udfSelection.take(5))
   }
 
@@ -313,5 +289,75 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
   test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is enabled") {
     val settings = H2OMOJOSettings()
     testTransformAndTransformSchemaAreAligned(settings)
+  }
+
+  test("Mojo pipeline can expose contribution (SHAP) values") {
+
+    val mojoSettings = H2OMOJOSettings(withContributions = true)
+    val pipeline = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapley/pipeline.mojo"),
+      "pipeline.mojo",
+      mojoSettings)
+
+    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
+    val predictionsAndContributions = pipeline.transform(df)
+    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.*")
+
+    val featureColumns = 1
+    val predictionColumns = 4
+    val bias = 1
+    val contributionColumnsNo = predictionColumns * (featureColumns + bias)
+
+    onlyContributions.columns should have length contributionColumnsNo
+    forAll(onlyContributions.columns) { _ should startWith("contrib_") }
+
+    assertContributionValues(onlyContributions.take(1))
+  }
+
+  private def assertContributionValues(contributions: Array[Row]): Unit = {
+    contributions(0).getDouble(0) shouldBe 0.0
+    contributions(0).getDouble(1) shouldBe -2.3025851249694824
+    contributions(0).getDouble(2) shouldBe 0.0
+    contributions(0).getDouble(3) shouldBe -1.3470736742019653
+    contributions(0).getDouble(4) shouldBe 0.0
+    contributions(0).getDouble(5) shouldBe -2.263364315032959
+    contributions(0).getDouble(6) shouldBe 0.0
+    contributions(0).getDouble(7) shouldBe -0.6236211061477661
+  }
+
+  test("Mojo pipeline outputs named contribution values even if namedMojoOutputColumns was set to false") {
+
+    val mojoSettings = H2OMOJOSettings(withContributions = true, namedMojoOutputColumns = false)
+    val pipeline = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapley/pipeline.mojo"),
+      "pipeline.mojo",
+      mojoSettings)
+
+    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
+    val predictionsAndContributions = pipeline.transform(df)
+
+    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.*")
+
+    val featureColumns = 1
+    val predictionColumns = 4
+    val bias = 1
+    val contributionColumnsNo = predictionColumns * (featureColumns + bias)
+
+    onlyContributions.columns should have length contributionColumnsNo
+    forAll(onlyContributions.columns) { _ should startWith("contrib_") }
+  }
+
+  test("Transform and transformSchema methods are aligned when (SHAP) contributions are enabled") {
+    val mojoSettings = H2OMOJOSettings(withContributions = true)
+    val pipeline = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapley/pipeline.mojo"),
+      "pipeline.mojo",
+      mojoSettings)
+
+    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
+    val outputSchema = pipeline.transform(df).schema
+    val transformedSchema = pipeline.transformSchema(df.schema)
+
+    transformedSchema should equal(outputSchema)
   }
 }

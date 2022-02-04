@@ -20,6 +20,7 @@ package ai.h2o.sparkling.ml.params
 import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.expose.Logging
 import org.apache.spark.sql.DataFrame
+import ai.h2o.sparkling.utils.DataFrameSerializationWrappers._
 
 trait HasLeaderboardDataFrame extends H2OAlgoParamsBase with Logging with HasDataFrameSerializer {
 
@@ -35,7 +36,7 @@ trait HasLeaderboardDataFrame extends H2OAlgoParamsBase with Logging with HasDat
 
   def getLeaderboardDataFrame(): DataFrame = $(leaderboardDataFrame)
 
-  def setLeaderboardDataFrame(value: DataFrame): this.type = set(leaderboardDataFrame, value)
+  def setLeaderboardDataFrame(value: DataFrame): this.type = set(leaderboardDataFrame, toWrapper(value))
 
   private[sparkling] def getLeaderboardDataFrameParam(trainingFrame: H2OFrame): Map[String, Any] = {
     Map("leaderboard_frame" -> convertDataFrameToH2OFrameKey(getLeaderboardDataFrame()))
