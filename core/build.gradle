@@ -112,6 +112,7 @@ dependencies {
   integTestImplementation("org.scala-lang:scala-library:${scalaVersion}")
   integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   integTestImplementation("junit:junit:4.11")
+  integTestImplementation("io.fabric8:kubernetes-client:${fabricK8sClientVersion}")
 
   benchImplementation("org.scala-lang:scala-library:${scalaVersion}")
   benchImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
