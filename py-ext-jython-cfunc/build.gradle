@@ -1,0 +1,133 @@
+description = "PySparklingScoring - Sparkling Water Python Scoring Package"
+
+apply from: "$rootDir/gradle/utils.gradle"
+apply plugin: 'ru.vyarus.use-python'
+
+import ru.vyarus.gradle.plugin.python.cmd.Python
+
+def getPythonVersion() {
+  Python p = new Python(project, python.getPythonPath(), python.getPythonBinary())
+  return p.version
+}
+
+ext {
+  FS = File.separator
+  FPS = File.pathSeparator
+  pythonBinary = findProperty("pythonBinary") ?: "python"
+  pkgDir = file("$buildDir/pkg")
+  distDir = file("$buildDir/dist")
+  condaDir = file("$buildDir/conda/h2o_pysparkling_ext_jython_cfunc")
+}
+
+// Define the environment required to run tests
+python {
+  if (project.hasProperty("pythonBinary")) {
+    pythonBinary project.findProperty("pythonBinary").toString()
+  }
+  if (project.hasProperty("pythonPath")) {
+    pythonPath project.findProperty("pythonPath").toString()
+  }
+
+  if (project.hasProperty("pythonEnvBasePath")) {
+    // for CI as we use pre-cached environment
+    envPath "${project.findProperty("pythonEnvBasePath")}/${getPythonVersion()}/${sparkVersion}"
+  } else {
+    envPath "${rootDir}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
+  }
+}
+
+configurations {
+  sparklingWaterAssemblyJar
+}
+
+dependencies {
+  sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly-ext-jython-cfunc', configuration: 'shadow')
+}
+
+task createVersionFile {
+  doLast {
+    def versionFileDir = new File(pkgDir, "sparkling_water_ext_jython_cfunc")
+    if (!versionFileDir.exists()) {
+      versionFileDir.mkdirs()
+    }
+    File version_file = new File(versionFileDir, "version.txt")
+
+    def version_txt = version
+    version_file.write(version_txt)
+  }
+}
+
+def copyPySetup() {
+  copy {
+    from("$projectDir/src") {
+      include 'setup.py'
+    }
+    filter {
+      it.replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
+        .replaceAll("SUBST_PYTHON_VERSIONS", convertSupportedPythonVersionsToPyPiDefinitions(pythonEnvironments))
+    }
+    into pkgDir
+  }
+
+  copy {
+    from("$projectDir") {
+      include 'README.rst'
+    }
+    into pkgDir
+  }
+
+  copy {
+    from("$projectDir/src") {
+      include 'MANIFEST.in'
+      include 'setup.cfg'
+      exclude '**/*.pyc'
+    }
+    into pkgDir
+  }
+
+  copy {
+    from("$projectDir/conda/h2o_pysparkling_ext_jython_cfunc") {
+      include 'bld.bat'
+      include 'build.sh'
+    }
+    into condaDir
+  }
+
+  copy {
+    from("$projectDir/conda/h2o_pysparkling_ext_jython_cfunc") {
+      include 'meta.yaml'
+    }
+    filter {
+      it.replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
+    }
+    into condaDir
+  }
+}
+
+task createPkg(dependsOn: configurations.sparklingWaterAssemblyJar) {
+  copyPySetup()
+  // Copy sparkling water assembly jar
+  def fatJar = configurations.sparklingWaterAssemblyJar.singleFile
+  copy {
+    from fatJar
+    into file("${project.pkgDir}/sparkling_water_ext_jython_cfunc")
+    rename ".*", "sparkling_water_ext_jython_cfunc_assembly.jar"
+  }
+  // Save comment into module file
+  file("${project.pkgDir}/sparkling_water_ext_jython_cfunc/").mkdir()
+  file("${project.pkgDir}/sparkling_water_ext_jython_cfunc/__init__.py").write("# Sparkling-water JAR holder for pySparklingExtJythonCfunc module.")
+}
+
+//
+// Cleanup
+//
+task cleanPython(type: Delete) {
+  delete getBuildDir()
+}
+
+//
+// Setup execution graph
+//
+clean.dependsOn cleanPython
+createPkg.dependsOn createVersionFile
+build.dependsOn createPkg

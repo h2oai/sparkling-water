@@ -1,0 +1,31 @@
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'java-library'
+apply from: "$rootDir/gradle/assembly.gradle"
+
+description = "Sparkling Water Assembly Jython Extension (for pypi)"
+
+
+dependencies {
+  api("ai.h2o:h2o-ext-jython-cfunc:${h2oVersion}")
+}
+
+configurations {
+  jythonShadowApi {
+    extendsFrom shadowApi
+    exclude group: "ai.h2o", module: "h2o-core"
+  }
+}
+
+shadowJar {
+  configurations = [project.configurations.jythonShadowApi]
+  mergeServiceFiles()
+
+  archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
+}
+
+artifacts {
+  api shadowJar
+}
+
+build.dependsOn shadowJar

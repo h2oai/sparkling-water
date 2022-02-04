@@ -19,6 +19,8 @@ requirements:
     - future >=0.15.2
     - tabulate >=0.7.5
     - requests >=2.10
+    - h2o_pysparkling_ext_xgboost == SUBST_SW_VERSION
+    - h2o_pysparkling_ext_jython_cfunc == SUBST_SW_VERSION
 
 about:
   home: https://github.com/h2oai/sparkling-water.git

@@ -75,7 +75,12 @@ ext {
     project(':sparkling-water-doc'),
     project(':sparkling-water-booklet')
   ]
-  pythonProjects = [project(':sparkling-water-py'), project(':sparkling-water-py-scoring')]
+  pythonProjects = [
+    project(':sparkling-water-py'),
+    project(':sparkling-water-py-ext-jython-cfunc'),
+    project(':sparkling-water-py-ext-xgboost'),
+    project(':sparkling-water-py-scoring')
+  ]
   rProjects = [project(':sparkling-water-r'), project(':sparkling-water-r-cran')]
   docProjects = [project(':sparkling-water-doc')]
 

@@ -1,0 +1,34 @@
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'java-library'
+apply from: "$rootDir/gradle/assembly.gradle"
+
+description = "Sparkling Water Assembly XGBoost Extension (for pypi)"
+
+dependencies {
+  api("ai.h2o:h2o-ext-xgboost:${h2oVersion}")
+}
+
+configurations {
+  xgboostShadowApi {
+    extendsFrom shadowApi
+    exclude group: "ai.h2o", module: "h2o-core"
+    exclude group: "ai.h2o", module: "h2o-algos"
+    exclude group: "ai.h2o", module: "h2o-genmodel"
+    exclude group: "ai.h2o", module: "h2o-ext-steam"
+  }
+}
+
+shadowJar {
+  configurations = [project.configurations.xgboostShadowApi]
+  mergeServiceFiles()
+
+  relocate 'org.apache.http', 'ai.h2o.org.apache.http'
+  archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
+}
+
+artifacts {
+  api shadowJar
+}
+
+build.dependsOn shadowJar

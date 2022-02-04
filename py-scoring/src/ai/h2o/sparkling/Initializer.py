@@ -49,15 +49,24 @@ class Initializer(object):
     def __setUpPySparkSubmitArgs():
         # Ensure that when we do import pysparkling, spark will put later the JAR file
         # to the driver. This option has effect only when SparkContext has not been started before.
+        swjars = ""
+        delimiter = False
+        for backingJar in BackingJar.getBackingJars():
+            if delimiter:
+                swjars = swjars + ","
+            else:
+                delimiter = True
+            swjars = swjars + Initializer.__get_sw_jar(None, backingJar)
+
         if os.environ.get('PYSPARK_SUBMIT_ARGS') is None:
-            os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars " + Initializer.__get_sw_jar(None) + " pyspark-shell"
+            os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars " + swjars + " pyspark-shell"
         else:
             value = os.environ.get('PYSPARK_SUBMIT_ARGS')
             if "--jars" not in value:
-                os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars " + Initializer.__get_sw_jar(None) + " " + value
+                os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars " + swjars + " " + value
             else:
                 pos = re.search("--jars\\s+", value).end()
-                os.environ["PYSPARK_SUBMIT_ARGS"] = value[:pos] + Initializer.__get_sw_jar(None) + "," + value[pos:]
+                os.environ["PYSPARK_SUBMIT_ARGS"] = value[:pos] + swjars + "," + value[pos:]
 
     @staticmethod
     def load_sparkling_jar():
@@ -70,7 +79,8 @@ class Initializer(object):
                 stream = jvm.Thread.currentThread().getContextClassLoader().getResourceAsStream("sw.version")
                 if stream is None:
                     sys.path.append(".")
-                    Initializer.__add_sparkling_jar_to_spark(sc)
+                    for backingJar in BackingJar.getBackingJars():
+                        Initializer.__add_sparkling_jar_to_spark(sc, backingJar)
                 else:
                     otherVersion = jvm.scala.io.Source.fromInputStream(stream, "UTF-8").mkString()
                     currentVersion = Initializer.getVersion()
@@ -83,10 +93,10 @@ class Initializer(object):
                 Initializer.__sparklingWaterJarLoaded = True
 
     @staticmethod
-    def __add_sparkling_jar_to_spark(sc):
+    def __add_sparkling_jar_to_spark(sc, backingJar):
         gateway = sc._gateway
         # Add Sparkling water assembly JAR to driver
-        sw_jar_file = Initializer.__get_sw_jar(sc)
+        sw_jar_file = Initializer.__get_sw_jar(sc, backingJar)
 
         # SW-593 - adding an extra / to fix a windows shell issue creating malform url
         if not sw_jar_file.startswith('/'):
@@ -105,25 +115,25 @@ class Initializer(object):
         shutil.rmtree(Initializer.__extracted_jar_dir)
 
     @staticmethod
-    def __extracted_jar_path(sc):
+    def __extracted_jar_path(sc, backingJar):
 
         if Initializer.__extracted_jar_dir is None:
-            zip_file = Initializer.__get_pysparkling_package_path()
+            zip_file = Initializer.__get_pysparkling_package_path(backingJar)
             if sc is None:
                 Initializer.__extracted_jar_dir = tempfile.mkdtemp()
                 atexit.register(Initializer.__removeTmpDir)
             else:
                 Initializer.__extracted_jar_dir = sc._temp_dir
             with zipfile.ZipFile(zip_file) as fzip:
-                fzip.extract(BackingJar.getRelativePath(), path=Initializer.__extracted_jar_dir)
+                fzip.extract(backingJar.getRelativePath(), path=Initializer.__extracted_jar_dir)
 
-        return os.path.abspath("{}/{}".format(Initializer.__extracted_jar_dir, BackingJar.getRelativePath()))
+        return os.path.abspath("{}/{}".format(Initializer.__extracted_jar_dir, backingJar.getRelativePath()))
 
     @staticmethod
-    def __get_pysparkling_package_path():
-        import sparkling_water
-        sw_pkg_file = sparkling_water.__file__
-        return sw_pkg_file[:-len('/sparkling_water/__init__.py')]
+    def __get_pysparkling_package_path(backingJar):
+        module = __import__(backingJar.getModule())
+        pkg_file = module.__file__
+        return pkg_file[:-len('/' + backingJar.getModule() + '/__init__.py')]
 
     @staticmethod
     def check_different_h2o():
@@ -136,7 +146,7 @@ class Initializer(object):
         try:
             import h2o
             sw_h2o_version = h2o.__version__
-            zip_file_name = os.path.basename(Initializer.__get_pysparkling_package_path())
+            zip_file_name = os.path.basename(Initializer.__get_pysparkling_package_path(BackingJar.getMainBackingJar()))
             path_without_sw = [i for i in sys.path if os.path.basename(i) != zip_file_name]
             command_sys_path = "import sys; sys.path = " + str(path_without_sw).replace("'", "\"") + ";"
             command_import_h2o = "import h2o; print(h2o.__version__)"
@@ -153,14 +163,14 @@ class Initializer(object):
             pass
 
     @staticmethod
-    def __get_sw_jar(sc):
-        packagePath = Initializer.__get_pysparkling_package_path()
+    def __get_sw_jar(sc, backingJar):
+        packagePath = Initializer.__get_pysparkling_package_path(backingJar)
         # Extract jar file from zip
         if zipfile.is_zipfile(packagePath):
-            return Initializer.__extracted_jar_path(sc)
+            return Initializer.__extracted_jar_path(sc, backingJar)
         else:
             from pkg_resources import resource_filename
-            return os.path.abspath(resource_filename("sparkling_water", BackingJar.getName()))
+            return os.path.abspath(resource_filename(backingJar.getModule(), backingJar.getName()))
 
     @staticmethod
     def __get_logger(jvm):
@@ -201,7 +211,7 @@ class Initializer(object):
 
     @staticmethod
     def getVersion():
-        packagePath = Initializer.__get_pysparkling_package_path()
+        packagePath = Initializer.__get_pysparkling_package_path(BackingJar.getMainBackingJar())
         versionFile = 'ai/h2o/sparkling/version.txt'
         if zipfile.is_zipfile(packagePath):
             with zipfile.ZipFile(packagePath, 'r') as archive:

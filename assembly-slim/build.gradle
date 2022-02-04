@@ -1,14 +1,9 @@
 apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'com.github.jk1.dependency-license-report'
 apply plugin: 'java-library'
 apply from: "$rootDir/gradle/assembly.gradle"
 
-import com.github.jk1.license.filter.*
-import com.github.jk1.license.render.*
-
-description = "Sparkling Water Assembly"
-
+description = "Sparkling Water Assembly Slim (for pypi)"
 
 dependencies {
   api(project(":sparkling-water-ml"))
@@ -17,8 +12,16 @@ dependencies {
   api(project(":sparkling-water-extensions"))
 }
 
+configurations {
+  slimShadowApi {
+    extendsFrom shadowApi
+    exclude group: "ai.h2o", module: "h2o-ext-jython-cfunc"
+    exclude group: "ai.h2o", module: "h2o-ext-xgboost"
+  }
+}
+
 shadowJar {
-  configurations = [project.configurations.shadowApi]
+  configurations = [project.configurations.slimShadowApi]
   mergeServiceFiles()
 
   relocate 'javassist', 'ai.h2o.javassist'
@@ -35,16 +38,8 @@ shadowJar {
   archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
 }
 
-licenseReport {
-  renderers = [new InventoryHtmlReportRenderer(), new CsvReportRenderer()]
-  allowedLicensesFile = new File("$projectDir/allowed-licenses.json")
-  filters = new LicenseBundleNormalizer(bundlePath: "$projectDir/license-normalizer-bundle.json")
-}
-
 artifacts {
   api shadowJar
 }
 
-shadowJar.dependsOn generateLicenseReport
-build.dependsOn checkLicense
 build.dependsOn shadowJar
