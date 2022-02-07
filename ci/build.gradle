@@ -48,6 +48,9 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
     if (version.startsWith("2.4")) {
       runCommand "sed -i 's/openjdk:8-jdk-slim/openjdk:8-jdk-slim-buster/g' /home/jenkins/spark-${version}-bin-hadoop2.7/kubernetes/dockerfiles/spark/Dockerfile"
     }
+    if (version.startsWith("3.0") || version.startsWith("3.1")) {
+      runCommand "sed -i 's/\\(apt-key[^)]*\\)/apt-key adv --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7'/g' /home/jenkins/spark-${version}-bin-hadoop2.7/kubernetes/dockerfiles/spark/bindings/R/Dockerfile"
+    }
     def first = version.split("\\.")[0]
     def second = version.split("\\.")[1]
     environmentVariable("SPARK_HOME_${first}_${second}", "/home/jenkins/spark-${version}-bin-hadoop2.7")
