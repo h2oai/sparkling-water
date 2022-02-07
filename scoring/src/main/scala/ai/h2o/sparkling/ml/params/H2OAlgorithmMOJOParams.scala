@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.models.H2OMOJOSettings
 import org.apache.spark.expose.Logging
 import org.apache.spark.ml.param.{BooleanParam, Param, StringArrayParam}
@@ -75,6 +76,7 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
 
   def getFeaturesCols(): Array[String] = $(featuresCols)
 
+  @DeprecatedMethod(version = "3.40")
   def getNamedMojoOutputColumns(): Boolean = $(namedMojoOutputColumns)
 
   def getWithLeafNodeAssignments(): Boolean = $(withLeafNodeAssignments)

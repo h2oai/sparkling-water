@@ -16,6 +16,8 @@
  */
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
+
 import scala.collection.JavaConverters._
 
 /**
@@ -59,6 +61,7 @@ trait H2OAlgorithmCommonParams extends H2OCommonParams with H2OAlgorithmMOJOPara
     setFeaturesCols(columnNames.asScala.toArray)
   }
 
+  @DeprecatedMethod(version = "3.40")
   def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
 
   private[sparkling] def getExcludedCols(): Seq[String]
