@@ -62,6 +62,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
 
   runCommand """\\
                 chmod 777 /envs && \\
+                apt-get update && \\
                 for pythonVersion in ${pythonEnvironments}; \\
                 do \\
                   apt-get install -y python\$pythonVersion && \\
