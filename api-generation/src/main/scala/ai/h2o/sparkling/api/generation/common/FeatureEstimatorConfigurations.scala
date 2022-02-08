@@ -115,29 +115,18 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
 
     def none = Seq.empty[String]
     val algorithms = Seq[(String, Class[_], String, Option[String])](
-      (
-        "H2OAutoEncoder",
-        classOf[DeepLearningParameters],
-        "H2OAutoEncoderBase",
-
-        Some("H2OAutoEncoderMetrics")),
-      (
-        "H2OPCA",
-        classOf[PCAParameters],
-        "H2ODimReductionEstimator",
-
-        Some("H2OPCAMetrics")),
+      ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OAutoEncoderBase", Some("H2OAutoEncoderMetrics")),
+      ("H2OPCA", classOf[PCAParameters], "H2ODimReductionEstimator", Some("H2OPCAMetrics")),
       ("H2OGLRM", classOf[GLRMParameters], "H2OGLRMBase", Some("H2OGLRMMetrics")),
       ("H2OWord2Vec", classOf[Word2VecParameters], "H2OWord2VecBase", Some("H2OCommonMetrics")))
 
-    for ((entityName, h2oParametersClass: Class[_], algorithmType, mojoBaseClasses, metricsClass) <- algorithms)
+    for ((entityName, h2oParametersClass: Class[_], algorithmType, metricsClass) <- algorithms)
       yield AlgorithmSubstitutionContext(
         namespace = "ai.h2o.sparkling.ml.features",
         entityName,
         h2oParametersClass,
         algorithmType,
-        specificMetricsClass = metricsClass,
-        extraInheritedEntitiesOnMOJO = mojoBaseClasses)
+        specificMetricsClass = metricsClass)
   }
 
   override def modelOutputConfiguration: Seq[ModelOutputSubstitutionContext] = super.modelOutputConfiguration ++ {
