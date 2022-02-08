@@ -23,11 +23,11 @@ import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 trait GLRMMetricCalculation {
   self: H2OGLRMMOJOModel =>
 
-  override private[sparkling] def getPrediction(
-      wrapper: EasyPredictModelWrapper,
-      rowData: RowData,
-      offset: Double): Array[Double] = {
-    val vpa = wrapper.predictDimReduction(rowData)
-    vpa.reconstructed
+  private[sparkling] def getPredictionGetter(): (EasyPredictModelWrapper, RowData, Double) => Array[Double] = {
+    (wrapper: EasyPredictModelWrapper, rowData: RowData, offset: Double) =>
+      {
+        val vpa = wrapper.predictDimReduction(rowData)
+        vpa.reconstructed
+      }
   }
 }

@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.ml.metrics
 
+import java.io.File
+
 import ai.h2o.sparkling.ml.internals.H2OModelCategory
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, RowConverter}
 import ai.h2o.sparkling.ml.utils.{DatasetShape, SchemaUtils}
@@ -26,12 +28,12 @@ import hex.ModelMetrics.IndependentMetricBuilder
 import hex.ModelMetricsBinomialGLM.{ModelMetricsMultinomialGLM, ModelMetricsOrdinalGLM}
 import hex.genmodel.MojoModel
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
+import org.apache.spark.SparkFiles
 import org.apache.spark.sql.DataFrame
 import water.api.{Schema, SchemaServer}
 import water.api.schemas3._
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.DoubleType
-import water.Iced
 
 trait MetricCalculation {
   self: H2OMOJOModel =>
@@ -60,80 +62,33 @@ trait MetricCalculation {
     extractMetrics(conversionInput, "realtime_metrics")
   }
 
+  private[sparkling] def getActualValuesExtractor(): (RowData, EasyPredictModelWrapper) => Array[Double] = {
+    (rowData: RowData, wrapper: EasyPredictModelWrapper) =>
+      {
+        val rawData = new Array[Double](wrapper.m.nfeatures())
+        wrapper.fillRawData(rowData, rawData)
+      }
+  }
+
+  private[sparkling] def getPredictionGetter(): (EasyPredictModelWrapper, RowData, Double) => Array[Double] = {
+    (wrapper: EasyPredictModelWrapper, rowData: RowData, offset: Double) =>
+      {
+        wrapper.preamble(wrapper.m.getModelCategory, rowData, offset)
+      }
+  }
+
   private[sparkling] def getMetricGson(dataFrame: DataFrame): JsonObject = {
     val (preparedDF, offsetColOption, weightColOption) = validateAndPrepareDataFrameForMetricCalculation(dataFrame)
-
-    val filledMetricsBuilder = preparedDF.rdd
-      .mapPartitions[IndependentMetricBuilder[_]] { rows =>
-        val wrapper = loadEasyPredictModelWrapper()
-        val model = wrapper.m
-        val metricBuilder = makeMetricBuilder(wrapper)
-        while (rows.hasNext) {
-          val row = rows.next()
-          val rowData = RowConverter.toH2ORowData(row)
-          val offset = offsetColOption match {
-            case Some(offsetCol) => row.getDouble(row.fieldIndex(offsetCol))
-            case None => 0.0d
-          }
-          val weight = weightColOption match {
-            case Some(weightCol) => row.getDouble(row.fieldIndex(weightCol))
-            case None => 1.0d
-          }
-          val prediction = getPrediction(wrapper, rowData, offset)
-          val actualValues = extractActualValues(rowData, wrapper)
-          metricBuilder.perRow(prediction, actualValues, weight, offset)
-        }
-        Iterator.single(metricBuilder)
-      }
-      .reduce((f, s) => { f.reduce(s); f })
-
-    val metrics = filledMetricsBuilder.makeModelMetrics()
-    val schema = metricsToSchema(metrics)
-    val json = schema.toJsonString
-    new GsonBuilder().create().fromJson(json, classOf[JsonObject])
-  }
-
-  private[sparkling] def getPrediction(
-      wrapper: EasyPredictModelWrapper,
-      rowData: RowData,
-      offset: Double): Array[Double] = {
-    wrapper.preamble(wrapper.m.getModelCategory, rowData, offset)
-  }
-
-  private[sparkling] def metricsToSchema(metrics: ModelMetrics): Schema[_, _] = {
-    val schemas =
-      MetricsCalculationTypeExtensions.SCHEMA_CLASSES.map(c =>
-        Class.forName(c).getConstructor().newInstance().asInstanceOf[Schema[Nothing, Nothing]])
-    schemas.foreach(SchemaServer.register)
-    val schema = SchemaServer.schema(3, metrics)
-    schema match {
-      case s: ModelMetricsBinomialGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsBinomialGLM])
-      case s: ModelMetricsBinomialV3[ModelMetricsBinomial, _] =>
-        s.fillFromImpl(metrics.asInstanceOf[ModelMetricsBinomial])
-      case s: ModelMetricsMultinomialGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsMultinomialGLM])
-      case s: ModelMetricsMultinomialV3[ModelMetricsMultinomial, _] =>
-        s.fillFromImpl(metrics.asInstanceOf[ModelMetricsMultinomial])
-      case s: ModelMetricsOrdinalGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsOrdinalGLM])
-      case s: ModelMetricsOrdinalV3[ModelMetricsOrdinal, _] => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsOrdinal])
-      case s: ModelMetricsRegressionCoxPHV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegressionCoxPH])
-      case s: ModelMetricsRegressionGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegressionGLM])
-      case s: ModelMetricsRegressionV3[ModelMetricsRegression, _] =>
-        s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegression])
-      case s: ModelMetricsClusteringV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsClustering])
-      case s: ModelMetricsHGLMV3[ModelMetricsHGLM, _] => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsHGLM])
-      case s: ModelMetricsAutoEncoderV3 => s.fillFromImpl(metrics)
-      case s: ModelMetricsBaseV3[_, _] => s.fillFromImpl(metrics)
-    }
-    schema
-  }
-
-  private[sparkling] def makeMetricBuilder(wrapper: EasyPredictModelWrapper): IndependentMetricBuilder[_] = {
-    return MojoModel.loadMetricBuilder(unwrapMojoModel(), getMojo()).asInstanceOf[IndependentMetricBuilder[_]]
-  }
-
-  private[sparkling] def extractActualValues(rowData: RowData, wrapper: EasyPredictModelWrapper): Array[Double] = {
-    val rawData = new Array[Double](wrapper.m.nfeatures())
-    wrapper.fillRawData(rowData, rawData)
+    val configInitializers = getEasyPredictModelWrapperConfigurationInitializers()
+    MetricCalculationClosure.getMetricGson(
+      uid,
+      mojoFileName,
+      preparedDF,
+      offsetColOption,
+      weightColOption,
+      configInitializers,
+      getActualValuesExtractor(),
+      getPredictionGetter())
   }
 
   private[sparkling] def validateAndPrepareDataFrameForMetricCalculation(
@@ -176,4 +131,77 @@ trait MetricCalculation {
     weightColTuple
   }
 
+}
+
+object MetricCalculationClosure {
+
+  private[sparkling] def makeMetricBuilder(mojoModel: MojoModel, mojoFileName: String): IndependentMetricBuilder[_] = {
+    val mojoFile = new File(SparkFiles.get(mojoFileName))
+    MojoModel.loadMetricBuilder(mojoModel, mojoFile).asInstanceOf[IndependentMetricBuilder[_]]
+  }
+
+  private[sparkling] def metricsToSchema(metrics: ModelMetrics): Schema[_, _] = {
+    val schemas =
+      MetricsCalculationTypeExtensions.SCHEMA_CLASSES.map(c =>
+        Class.forName(c).getConstructor().newInstance().asInstanceOf[Schema[Nothing, Nothing]])
+    schemas.foreach(SchemaServer.register)
+    val schema = SchemaServer.schema(3, metrics)
+    schema match {
+      case s: ModelMetricsBinomialGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsBinomialGLM])
+      case s: ModelMetricsBinomialV3[ModelMetricsBinomial, _] =>
+        s.fillFromImpl(metrics.asInstanceOf[ModelMetricsBinomial])
+      case s: ModelMetricsMultinomialGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsMultinomialGLM])
+      case s: ModelMetricsMultinomialV3[ModelMetricsMultinomial, _] =>
+        s.fillFromImpl(metrics.asInstanceOf[ModelMetricsMultinomial])
+      case s: ModelMetricsOrdinalGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsOrdinalGLM])
+      case s: ModelMetricsOrdinalV3[ModelMetricsOrdinal, _] => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsOrdinal])
+      case s: ModelMetricsRegressionCoxPHV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegressionCoxPH])
+      case s: ModelMetricsRegressionGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegressionGLM])
+      case s: ModelMetricsRegressionV3[ModelMetricsRegression, _] =>
+        s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegression])
+      case s: ModelMetricsClusteringV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsClustering])
+      case s: ModelMetricsHGLMV3[ModelMetricsHGLM, _] => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsHGLM])
+      case s: ModelMetricsAutoEncoderV3 => s.fillFromImpl(metrics)
+      case s: ModelMetricsBaseV3[_, _] => s.fillFromImpl(metrics)
+    }
+    schema
+  }
+
+  private[sparkling] def getMetricGson(
+      uid: String,
+      mojoFileName: String,
+      preparedDF: DataFrame,
+      offsetColOption: Option[String],
+      weightColOption: Option[String],
+      configInitializers: Seq[H2OMOJOModel.EasyPredictModelWrapperConfigurationInitializer],
+      extractActualValues: (RowData, EasyPredictModelWrapper) => Array[Double],
+      getPrediction: (EasyPredictModelWrapper, RowData, Double) => Array[Double]): JsonObject = {
+    val filledMetricsBuilder = preparedDF.rdd
+      .mapPartitions[IndependentMetricBuilder[_]] { rows =>
+        val wrapper = H2OMOJOModel.loadEasyPredictModelWrapper(uid, mojoFileName, configInitializers)
+        val metricBuilder = makeMetricBuilder(wrapper.getModel.asInstanceOf[MojoModel], mojoFileName)
+        while (rows.hasNext) {
+          val row = rows.next()
+          val rowData = RowConverter.toH2ORowData(row)
+          val offset = offsetColOption match {
+            case Some(offsetCol) => row.getDouble(row.fieldIndex(offsetCol))
+            case None => 0.0d
+          }
+          val weight = weightColOption match {
+            case Some(weightCol) => row.getDouble(row.fieldIndex(weightCol))
+            case None => 1.0d
+          }
+          val prediction = getPrediction(wrapper, rowData, offset)
+          val actualValues = extractActualValues(rowData, wrapper)
+          metricBuilder.perRow(prediction, actualValues, weight, offset)
+        }
+        Iterator.single(metricBuilder)
+      }
+      .reduce((f, s) => { f.reduce(s); f })
+
+    val metrics = filledMetricsBuilder.makeModelMetrics()
+    val schema = metricsToSchema(metrics)
+    val json = schema.toJsonString
+    new GsonBuilder().create().fromJson(json, classOf[JsonObject])
+  }
 }

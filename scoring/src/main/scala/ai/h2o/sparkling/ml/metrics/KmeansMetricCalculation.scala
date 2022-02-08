@@ -27,15 +27,16 @@ import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 trait KmeansMetricCalculation {
   self: H2OKMeansMOJOModel =>
 
-  override private[sparkling] def extractActualValues(
-      rowData: RowData,
-      wrapper: EasyPredictModelWrapper): Array[Double] = {
-    val model = wrapper.m.asInstanceOf[KMeansMojoModel]
-    val rawData = new Array[Double](wrapper.m.nfeatures())
-    wrapper.fillRawData(rowData, rawData)
-    if (model._standardize) {
-      GenModel.Kmeans_preprocessData(rawData, model._means, model._mults, model._modes)
-    }
-    rawData
+  override private[sparkling] def getActualValuesExtractor(): (RowData, EasyPredictModelWrapper) => Array[Double] = {
+    (rowData: RowData, wrapper: EasyPredictModelWrapper) =>
+      {
+        val model = wrapper.m.asInstanceOf[KMeansMojoModel]
+        val rawData = new Array[Double](wrapper.m.nfeatures())
+        wrapper.fillRawData(rowData, rawData)
+        if (model._standardize) {
+          GenModel.Kmeans_preprocessData(rawData, model._means, model._mults, model._modes)
+        }
+        rawData
+      }
   }
 }
