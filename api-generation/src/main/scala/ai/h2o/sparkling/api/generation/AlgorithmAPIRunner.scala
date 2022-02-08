@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.api.generation
 
-import ai.h2o.sparkling.api.generation.common.{APIRunnerBase, AlgorithmConfigurations, AutoMLConfiguration, FeatureEstimatorConfigurations, GridSearchConfiguration, SubstitutionContextBase, Word2VecConfiguration}
+import ai.h2o.sparkling.api.generation.common.{APIRunnerBase, AlgorithmConfigurations, AutoMLConfiguration, FeatureEstimatorConfigurations, GridSearchConfiguration, StackedEnsembleConfiguration, SubstitutionContextBase, Word2VecConfiguration}
 import ai.h2o.sparkling.api.generation.python.Word2VecTemplate
 
 object AlgorithmAPIRunner
@@ -26,6 +26,7 @@ object AlgorithmAPIRunner
   with FeatureEstimatorConfigurations
   with GridSearchConfiguration
   with AutoMLConfiguration
+  with StackedEnsembleConfiguration
   with Word2VecConfiguration {
 
   private val algorithmTemplates = Map("scala" -> scala.AlgorithmTemplate, "py" -> python.AlgorithmTemplate)
@@ -95,6 +96,17 @@ object AlgorithmAPIRunner
     if (languageExtension != "scala") {
       val content = algorithmTemplates(languageExtension)(gridSearchAlgorithmContext, gridSearchParameterConfiguration)
       writeResultToFile(content, gridSearchAlgorithmContext, languageExtension, destinationDir)
+    }
+
+    for (substitutionContext <- stackedEnsembleParameterConfiguration) {
+      val content = parameterTemplates(languageExtension)(substitutionContext)
+      writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
+    }
+
+    if (languageExtension != "scala") {
+      val content =
+        algorithmTemplates(languageExtension)(stackedEnsembleAlgorithmContext, stackedEnsembleParameterConfiguration)
+      writeResultToFile(content, stackedEnsembleAlgorithmContext, languageExtension, destinationDir)
     }
   }
 
