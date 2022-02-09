@@ -44,7 +44,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     .withColumn("WEIGHT", rand(42))
     .repartition(20)
 
-  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
+  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2), 42L)
 
   private def assertMetrics[T](model: H2OMOJOModel): Unit = {
     assertMetrics[T](model.getTrainingMetricsObject(), model.getTrainingMetrics())

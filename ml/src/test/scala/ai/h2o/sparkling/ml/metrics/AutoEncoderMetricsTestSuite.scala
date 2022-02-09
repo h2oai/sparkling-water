@@ -33,7 +33,7 @@ class AutoEncoderMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
-  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2), seed = 42)
+  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2), seed = 42L)
 
   test("test calculation of autoencoder metric objects on arbitrary dataset") {
     val algorithm = new H2OAutoEncoder()

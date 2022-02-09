@@ -35,7 +35,7 @@ class ClusteringMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/iris/iris_wheader.csv"))
 
-  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2), seed = 42)
+  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2), seed = 42L)
 
   test("test calculation of kmeans metric objects on arbitrary dataset") {
     val algorithm = new H2OKMeans()

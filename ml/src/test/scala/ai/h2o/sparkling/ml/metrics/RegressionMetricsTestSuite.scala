@@ -42,7 +42,7 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
     .withColumn("DCAPS", 'DCAPS.cast(StringType))
     .repartition(20)
 
-  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
+  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2), 42L)
 
   private def assertMetrics[T](model: H2OMOJOModel): Unit = {
     assertMetrics[T](model.getTrainingMetricsObject(), model.getTrainingMetrics())
