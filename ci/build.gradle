@@ -72,7 +72,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 conda install anaconda-client conda-build conda-verify -y && \\
                 conda update conda -y && \\
                 conda update anaconda-client conda-build conda-verify -y && \\
-                conda config --add channels conda-forge && \\
+                conda config --add channels conda-forge
                 """
 
   runCommand """\\
