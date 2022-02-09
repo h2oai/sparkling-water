@@ -58,54 +58,8 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
 
   def branchName = getGitBranch()
 
-  user("root")
-
-  runCommand """\\
-                chmod 777 /envs && \\
-                apt-get update && \\
-                for pythonVersion in ${pythonEnvironments}; \\
-                do \\
-                  apt-get install -y python\$pythonVersion && \\
-                  if [ \$pythonVersion = "3.8" ] ; then apt-get install -y python\$pythonVersion-distutils; fi \\
-                done
-                """
-
   user("jenkins")
 
-  runCommand """\\
-                cd /envs && \\
-                pip install virtualenv && \\
-                for pythonVersion in ${pythonEnvironments}; \\
-                do \\
-                  virtualenv --python python\$pythonVersion sw_env_python\$pythonVersion && \\
-                  . /envs/sw_env_python\$pythonVersion/bin/activate && \\
-                  pip install setuptools && \\
-                  pip install twine; \\
-                done
-                """
-
-  runCommand """\\
-                cd /home/jenkins && \\
-                git clone https://github.com/h2oai/sparkling-water.git && \\
-                cd sparkling-water && \\
-                git checkout ${branchName} && \\
-                for sparkMajor in ${supportedSparkVersions}; \\
-                do \\
-                  ./gradlew -Pspark=\$sparkMajor --refresh-dependencies resolveDependencies && \\
-                  for pythonVersion in ${supportedPythonVersions}; \\
-                  do \\
-                    ./gradlew -Pspark=\$sparkMajor :sparkling-water-py:pipInstall -PpythonPath=/envs/sw_env_python\$pythonVersion/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python; \\
-                  done; \\ 
-                done && cd .. && rm -rf sparkling-water
-                """
-
-  user("root")
-
-  runCommand """\\
-                sudo sh -c "echo \\"jenkins ALL=(ALL) NOPASSWD:ALL\\" >> /etc/sudoers"
-               """
-
-  user("jenkins")
   environmentVariable("USER", "jenkins")
   runCommand """\\
                cd /home/jenkins && \\
@@ -119,7 +73,42 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 conda update conda -y && \\
                 conda update anaconda-client conda-build conda-verify -y && \\
                 conda config --add channels conda-forge
+                conda init
                 """
+
+  runCommand """\\
+                for pythonVersion in ${pythonEnvironments}; \\
+                do \\
+                  conda create -n sw_env_python\$pythonVersion python=\$pythonVersion -y \\
+                  conda activate sw_env_python\$pythonVersion && \\
+                  pip install setuptools && \\
+                  pip install twine && \\
+                  conda deactivate; \\
+                done
+                """
+
+  runCommand """\\
+                cd /home/jenkins && \\
+                git clone https://github.com/h2oai/sparkling-water.git && \\
+                cd sparkling-water && \\
+                git checkout ${branchName} && \\
+                for sparkMajor in ${supportedSparkVersions}; \\
+                do \\
+                  ./gradlew -Pspark=\$sparkMajor --refresh-dependencies resolveDependencies && \\
+                  for pythonVersion in ${supportedPythonVersions}; \\
+                  do \\
+                    ./gradlew -Pspark=\$sparkMajor :sparkling-water-py:pipInstall -PpythonPath=/home/jenkins/miniconda/envs/sw_env_python\$pythonVersion/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python; \\
+                  done; \\ 
+                done && cd .. && rm -rf sparkling-water
+                """
+
+  user("root")
+
+  runCommand """\\
+                sudo sh -c "echo \\"jenkins ALL=(ALL) NOPASSWD:ALL\\" >> /etc/sudoers"
+               """
+
+  user("jenkins")
 
   runCommand "pip install awscli --upgrade --user"
 }
