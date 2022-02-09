@@ -74,7 +74,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 conda update anaconda-client conda-build conda-verify -y && \\
                 conda config --add channels conda-forge && \\
                 conda init && \\
-                source /home/jenkins/.bashrc
+                . /home/jenkins/.bashrc
                 """
 
   runCommand """\\
