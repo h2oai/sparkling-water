@@ -73,11 +73,11 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 conda update conda -y && \\
                 conda update anaconda-client conda-build conda-verify -y && \\
                 conda config --add channels conda-forge && \\
-                conda init && \\
-                . /home/jenkins/.bashrc
+                conda init
                 """
 
   runCommand """\\
+                . /home/jenkins/.bashrc && \\
                 for pythonVersion in ${pythonEnvironments}; \\
                 do \\
                   conda create -n sw_env_python\$pythonVersion python=\$pythonVersion -y && \\
