@@ -81,6 +81,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   user("jenkins")
 
   runCommand """\\
+                . /home/jenkins/.bashrc && \\
                 for pythonVersion in ${pythonEnvironments}; \\
                 do \\
                   conda create -n sw_env_python\$pythonVersion python=\$pythonVersion -y && \\
