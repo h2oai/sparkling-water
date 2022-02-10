@@ -76,8 +76,6 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 conda init
                 """
 
-  user("jenkins")
-
   runCommand """\\
                 . ~/miniconda/etc/profile.d/conda.sh && \\
                 for pythonVersion in ${pythonEnvironments}; \\
