@@ -18,9 +18,8 @@
 package ai.h2o.sparkling.ml.models
 
 import java.io.File
-
 import ai.h2o.sparkling.backend.BuildInfo
-import ai.h2o.sparkling.ml.algos.{H2OAutoML, H2OGBM, H2OGridSearch}
+import ai.h2o.sparkling.ml.algos.{H2OAutoML, H2OGBM, H2OGLM, H2OGridSearch, H2OStackedEnsemble}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
@@ -116,5 +115,37 @@ class BinaryModelTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     automl.fit(dataset)
     val binaryModel = automl.getBinaryModel()
     assert(H2OBinaryModel.exists(binaryModel.modelId))
+  }
+
+  test("Binary model is available in H2O after training StackedEnsemble in SW") {
+
+    val foldsNo = 5
+    val foldAssignment = "Modulo"
+
+    val glm = new H2OGLM()
+      .setLabelCol("AGE")
+      .setNfolds(foldsNo)
+      .setFoldAssignment(foldAssignment)
+      .setKeepBinaryModels(true)
+      .setKeepCrossValidationPredictions(true)
+    val glmModel = glm.fit(dataset)
+
+    val gbm = new H2OGBM()
+      .setLabelCol("AGE")
+      .setNfolds(foldsNo)
+      .setFoldAssignment(foldAssignment)
+      .setKeepBinaryModels(true)
+      .setKeepCrossValidationPredictions(true)
+    val gbmModel = gbm.fit(dataset)
+
+    val ensemble = new H2OStackedEnsemble()
+      .setBaseModels(Seq(glmModel, gbmModel))
+      .setLabelCol("AGE")
+      .setKeepBinaryModels(true)
+
+    ensemble.fit(dataset)
+    val ensembleBinaryModel = ensemble.getBinaryModel()
+
+    assert(H2OBinaryModel.exists(ensembleBinaryModel.modelId))
   }
 }

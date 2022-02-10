@@ -19,14 +19,15 @@ package ai.h2o.sparkling.api.generation.common
 
 import hex.Model.Parameters.FoldAssignmentScheme
 import hex.ensemble.StackedEnsembleModel.StackedEnsembleParameters
+import hex.schemas.StackedEnsembleModelV99.StackedEnsembleModelOutputV99
 import hex.schemas.StackedEnsembleV99.StackedEnsembleParametersV99
 
-trait StackedEnsembleConfiguration {
+class StackedEnsembleConfiguration extends SingleAlgorithmConfiguration {
 
-  def stackedEnsembleParameterConfiguration: Seq[ParameterSubstitutionContext] = {
+  override def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
 
     val stackedEnsembleParameters = Seq[(String, Class[_], Class[_])](
-      ("H2OStackedEnsembleParameters", classOf[StackedEnsembleParametersV99], classOf[StackedEnsembleParameters]))
+      ("H2OStackedEnsembleParams", classOf[StackedEnsembleParametersV99], classOf[StackedEnsembleParameters]))
 
     val blendingFrame = ExplicitField("blending_frame", "HasBlendingDataFrame", null, Some("blendingDataFrame"), None)
     val explicitDefaultValues =
@@ -48,13 +49,26 @@ trait StackedEnsembleConfiguration {
         generateParamTag = false)
   }
 
-  def stackedEnsembleAlgorithmContext: AlgorithmSubstitutionContext = {
-    AlgorithmSubstitutionContext(
-      namespace = "ai.h2o.sparkling.ml.algos",
-      "H2OStackedEnsemble",
-      null,
-      "H2OAlgorithm",
-      Seq("H2OStackedEnsembleExtras"),
-      false)
+  override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
+    Seq(
+      AlgorithmSubstitutionContext(
+        namespace = "ai.h2o.sparkling.ml.algos",
+        "H2OStackedEnsemble",
+        null,
+        "H2OSupervisedAlgorithm",
+        Seq("H2OStackedEnsembleExtras"),
+        false))
+  }
+
+  override def modelOutputConfiguration: Seq[ModelOutputSubstitutionContext] = {
+    val modelOutputs =
+      Seq[(String, Class[_])](("H2OStackedEnsembleModelOutputs", classOf[StackedEnsembleModelOutputV99]))
+
+    for ((outputEntityName, h2oParametersClass: Class[_]) <- modelOutputs)
+      yield ModelOutputSubstitutionContext(
+        "ai.h2o.sparkling.ml.outputs",
+        outputEntityName,
+        h2oParametersClass,
+        Seq.empty)
   }
 }

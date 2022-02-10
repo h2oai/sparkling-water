@@ -17,17 +17,10 @@
 
 package ai.h2o.sparkling.api.generation
 
-import ai.h2o.sparkling.api.generation.common.{APIRunnerBase, AlgorithmConfigurations, AutoMLConfiguration, FeatureEstimatorConfigurations, GridSearchConfiguration, StackedEnsembleConfiguration, SubstitutionContextBase, Word2VecConfiguration}
+import ai.h2o.sparkling.api.generation.common.{APIRunnerBase, AlgorithmConfigurations, AutoMLConfiguration, ConfigurationSource, FeatureEstimatorConfigurations, GridSearchConfiguration, StackedEnsembleConfiguration, SubstitutionContextBase, Word2VecConfiguration}
 import ai.h2o.sparkling.api.generation.python.Word2VecTemplate
 
-object AlgorithmAPIRunner
-  extends APIRunnerBase
-  with AlgorithmConfigurations
-  with FeatureEstimatorConfigurations
-  with GridSearchConfiguration
-  with AutoMLConfiguration
-  with StackedEnsembleConfiguration
-  with Word2VecConfiguration {
+object AlgorithmAPIRunner extends APIRunnerBase {
 
   private val algorithmTemplates = Map("scala" -> scala.AlgorithmTemplate, "py" -> python.AlgorithmTemplate)
 
@@ -35,6 +28,7 @@ object AlgorithmAPIRunner
     Map("scala" -> scala.ProblemSpecificAlgorithmTemplate, "py" -> python.ProblemSpecificAlgorithmTemplate)
 
   private val parameterTemplates = Map("scala" -> scala.ParametersTemplate, "py" -> python.ParametersTemplate)
+  private val skippedScalaAlgorithms = Seq("H2OAutoML", "H2OGridSearch", "H2OStackedEnsemble")
 
   def main(args: Array[String]): Unit = {
     val languageExtension = args(0)
@@ -42,76 +36,60 @@ object AlgorithmAPIRunner
 
     generateWord2Vec(languageExtension, destinationDir)
 
-    for (substitutionContext <- parametersConfiguration) {
-      val content = parameterTemplates(languageExtension)(substitutionContext)
-      writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
-    }
+    val configurationSources: Seq[ConfigurationSource] = Seq(
+      new AlgorithmConfigurations(),
+      new FeatureEstimatorConfigurations(),
+      new AutoMLConfiguration(),
+      new GridSearchConfiguration(),
+      new StackedEnsembleConfiguration())
 
-    for ((algorithmContext, parameterContext) <- algorithmConfiguration.zip(parametersConfiguration)) {
-      val content = algorithmTemplates(languageExtension)(algorithmContext, Seq(parameterContext))
-      writeResultToFile(content, algorithmContext, languageExtension, destinationDir)
-    }
+    for (source <- configurationSources) {
 
-    val parametersConfigurationSequences = parametersConfiguration.map(Seq(_))
-    val specificAlgorithmCombinations = problemSpecificAlgorithmConfiguration.zip(parametersConfigurationSequences) :+
-      (problemSpecificAutoMLAlgorithmContext, autoMLParameterConfiguration)
+      for (substitutionContext <- source.parametersConfiguration) {
+        val content = parameterTemplates(languageExtension)(substitutionContext)
+        writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
+      }
 
-    for ((algorithmContext, parameterContexts) <- specificAlgorithmCombinations) {
-      val classificationAlgorithmContext = algorithmContext.copy(
-        entityName = algorithmContext.parentEntityName + "Classifier",
-        namespace = algorithmContext.parentNamespace + ".classification")
-      val content = problemSpecificAlgorithmTemplates(languageExtension)(
-        "classification",
-        classificationAlgorithmContext,
-        parameterContexts)
-      writeResultToFile(content, classificationAlgorithmContext, languageExtension, destinationDir)
-    }
+      for ((algorithmContext, parameterContext) <- source.algorithmParametersPairs
+           if shouldGenerateAlgorithm(languageExtension, algorithmContext.entityName)) {
+        val content = algorithmTemplates(languageExtension)(algorithmContext, parameterContext)
+        writeResultToFile(content, algorithmContext, languageExtension, destinationDir)
+      }
 
-    for ((algorithmContext, parameterContexts) <- specificAlgorithmCombinations) {
-      val regressionAlgorithmContext = algorithmContext.copy(
-        entityName = algorithmContext.parentEntityName + "Regressor",
-        namespace = algorithmContext.parentNamespace + ".regression")
-      val content = problemSpecificAlgorithmTemplates(languageExtension)(
-        "regression",
-        regressionAlgorithmContext,
-        parameterContexts)
-      writeResultToFile(content, regressionAlgorithmContext, languageExtension, destinationDir)
-    }
+      val specificAlgorithmCombinations = source.specificAlgorithmParametersPairs
 
-    for (substitutionContext <- autoMLParameterConfiguration) {
-      val content = parameterTemplates(languageExtension)(substitutionContext)
-      writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
-    }
+      for ((algorithmContext, parameterContexts) <- specificAlgorithmCombinations) {
+        val classificationAlgorithmContext = algorithmContext.copy(
+          entityName = algorithmContext.parentEntityName + "Classifier",
+          namespace = algorithmContext.parentNamespace + ".classification")
 
-    if (languageExtension != "scala") {
-      val content = algorithmTemplates(languageExtension)(autoMLAlgorithmContext, autoMLParameterConfiguration)
-      writeResultToFile(content, autoMLAlgorithmContext, languageExtension, destinationDir)
-    }
+        val content = problemSpecificAlgorithmTemplates(languageExtension)(
+          "classification",
+          classificationAlgorithmContext,
+          parameterContexts)
+        writeResultToFile(content, classificationAlgorithmContext, languageExtension, destinationDir)
+      }
 
-    for (substitutionContext <- gridSearchParameterConfiguration) {
-      val content = parameterTemplates(languageExtension)(substitutionContext)
-      writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
-    }
-
-    if (languageExtension != "scala") {
-      val content = algorithmTemplates(languageExtension)(gridSearchAlgorithmContext, gridSearchParameterConfiguration)
-      writeResultToFile(content, gridSearchAlgorithmContext, languageExtension, destinationDir)
-    }
-
-    for (substitutionContext <- stackedEnsembleParameterConfiguration) {
-      val content = parameterTemplates(languageExtension)(substitutionContext)
-      writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
-    }
-
-    if (languageExtension != "scala") {
-      val content =
-        algorithmTemplates(languageExtension)(stackedEnsembleAlgorithmContext, stackedEnsembleParameterConfiguration)
-      writeResultToFile(content, stackedEnsembleAlgorithmContext, languageExtension, destinationDir)
+      for ((algorithmContext, parameterContexts) <- specificAlgorithmCombinations) {
+        val regressionAlgorithmContext = algorithmContext.copy(
+          entityName = algorithmContext.parentEntityName + "Regressor",
+          namespace = algorithmContext.parentNamespace + ".regression")
+        val content = problemSpecificAlgorithmTemplates(languageExtension)(
+          "regression",
+          regressionAlgorithmContext,
+          parameterContexts)
+        writeResultToFile(content, regressionAlgorithmContext, languageExtension, destinationDir)
+      }
     }
   }
 
+  private def shouldGenerateAlgorithm(language: String, entityName: String): Boolean = {
+    if (language == "scala" && skippedScalaAlgorithms.contains(entityName)) false
+    else true
+  }
+
   private def generateWord2Vec(languageExtension: String, destinationDir: String): Unit = {
-    val w2vContext = word2VecParametersSubstitutionContext
+    val w2vContext = new Word2VecConfiguration().word2VecParametersSubstitutionContext
     val content = parameterTemplates(languageExtension)(w2vContext)
     writeResultToFile(content, w2vContext, languageExtension, destinationDir)
 
@@ -125,4 +103,5 @@ object AlgorithmAPIRunner
       writeResultToFile(content, context, languageExtension, destinationDir)
     }
   }
+
 }
