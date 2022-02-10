@@ -21,8 +21,6 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   destFile = outputFile
   from testingBaseImage
 
-  runCommand "rm /bin/sh && ln -s /bin/bash /bin/sh"
-
   runCommand "rm /etc/startup/70_start_slapd"
 
   // Install Terraform
@@ -81,7 +79,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   user("jenkins")
 
   runCommand """\\
-                . /home/jenkins/.bashrc && \\
+                . ~/miniconda/etc/profile.d/conda.sh && \\
                 for pythonVersion in ${pythonEnvironments}; \\
                 do \\
                   conda create -n sw_env_python\$pythonVersion python=\$pythonVersion -y && \\
