@@ -82,8 +82,9 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 do \\
                   conda create -n sw_env_python\$pythonVersion python=\$pythonVersion -y && \\
                   conda activate sw_env_python\$pythonVersion && \\
-                  pip install setuptools && \\
-                  pip install twine && \\
+                  conda install setuptools -y && \\
+                  conda install twine -y && \\
+                  conda install virtualenv -y && \\
                   conda deactivate; \\
                 done
                 """
