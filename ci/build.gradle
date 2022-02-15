@@ -48,6 +48,9 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
     if (version.startsWith("2.4")) {
       runCommand "sed -i 's/openjdk:8-jdk-slim/openjdk:8-jdk-slim-buster/g' /home/jenkins/spark-${version}-bin-hadoop2.7/kubernetes/dockerfiles/spark/Dockerfile"
     }
+    if (version.startsWith("3.0") || version.startsWith("3.1")) {
+      runCommand "sed -i 's/\\(apt-key[^)]*\\)/apt-key adv --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7'/g' /home/jenkins/spark-${version}-bin-hadoop2.7/kubernetes/dockerfiles/spark/bindings/R/Dockerfile"
+    }
     def first = version.split("\\.")[0]
     def second = version.split("\\.")[1]
     environmentVariable("SPARK_HOME_${first}_${second}", "/home/jenkins/spark-${version}-bin-hadoop2.7")
@@ -55,28 +58,34 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
 
   def branchName = getGitBranch()
 
-  user("root")
-
-  runCommand """\\
-                chmod 777 /envs && \\
-                for pythonVersion in ${pythonEnvironments}; \\
-                do \\
-                  apt-get install -y python\$pythonVersion && \\
-                  if [ \$pythonVersion = "3.8" ] ; then apt-get install -y python\$pythonVersion-distutils; fi \\
-                done
-                """
-
   user("jenkins")
 
+  environmentVariable("USER", "jenkins")
   runCommand """\\
-                cd /envs && \\
-                pip install virtualenv && \\
+               cd /home/jenkins && \\
+               wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /home/jenkins/miniconda.sh && \\
+               bash /home/jenkins/miniconda.sh -b -p /home/jenkins/miniconda && \\
+               rm /home/jenkins/miniconda.sh
+                """
+  environmentVariable("PATH", "\"/home/jenkins/miniconda/bin:\${PATH}\"")
+  runCommand """\\
+                conda install anaconda-client conda-build conda-verify -y && \\
+                conda update conda -y && \\
+                conda update anaconda-client conda-build conda-verify -y && \\
+                conda config --add channels conda-forge && \\
+                conda init
+                """
+
+  runCommand """\\
+                . ~/miniconda/etc/profile.d/conda.sh && \\
                 for pythonVersion in ${pythonEnvironments}; \\
                 do \\
-                  virtualenv --python python\$pythonVersion sw_env_python\$pythonVersion && \\
-                  . /envs/sw_env_python\$pythonVersion/bin/activate && \\
-                  pip install setuptools && \\
-                  pip install twine; \\
+                  conda create -n sw_env_python\$pythonVersion python=\$pythonVersion -y && \\
+                  conda activate sw_env_python\$pythonVersion && \\
+                  conda install setuptools -y && \\
+                  conda install twine -y && \\
+                  conda install virtualenv -y && \\
+                  conda deactivate; \\
                 done
                 """
 
@@ -90,7 +99,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                   ./gradlew -Pspark=\$sparkMajor --refresh-dependencies resolveDependencies && \\
                   for pythonVersion in ${supportedPythonVersions}; \\
                   do \\
-                    ./gradlew -Pspark=\$sparkMajor :sparkling-water-py:pipInstall -PpythonPath=/envs/sw_env_python\$pythonVersion/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python; \\
+                    ./gradlew -Pspark=\$sparkMajor :sparkling-water-py:pipInstall -PpythonPath=/home/jenkins/miniconda/envs/sw_env_python\$pythonVersion/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python; \\
                   done; \\ 
                 done && cd .. && rm -rf sparkling-water
                 """
@@ -102,20 +111,6 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                """
 
   user("jenkins")
-  environmentVariable("USER", "jenkins")
-  runCommand """\\
-               cd /home/jenkins && \\
-               wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /home/jenkins/miniconda.sh && \\
-               bash /home/jenkins/miniconda.sh -b -p /home/jenkins/miniconda && \\
-               rm /home/jenkins/miniconda.sh
-                """
-  environmentVariable("PATH", "\"/home/jenkins/miniconda/bin:\${PATH}\"")
-  runCommand """\\
-                conda install anaconda-client conda-build conda-verify -y && \\
-                conda update conda -y && \\
-                conda update anaconda-client conda-build conda-verify -y && \\
-                conda config --add channels conda-forge
-                """
 
   runCommand "pip install awscli --upgrade --user"
 }
