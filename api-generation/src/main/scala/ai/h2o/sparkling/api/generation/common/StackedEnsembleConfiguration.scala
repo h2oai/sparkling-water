@@ -45,7 +45,7 @@ class StackedEnsembleConfiguration extends SingleAlgorithmConfiguration {
         explicitDefaultValues, // = Map.empty,
         typeExceptions = Map.empty,
         defaultValueSource = DefaultValueSource.Field,
-        defaultValuesOfCommonParameters = Map(),
+        defaultValuesOfCommonParameters = AlgorithmConfigurations.defaultValuesOfAlgorithmCommonParameters,
         generateParamTag = false)
   }
 

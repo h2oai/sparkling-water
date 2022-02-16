@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -15,8 +14,21 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos import H2OKMeans, H2OAutoML, H2OGridSearch, H2OGLM, H2OGBM, H2OXGBoost, H2ODeepLearning
-from ai.h2o.sparkling.ml.algos import H2ODRF, H2OGAM, H2OIsolationForest, H2OCoxPH, H2ORuleFit, H2OStackedEnsemble
+import os
+from pyspark.ml import Pipeline, PipelineModel
+from pyspark.mllib.linalg import *
+from pyspark.mllib.linalg import *
+from pyspark.sql.types import *
+from pyspark.sql.types import *
+from pysparkling.ml.algos import H2OStackedEnsemble
+from tests import unit_test_utils
 
-__all__ = ["H2OAutoML", "H2OGridSearch", "H2OGLM", "H2OGAM", "H2OGBM", "H2OXGBoost", "H2ODeepLearning", "H2OKMeans",
-           "H2ODRF", "H2OIsolationForest", "H2OCoxPH", "H2ORuleFit", "H2OStackedEnsemble"]
+from tests.unit.with_runtime_sparkling.algo_test_utils import *
+
+
+def testParamsPassedByConstructor():
+    assertParamsViaConstructor("H2OStackedEnsemble")
+
+
+def testParamsPassedBySetters():
+    assertParamsViaSetters("H2OStackedEnsemble")
