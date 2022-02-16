@@ -22,6 +22,7 @@ import ai.h2o.sparkling.ml.utils.SchemaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.{H2OContext, H2OFrame, SparkTimeZone}
 import org.apache.spark.expose.Logging
+import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.DataFrame
 
 object SparkDataFrameConverter extends Logging {
@@ -40,23 +41,47 @@ object SparkDataFrameConverter extends Logging {
     spark.baseRelationToDataFrame(relation)
   }
 
-  def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
+  def toH2OFrame(
+      hc: H2OContext,
+      dataFrame: DataFrame,
+      frameKeyName: Option[String] = None,
+      featureColsForConstCheck: Option[Seq[String]] = None): H2OFrame = {
     val df = dataFrame.toDF() // Because of PySparkling, we can receive Dataset[Primitive] in this method, ensure that
     // we are dealing with Dataset[Row]
     val flatDataFrame = flattenDataFrame(df)
     val schema = flatDataFrame.schema
-    val rdd = flatDataFrame.rdd // materialized the data frame
+    val rdd = flatDataFrame.rdd.cache()
 
     val elemMaxSizes = collectMaxElementSizes(rdd, schema)
     val vecIndices = collectVectorLikeTypes(schema).toArray
-    val flattenSchema = expandedSchema(schema, elemMaxSizes)
-    val colNames = flattenSchema.map(field => "\"" + field.name + "\"").toArray
+    val flattenedSchema = expandedSchema(schema, elemMaxSizes)
+    val flattenedFeatureCols = featureColsForConstCheck.map(findFlattenedColumnNamesByPrefix(_, flattenedSchema))
+    val h2oColNames = flattenedSchema.map(field => "\"" + field.name + "\"").toArray
     val maxVecSizes = vecIndices.map(elemMaxSizes(_))
 
     val expectedTypes = DataTypeConverter.determineExpectedTypes(schema)
 
     val uniqueFrameId = frameKeyName.getOrElse("frame_rdd_" + rdd.id + scala.util.Random.nextInt())
-    val metadata = WriterMetadata(hc.getConf, uniqueFrameId, expectedTypes, maxVecSizes, SparkTimeZone.current())
-    Writer.convert(new H2OAwareRDD(hc.getH2ONodes(), rdd), colNames, metadata)
+    val metadata =
+      WriterMetadata(
+        hc.getConf,
+        uniqueFrameId,
+        expectedTypes,
+        maxVecSizes,
+        SparkTimeZone.current(),
+        flattenedFeatureCols)
+    val result = Writer.convert(new H2OAwareRDD(hc.getH2ONodes(), rdd), h2oColNames, metadata)
+    rdd.unpersist(blocking = false)
+    result
+  }
+
+  private def findFlattenedColumnNamesByPrefix(
+      columnPrefixes: Seq[String],
+      flattenedFields: Seq[StructField]): Seq[String] = {
+    columnPrefixes.flatMap(
+      colNameBeforeFlatten =>
+        flattenedFields
+          .filter(col => col.name == colNameBeforeFlatten || col.name.startsWith(colNameBeforeFlatten + "."))
+          .map(_.name))
   }
 }

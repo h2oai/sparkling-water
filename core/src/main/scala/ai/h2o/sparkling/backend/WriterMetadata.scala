@@ -26,4 +26,5 @@ case class WriterMetadata(
     frameId: String,
     expectedTypes: Array[ExpectedType],
     maxVectorSizes: Array[Int],
-    timezone: TimeZone)
+    timezone: TimeZone,
+    featureColsForConstCheck: Option[Seq[String]])

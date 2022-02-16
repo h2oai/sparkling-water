@@ -91,16 +91,22 @@ private[backend] object Writer {
 
   def convert(rdd: H2OAwareRDD[Row], colNames: Array[String], metadata: WriterMetadata): H2OFrame = {
     H2OFrame.initializeFrame(metadata.conf, metadata.frameId, colNames)
-    val partitionSizes = getNonEmptyPartitionSizes(rdd)
+    val partitionStats = getPartitionStats(rdd, metadata.featureColsForConstCheck)
+    if (partitionStats.areFeatureColumnsConstant.getOrElse(false)) {
+      throw new IllegalArgumentException(s"H2O could not use any of the specified input" +
+        s" columns: '${metadata.featureColsForConstCheck.get.mkString(", ")}' because they are all constants. H2O requires at least one non-constant column.")
+    }
+
+    val partitionSizes = partitionStats.partitionSizes
     val nonEmptyPartitions = getNonEmptyPartitions(partitionSizes)
 
     val uploadPlan = getUploadPlan(metadata.conf, nonEmptyPartitions.length)
     val operation: SparkJob = perDataFramePartition(metadata, uploadPlan, nonEmptyPartitions, partitionSizes)
     val rows = SparkSessionUtils.active.sparkContext.runJob(rdd, operation, nonEmptyPartitions)
-    val res = new Array[Long](nonEmptyPartitions.size)
-    rows.foreach { case (chunkIdx, numRows) => res(chunkIdx) = numRows }
+    val rowsPerChunk = new Array[Long](nonEmptyPartitions.size)
+    rows.foreach { case (chunkIdx, numRows) => rowsPerChunk(chunkIdx) = numRows }
     val types = SerdeUtils.expectedTypesToVecTypes(metadata.expectedTypes, metadata.maxVectorSizes)
-    H2OFrame.finalizeFrame(metadata.conf, metadata.frameId, res, types)
+    H2OFrame.finalizeFrame(metadata.conf, metadata.frameId, rowsPerChunk, types)
     H2OFrame(metadata.frameId)
   }
 
@@ -164,22 +170,40 @@ private[backend] object Writer {
     }
   }
 
-  private def getNonEmptyPartitionSizes[T](rdd: RDD[T]): Map[Int, Int] = {
-    rdd
-      .mapPartitionsWithIndex {
-        case (idx, it) =>
-          if (it.nonEmpty) {
-            Iterator.single((idx, it.size))
-          } else {
-            Iterator.empty
-          }
+  private def getPartitionStats(rdd: RDD[Row], maybeFeatureColumns: Option[Seq[String]]): PartitionStats = {
+    def rowCountWithFeatureColumnConstantCheck(
+        partitionIdx: Int,
+        iterator: Iterator[Row],
+        featureColumns: Seq[String]) = {
+      var atMostTwoDistinctFeatureColumnValues = Set[Map[String, Any]]()
+      var recordCount = 0
+      while (iterator.hasNext) {
+        if (atMostTwoDistinctFeatureColumnValues.size < 2) {
+          atMostTwoDistinctFeatureColumnValues += iterator.next().getValuesMap(featureColumns)
+        } else {
+          iterator.next()
+        }
+        recordCount += 1
       }
-      .collect()
-      .toMap
+      Iterator.single(Map(partitionIdx -> recordCount), atMostTwoDistinctFeatureColumnValues)
+    }
+
+    val partitionStats = rdd
+      .mapPartitionsWithIndex {
+        case (partitionIdx, iterator) =>
+          maybeFeatureColumns
+            .map(rowCountWithFeatureColumnConstantCheck(partitionIdx, iterator, _))
+            .getOrElse(Iterator.single(Map(partitionIdx -> iterator.size), Set.empty))
+      }
+      .reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
+
+    PartitionStats(
+      partitionSizes = partitionStats._1,
+      areFeatureColumnsConstant = maybeFeatureColumns.map(_ => partitionStats._2.size < 2))
   }
 
   private def getNonEmptyPartitions(partitionSizes: Map[Int, Int]): Seq[Int] = {
-    partitionSizes.keys.toSeq.sorted
+    partitionSizes.filter(_._2 > 0).keys.toSeq.sorted
   }
 
   private def getUploadPlan(conf: H2OConf, numberOfPartitions: Int): UploadPlan = {
