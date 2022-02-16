@@ -15,11 +15,8 @@
 # limitations under the License.
 #
 
-from pyspark.sql import SparkSession
-from pyspark.sql.dataframe import DataFrame
-from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModelFactory
-
-
 class H2OStackedEnsembleExtras:
 
-    pass
+    def setBaseModels(self, base_models):
+        ids = [model.getMojoFileName() for model in base_models]
+        self._java_obj.setBaseModelsIds(ids)

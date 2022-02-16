@@ -26,6 +26,8 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.Dataset
+
+import scala.collection.JavaConverters
 import scala.reflect.ClassTag
 
 /**
@@ -34,21 +36,26 @@ import scala.reflect.ClassTag
   */
 class H2OStackedEnsemble(override val uid: String)
   extends H2OSupervisedAlgorithm[StackedEnsembleParameters]
-  //with H2OTrainFramePreparation
   with H2OStackedEnsembleParams {
 
   def this() = this(Identifiable.randomUID(classOf[H2OStackedEnsemble].getSimpleName))
 
-  private var baseModels: Array[H2OMOJOModel] = Array.empty
+  private var baseModelsIds: String = ""
 
   def setBaseModels(models: Seq[H2OMOJOModel]): this.type  = {
-    baseModels = models.toArray
+    setBaseModelsIds(models.map(m => m.mojoFileName))
+  }
+
+  def setBaseModelsIds(modelIds: Seq[String]): this.type  = {
+    baseModelsIds = modelIds.mkString("[", ",", "]")
     this
   }
 
-  override def fit(dataset: Dataset[_]): H2OStackedEnsembleMOJOModel = {
+  def setBaseModelsIds(modelIds: java.util.List[String]): this.type = {
+    setBaseModelsIds(JavaConverters.asScalaBuffer(modelIds))
+  }
 
-    val baseModelIds:String = baseModels.map(m => m.mojoFileName).mkString("[", ",", "]")
+  override def fit(dataset: Dataset[_]): H2OStackedEnsembleMOJOModel = {
 
     val (train, valid) = prepareDatasetForFitting(dataset)
 
@@ -57,7 +64,7 @@ class H2OStackedEnsemble(override val uid: String)
     val params = getH2OAlgorithmParams(train) ++
       Map("training_frame" -> train.frameId, "model_id" -> convertModelIdToKey(getModelId())) ++
       valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map()) ++
-      Map("base_models" -> baseModelIds)
+      Map("base_models" -> baseModelsIds)
 
     val modelId = trainAndGetDestinationKey(s"/99/ModelBuilders/stackedensemble", params)
     val model = H2OModel(modelId)

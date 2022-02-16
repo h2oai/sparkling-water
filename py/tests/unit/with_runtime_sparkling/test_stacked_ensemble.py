@@ -14,17 +14,22 @@
 # limitations under the License.
 #
 
+import pytest
 import os
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pyspark.sql.types import *
-from pysparkling.ml.algos import H2OStackedEnsemble
+from pyspark.sql.functions import col
+from pysparkling.ml.algos import H2OStackedEnsemble, H2OGLM, H2OGBM
 from tests import unit_test_utils
 
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
+@pytest.fixture(scope="module")
+def classificationDataset(prostateDataset):
+    return prostateDataset.withColumn("CAPSULE", col("CAPSULE").cast("string"))
 
 def testParamsPassedByConstructor():
     assertParamsViaConstructor("H2OStackedEnsemble")
@@ -32,3 +37,28 @@ def testParamsPassedByConstructor():
 
 def testParamsPassedBySetters():
     assertParamsViaSetters("H2OStackedEnsemble")
+
+
+def setParametersForTesting(algo, foldsNo):
+    algo.setLabelCol("AGE")
+    algo.setNfolds(foldsNo)
+    algo.setFoldAssignment("Modulo")
+    algo.setKeepBinaryModels(True)
+    algo.setKeepCrossValidationPredictions(True)
+    algo.setSeed(42)
+    return algo
+
+def testStackedEnsemble(classificationDataset):
+    foldsNo = 5
+    glm = setParametersForTesting(H2OGLM(), foldsNo)
+    glm_model = glm.fit(classificationDataset)
+
+    gbm = setParametersForTesting(H2OGBM(), foldsNo)
+    gbm_model = gbm.fit(classificationDataset)
+
+    ensemble = H2OStackedEnsemble()
+    ensemble.setBaseModels([glm_model, gbm_model])
+    ensemble.setLabelCol("AGE")
+
+    ensemble.fit(classificationDataset)
+
