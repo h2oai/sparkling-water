@@ -5,6 +5,7 @@ RSparkling
 
 RSparkling Documentation is hosted at our documentation page:
 
+- For Spark 3.2 - http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/rsparkling.html
 - For Spark 3.1 - http://docs.h2o.ai/sparkling-water/3.1/latest-stable/doc/rsparkling.html
 - For Spark 3.0 - http://docs.h2o.ai/sparkling-water/3.0/latest-stable/doc/rsparkling.html
 - For Spark 2.4 - http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/rsparkling.html
