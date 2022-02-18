@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+v3.36.0.3-1 (2022-02-18)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.0.3-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.0.3-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.0.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.0.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.0.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.0.3-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.0.3-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.0.3-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.0.3-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.0.3-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.0.3-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.0.3-1-3.2/index.html>`__
+
+-  Improvement
+
+   -  `SW-2689 <https://0xdata.atlassian.net/browse/SW-2689>`__ - Upgrade to H2O 3.36.0.3
+   -  `SW-2686 <https://0xdata.atlassian.net/browse/SW-2686>`__ - Deprecate namedMojoOutputColumns flag
+   -  `SW-2684 <https://0xdata.atlassian.net/browse/SW-2684>`__ - Make io.fabric8.kubernetes-client just a complileOnly dependency to minimize size of uber jar
+   -  `SW-2680 <https://0xdata.atlassian.net/browse/SW-2680>`__ - Expose predict_contributions (SHAP values) for H2OMOJOPipelineModel
+   -  `SW-2633 <https://0xdata.atlassian.net/browse/SW-2633>`__ - Add Support for Spark 3.2
+   -  `SW-2628 <https://0xdata.atlassian.net/browse/SW-2628>`__ - Support Java Serialization of  NullableDataFrameParams on H2OMOJOModel
+
+-  Engineering Story
+
+   -  `SW-2688 <https://0xdata.atlassian.net/browse/SW-2688>`__ - Update Repository Key In Spark R Docker Files
+
 v3.36.0.2-1 (2022-01-27)
 ------------------------
 Downloads:
