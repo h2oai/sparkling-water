@@ -17,21 +17,20 @@
 
 package ai.h2o.sparkling.backend
 
-import java.io.Closeable
-
-import ai.h2o.sparkling.{H2OConf, H2OFrame}
 import ai.h2o.sparkling.H2OFrame.query
+import ai.h2o.sparkling.backend.converters.{CategoricalDomainBuilder, TimeZoneConverter}
 import ai.h2o.sparkling.backend.utils.RestApiUtils.getClusterEndpoint
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.UploadPlanV3
-import ai.h2o.sparkling.backend.converters.{CategoricalDomainBuilder, TimeZoneConverter}
-import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, ExpectedTypes, SerdeUtils}
+import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, SerdeUtils}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.rdd.RDD
+import ai.h2o.sparkling.{H2OConf, H2OFrame}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.apache.spark.{ExposeUtils, TaskContext, ml, mllib}
+
+import java.io.Closeable
 
 private[backend] class Writer(nodeDesc: NodeDesc, metadata: WriterMetadata, numRows: Int, chunkId: Int)
   extends Closeable {
@@ -91,14 +90,14 @@ private[backend] object Writer {
 
   def convert(rdd: H2OAwareRDD[Row], colNames: Array[String], metadata: WriterMetadata): H2OFrame = {
     H2OFrame.initializeFrame(metadata.conf, metadata.frameId, colNames)
-    val partitionStats = getPartitionStats(rdd, metadata.featureColsForConstCheck)
+    val partitionStats = PartitionStatsGenerator.getPartitionStats(rdd, metadata.featureColsForConstCheck)
     if (partitionStats.areFeatureColumnsConstant.getOrElse(false)) {
       throw new IllegalArgumentException(s"H2O could not use any of the specified input" +
         s" columns: '${metadata.featureColsForConstCheck.get.mkString(", ")}' because they are all constants. H2O requires at least one non-constant column.")
     }
 
     val partitionSizes = partitionStats.partitionSizes
-    val nonEmptyPartitions = getNonEmptyPartitions(partitionSizes)
+    val nonEmptyPartitions = partitionSizes.filter(_._2 > 0).keys.toSeq.sorted
 
     val uploadPlan = getUploadPlan(metadata.conf, nonEmptyPartitions.length)
     val operation: SparkJob = perDataFramePartition(metadata, uploadPlan, nonEmptyPartitions, partitionSizes)
@@ -168,42 +167,6 @@ private[backend] object Writer {
           }
         }
     }
-  }
-
-  private def getPartitionStats(rdd: RDD[Row], maybeFeatureColumns: Option[Seq[String]]): PartitionStats = {
-    def rowCountWithFeatureColumnConstantCheck(
-        partitionIdx: Int,
-        iterator: Iterator[Row],
-        featureColumns: Seq[String]) = {
-      var atMostTwoDistinctFeatureColumnValues = Set[Map[String, Any]]()
-      var recordCount = 0
-      while (iterator.hasNext) {
-        if (atMostTwoDistinctFeatureColumnValues.size < 2) {
-          atMostTwoDistinctFeatureColumnValues += iterator.next().getValuesMap(featureColumns)
-        } else {
-          iterator.next()
-        }
-        recordCount += 1
-      }
-      Iterator.single(Map(partitionIdx -> recordCount), atMostTwoDistinctFeatureColumnValues)
-    }
-
-    val partitionStats = rdd
-      .mapPartitionsWithIndex {
-        case (partitionIdx, iterator) =>
-          maybeFeatureColumns
-            .map(rowCountWithFeatureColumnConstantCheck(partitionIdx, iterator, _))
-            .getOrElse(Iterator.single(Map(partitionIdx -> iterator.size), Set.empty))
-      }
-      .reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
-
-    PartitionStats(
-      partitionSizes = partitionStats._1,
-      areFeatureColumnsConstant = maybeFeatureColumns.map(_ => partitionStats._2.size < 2))
-  }
-
-  private def getNonEmptyPartitions(partitionSizes: Map[Int, Int]): Seq[Int] = {
-    partitionSizes.filter(_._2 > 0).keys.toSeq.sorted
   }
 
   private def getUploadPlan(conf: H2OConf, numberOfPartitions: Int): UploadPlan = {
