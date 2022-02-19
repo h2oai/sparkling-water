@@ -61,4 +61,23 @@ class PartitionStatsGeneratorTestSuite extends FunSuite with SparkTestContext wi
     result.partitionSizes should contain theSameElementsAs Map(0 -> 2, 1 -> 2)
   }
 
+  test("should not fail given an empty dataset") {
+    val inputWithOnePartition = Seq.empty[String].toDF.rdd
+
+    val result = PartitionStatsGenerator.getPartitionStats(inputWithOnePartition, Some(Seq("id")))
+
+    result.areFeatureColumnsConstant shouldBe None
+    result.partitionSizes should have size 0
+  }
+
+  test("should not fail given one element dataset") {
+    val inputWithOnePartition = Seq(dataset.head).toDF(datasetCols: _*).rdd
+
+    val result = PartitionStatsGenerator.getPartitionStats(inputWithOnePartition, Some(Seq("id")))
+
+    result.areFeatureColumnsConstant.value shouldBe true
+    result.partitionSizes should have size 1
+    result.partitionSizes shouldBe Map(0 -> 1)
+  }
+
 }

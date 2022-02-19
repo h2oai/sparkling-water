@@ -51,11 +51,14 @@ private[backend] object PartitionStatsGenerator {
             .map(rowCountWithFeatureColumnConstantCheck(partitionIdx, iterator, _))
             .getOrElse(Iterator.single(Map(partitionIdx -> iterator.size), Set.empty))
       }
-      .reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
+      .fold((Map.empty, Set.empty))((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
-    PartitionStats(
-      partitionSizes = partitionStats._1,
-      areFeatureColumnsConstant = maybeFeatureColumnsForConstantCheck.map(_ => partitionStats._2.size < 2))
+    val areFeatureColumnsConstant = if (partitionStats._2.isEmpty || maybeFeatureColumnsForConstantCheck.isEmpty) {
+      None
+    } else {
+      Some(partitionStats._2.size < 2)
+    }
+    PartitionStats(partitionStats._1, areFeatureColumnsConstant)
   }
 
 }
