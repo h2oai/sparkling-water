@@ -67,7 +67,9 @@ private[backend] object PartitionStatsGenerator {
     Iterator.single(Map(partitionIdx -> recordCount), atMostTwoDistinctFeatureColumnValues)
   }
 
-  private def findFlattenedColumnNamesByPrefix(columnPrefixes: Seq[String], flattenedFields: Array[String]): Seq[String] =
+  private def findFlattenedColumnNamesByPrefix(
+      columnPrefixes: Seq[String],
+      flattenedFields: Array[String]): Seq[String] =
     columnPrefixes.flatMap(
       colNameBeforeFlatten =>
         flattenedFields
