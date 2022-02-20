@@ -67,7 +67,6 @@ class PartitionStatsGeneratorTestSuite extends FunSuite with SparkTestContext wi
     val result = PartitionStatsGenerator.getPartitionStats(inputWithOnePartition, Some(Seq("id")))
 
     result.areFeatureColumnsConstant shouldBe None
-    result.partitionSizes should have size 0
   }
 
   test("should not fail given one element dataset") {
