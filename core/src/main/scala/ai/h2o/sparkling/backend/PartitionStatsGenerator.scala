@@ -27,29 +27,12 @@ private[backend] object PartitionStatsGenerator {
   def getPartitionStats(
       rdd: RDD[Row],
       maybeFeatureColumnsForConstantCheck: Option[Seq[String]] = None): PartitionStats = {
-    def rowCountWithFeatureColumnConstantCheck(
-        partitionIdx: Int,
-        iterator: Iterator[Row],
-        featureColumns: Seq[String]) = {
-      var atMostTwoDistinctFeatureColumnValues = Set[Map[String, Any]]()
-      var recordCount = 0
-      while (iterator.hasNext) {
-        if (atMostTwoDistinctFeatureColumnValues.size < 2) {
-          atMostTwoDistinctFeatureColumnValues += iterator.next().getValuesMap(featureColumns)
-        } else {
-          iterator.next()
-        }
-        recordCount += 1
-      }
-      Iterator.single(Map(partitionIdx -> recordCount), atMostTwoDistinctFeatureColumnValues)
-    }
-
     val partitionStats = rdd
       .mapPartitionsWithIndex {
         case (partitionIdx, iterator) =>
           maybeFeatureColumnsForConstantCheck
-            .map(rowCountWithFeatureColumnConstantCheck(partitionIdx, iterator, _))
-            .getOrElse(Iterator.single(Map(partitionIdx -> iterator.size), Set.empty))
+            .map(rowCountWithFeatureColumnsConstantCheck(partitionIdx, iterator, _))
+            .getOrElse(rowCountWithoutFeatureColumnsConstantCheck(partitionIdx, iterator))
       }
       .fold((Map.empty, Set.empty))((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
@@ -60,5 +43,34 @@ private[backend] object PartitionStatsGenerator {
     }
     PartitionStats(partitionStats._1, areFeatureColumnsConstant)
   }
+
+  private def rowCountWithoutFeatureColumnsConstantCheck(partitionIdx: Int, iterator: Iterator[Row]) =
+    Iterator.single(Map(partitionIdx -> iterator.size), Set.empty)
+
+  private def rowCountWithFeatureColumnsConstantCheck(
+      partitionIdx: Int,
+      iterator: Iterator[Row],
+      featureColumns: Seq[String]) = {
+    var atMostTwoDistinctFeatureColumnValues = Set[Map[String, Any]]()
+    var recordCount = 0
+    var featureColumnsFlattened: Option[Seq[String]] = None
+    while (iterator.hasNext) {
+      val row = iterator.next()
+      if (featureColumnsFlattened.isEmpty) {
+        featureColumnsFlattened = Some(findFlattenedColumnNamesByPrefix(featureColumns, row.schema.fieldNames))
+      }
+      if (atMostTwoDistinctFeatureColumnValues.size < 2) {
+        atMostTwoDistinctFeatureColumnValues += row.getValuesMap(featureColumnsFlattened.get)
+      }
+      recordCount += 1
+    }
+    Iterator.single(Map(partitionIdx -> recordCount), atMostTwoDistinctFeatureColumnValues)
+  }
+
+  private def findFlattenedColumnNamesByPrefix(columnPrefixes: Seq[String], flattenedFields: Array[String]): Seq[String] =
+    columnPrefixes.flatMap(
+      colNameBeforeFlatten =>
+        flattenedFields
+          .filter(col => col == colNameBeforeFlatten || col.startsWith(colNameBeforeFlatten + ".")))
 
 }

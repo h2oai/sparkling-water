@@ -22,7 +22,6 @@ import ai.h2o.sparkling.ml.utils.SchemaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.{H2OContext, H2OFrame, SparkTimeZone}
 import org.apache.spark.expose.Logging
-import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.DataFrame
 
 object SparkDataFrameConverter extends Logging {
@@ -55,7 +54,6 @@ object SparkDataFrameConverter extends Logging {
     val elemMaxSizes = collectMaxElementSizes(rdd, schema)
     val vecIndices = collectVectorLikeTypes(schema).toArray
     val flattenedSchema = expandedSchema(schema, elemMaxSizes)
-    val flattenedFeatureCols = featureColsForConstCheck.map(findFlattenedColumnNamesByPrefix(_, flattenedSchema))
     val h2oColNames = flattenedSchema.map(field => "\"" + field.name + "\"").toArray
     val maxVecSizes = vecIndices.map(elemMaxSizes(_))
 
@@ -69,19 +67,10 @@ object SparkDataFrameConverter extends Logging {
         expectedTypes,
         maxVecSizes,
         SparkTimeZone.current(),
-        flattenedFeatureCols)
+        featureColsForConstCheck)
     val result = Writer.convert(new H2OAwareRDD(hc.getH2ONodes(), rdd), h2oColNames, metadata)
     rdd.unpersist(blocking = false)
     result
   }
 
-  private def findFlattenedColumnNamesByPrefix(
-      columnPrefixes: Seq[String],
-      flattenedFields: Seq[StructField]): Seq[String] = {
-    columnPrefixes.flatMap(
-      colNameBeforeFlatten =>
-        flattenedFields
-          .filter(col => col.name == colNameBeforeFlatten || col.name.startsWith(colNameBeforeFlatten + "."))
-          .map(_.name))
-  }
 }
