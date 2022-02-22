@@ -1,7 +1,7 @@
 PySparkling - Scoring
 =====================
 
-This package contains just functionality for scoring with Sparkling Water, H20-3 and Driverless AI MOJO models.
+This package contains just functionality for scoring with Sparkling Water, H2O-3 and Driverless AI MOJO models.
 
 |Join the chat at https://gitter.im/h2oai/sparkling-water| |License| |Powered by H2O.ai|
 
