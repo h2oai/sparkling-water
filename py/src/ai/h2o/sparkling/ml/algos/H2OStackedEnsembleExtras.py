@@ -20,3 +20,6 @@ class H2OStackedEnsembleExtras:
     def setBaseModels(self, base_models):
         ids = [model.getMojoFileName() for model in base_models]
         self._java_obj.setBaseModelsIds(ids)
+
+    def setDeleteBaseModels(self, delete_models):
+        self._java_obj.setDeleteBaseModels(delete_models)

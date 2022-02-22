@@ -17,8 +17,12 @@
 
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.ml.internals.H2OModel
+import ai.h2o.sparkling.ml.models.{H2OBinaryModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.col
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -32,39 +36,121 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    .withColumn("CAPSULE", col("CAPSULE").cast("string"))
 
   private val outputPath = "ml/build/binary.model"
+  private val foldsNo = 5
 
-  test("H2O StackedEnsemble Pipeline") {
+  test("H2O StackedEnsemble model") {
 
-    val foldsNo = 5
-
-    val glm = new H2OGLM()
-      .setLabelCol("AGE")
-      .setNfolds(foldsNo)
-      .setFoldAssignment("Modulo")
-      .setKeepBinaryModels(true)
-      .setKeepCrossValidationPredictions(true)
-
+    val glm = getGlm()
     val glmModel = glm.fit(dataset)
 
-    val gbm = new H2OGBM()
-      .setLabelCol("AGE")
-      .setNfolds(foldsNo)
-      .setFoldAssignment("Modulo")
-      .setKeepBinaryModels(true)
-      .setKeepCrossValidationPredictions(true)
-
+    val gbm = getGbm()
     val gbmModel = gbm.fit(dataset)
 
     val ensemble = new H2OStackedEnsemble()
       .setBaseModels(Seq(glmModel, gbmModel))
-      .setLabelCol("AGE")
+      .setMetalearnerAlgorithm("GLM")
+      .setLabelCol("CAPSULE")
 
     val ensembleModel = ensemble.fit(dataset)
 
-    // TODO assert on ...
+    ensembleModel.getMetalearnerAlgorithm() shouldBe "glm"
+  }
+
+  test("H2O StackedEnsemble deletes base models by default") {
+
+    val drf = getDrf()
+    val drfModel = drf.fit(dataset)
+
+    val gbm = getGbm()
+    val gbmModel = gbm.fit(dataset)
+
+    val ensemble = new H2OStackedEnsemble()
+      .setBaseModels(Seq(drfModel, gbmModel))
+      .setLabelCol("CAPSULE")
+
+    // 2 algos * ( 1 model + 5 cross validation models)
+    val modelsNo = 2 * (1 + foldsNo)
+    H2OModel.listAllModels() should have length modelsNo
+
+    ensemble.fit(dataset)
+
+    H2OModel.listAllModels() should have length 0
+  }
+
+  test("H2O StackedEnsemble doesn't remove base models if requested") {
+
+    val drf = getDrf()
+    val drfModel = drf.fit(dataset)
+    val drfId = drf.getBinaryModel().modelId
+
+    val gbm = getGbm()
+    val gbmModel = gbm.fit(dataset)
+    val gbmId = gbm.getBinaryModel().modelId
+
+    val ensemble = new H2OStackedEnsemble()
+      .setBaseModels(Seq(drfModel, gbmModel))
+      .setLabelCol("CAPSULE")
+      .setDeleteBaseModels(false)
+
+    val modelsNo = 2 * (1 + foldsNo)
+    H2OModel.listAllModels() should have length modelsNo
+
+    ensemble.fit(dataset)
+
+    H2OModel.listAllModels() should have length modelsNo
+  }
+
+  ignore("H2O Stacked Ensemble pipeline serialization and deserialization") {
+
+    val drf = getDrf()
+    val drfModel = drf.fit(dataset)
+
+    val gbm = getGbm()
+    val gbmModel = gbm.fit(dataset)
+
+    val ensemble = new H2OStackedEnsemble()
+      .setBaseModels(Seq(drfModel, gbmModel))
+      .setLabelCol("CAPSULE")
+
+    val pipeline = new Pipeline().setStages(Array(ensemble))
+    pipeline.write.overwrite().save("ml/build/stacked_ensemble_pipeline")
+    val loadedPipeline = Pipeline.load("ml/build/stacked_ensemble_pipeline")
+    val model = loadedPipeline.fit(dataset)
+
+    model.write.overwrite().save("ml/build/stacked_ensemble_pipeline_model")
+    val loadedModel = PipelineModel.load("ml/build/stacked_ensemble_pipeline_model")
+
+    loadedModel.transform(dataset).count()
   }
 
 
+  private def getGbm() = {
+    new H2OGBM()
+      .setLabelCol("CAPSULE")
+      .setNfolds(foldsNo)
+      .setFoldAssignment("Modulo")
+      .setKeepBinaryModels(true)
+      .setKeepCrossValidationPredictions(true)
+  }
+
+  private def getGlm() = {
+    new H2OGLM()
+      .setLabelCol("CAPSULE")
+      .setNfolds(foldsNo)
+      .setFoldAssignment("Modulo")
+      .setKeepBinaryModels(true)
+      .setKeepCrossValidationPredictions(true)
+  }
+
+  private def getDrf() = {
+    new H2ODRF()
+      .setLabelCol("CAPSULE")
+      .setNfolds(foldsNo)
+      .setFoldAssignment("Modulo")
+      .setKeepBinaryModels(true)
+      .setKeepCrossValidationPredictions(true)
+  }
 }

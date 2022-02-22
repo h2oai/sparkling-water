@@ -37,11 +37,13 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             val rawSparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
             val dataset = rawSparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
 
-        Train the base models the Stack Ensemble will operate on. It's important to keep the same folding across
-        the base models. Furthermore, setKeepCrossValidationPredictions has to set to *true*, as the cross-validated
+        Train base models the Stack Ensemble will operate on. It's important to keep the same folding across
+        the base models. Furthermore, setKeepCrossValidationPredictions has to be set to *true*, as the cross-validated
         predicted values are used internally by Stacked Ensemble (for metalearning). Moreover, as the Stacked Ensemble
         combines the base models inside an H2O cluster, the base models have to be available there and therefore
-        setKeepBinaryModels has to be set to *true* as well.
+        setKeepBinaryModels has to be set to *true* as well. Stacked Ensemble will delete base models (incl. binary)
+        by default. If there is any reason to keep the models, call **setDeleteBaseModels** with a *false* argument
+        to retain them.
 
         .. code:: scala
 
@@ -110,11 +112,13 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             sparkDF = hc.asSparkFrame(frame)
             dataset = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
 
-        Train the base models the Stack Ensemble will operate on. It's important to keep the same folding across
-        the base models. Furthermore, setKeepCrossValidationPredictions has to set to *true*, as the cross-validated
+        Train base models the Stack Ensemble will operate on. It's important to keep the same folding across
+        the base models. Furthermore, setKeepCrossValidationPredictions has to be set to *true*, as the cross-validated
         predicted values are used internally by Stacked Ensemble (for metalearning). Moreover, as the Stacked Ensemble
         combines the base models inside an H2O cluster, the base models have to be available there and therefore
-        setKeepBinaryModels has to be set to *true* as well.
+        setKeepBinaryModels has to be set to *true* as well. Stacked Ensemble will delete base models (incl. binary)
+        by default. If there is any reason to keep the models, call **setDeleteBaseModels** with a *false* argument
+        to retain them.
 
         .. code:: python
 

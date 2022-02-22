@@ -20,6 +20,7 @@ import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.ml.models.{H2OBinaryModel, H2OMOJOModel, H2OStackedEnsembleMOJOModel}
 import ai.h2o.sparkling.ml.params.H2OStackedEnsembleParams
 import ai.h2o.sparkling.H2OContext
+import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.ensemble.StackedEnsembleModel.StackedEnsembleParameters
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.param._
@@ -40,14 +41,24 @@ class H2OStackedEnsemble(override val uid: String)
 
   def this() = this(Identifiable.randomUID(classOf[H2OStackedEnsemble].getSimpleName))
 
-  private var baseModelsIds: String = ""
+  private var baseModelsIds: Seq[String] = Seq.empty
+
+  private var deleteBaseModels = true
 
   def setBaseModels(models: Seq[H2OMOJOModel]): this.type  = {
+    checkBaseModelParameters(models)
     setBaseModelsIds(models.map(m => m.mojoFileName))
   }
 
   def setBaseModelsIds(modelIds: Seq[String]): this.type  = {
-    baseModelsIds = modelIds.mkString("[", ",", "]")
+
+    if(!modelIds.forall(id => H2OBinaryModel.exists(id))) {
+      throw new IllegalArgumentException(
+        "Base models need to be fit first with the 'keepBinaryModels' parameter " +
+          "set to true in order to access binary model.")
+    }
+
+    baseModelsIds = modelIds
     this
   }
 
@@ -55,16 +66,26 @@ class H2OStackedEnsemble(override val uid: String)
     setBaseModelsIds(JavaConverters.asScalaBuffer(modelIds))
   }
 
+  def setDeleteBaseModels(deleteModels: Boolean): this.type  = {
+    deleteBaseModels = deleteModels
+    this
+  }
+
   override def fit(dataset: Dataset[_]): H2OStackedEnsembleMOJOModel = {
+
+    if (baseModelsIds.length < 2) {
+      throw new IllegalArgumentException("Algorithm needs at least two base models.")
+    }
 
     val (train, valid) = prepareDatasetForFitting(dataset)
 
     prepareH2OTrainFrameForFitting(train)
 
     val params = getH2OAlgorithmParams(train) ++
-      Map("training_frame" -> train.frameId, "model_id" -> convertModelIdToKey(getModelId())) ++
-      valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map()) ++
-      Map("base_models" -> baseModelsIds)
+      Map("training_frame" -> train.frameId,
+        "model_id" -> convertModelIdToKey(getModelId()),
+        "base_models" -> baseModelsIds.mkString("[", ",", "]")) ++
+      valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
 
     val modelId = trainAndGetDestinationKey(s"/99/ModelBuilders/stackedensemble", params)
     val model = H2OModel(modelId)
@@ -89,7 +110,42 @@ class H2OStackedEnsemble(override val uid: String)
     } else {
       model.tryDelete()
     }
+
+    if (deleteBaseModels) {
+      baseModelsIds.foreach(H2OModel(_).tryDelete())
+    }
+
     result
+  }
+
+  def checkBaseModelParameters(models: Seq[H2OMOJOModel]) = {
+
+    if (!haveModelsSameParamValue("nfolds", models)) {
+      throw new IllegalArgumentException(
+        "Base models need to have consistent number of folds.")
+    }
+
+    if (!haveModelsSameParamValue("foldAssignment", models)) {
+      throw new IllegalArgumentException(
+        "Base models need to have consistent fold assignment scheme.")
+    }
+
+    if (!haveModelsParamValue("keepCrossValidationPredictions", models, true)) {
+      throw new IllegalArgumentException(
+        "Base models need to be fit first with the 'keepCrossValidationPredictions' parameter " +
+          "set to true in order to allow access to cross validations.")
+    }
+  }
+
+  private def haveModelsSameParamValue(paramName:String, models: Seq[H2OMOJOModel]):Boolean = {
+    val firstModel = models.head
+    val param = firstModel.getParam(paramName)
+    val firstValue = firstModel.getOrDefault(param)
+    haveModelsParamValue(paramName, models, firstValue)
+  }
+
+  private def haveModelsParamValue(paramName: String, models: Seq[H2OMOJOModel], value: Any) = {
+    models.forall(m => m.getOrDefault(m.getParam(paramName)) == value)
   }
 
   @DeveloperApi
@@ -104,4 +160,4 @@ class H2OStackedEnsemble(override val uid: String)
   override private[sparkling] def setInputCols(value: Array[String]): this.type = setFeaturesCols(value)
 }
 
-
+object H2OStackedEnsemble extends H2OParamsReadable[H2OStackedEnsemble]
