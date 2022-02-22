@@ -84,11 +84,9 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
 
     val drf = getDrf()
     val drfModel = drf.fit(dataset)
-    val drfId = drf.getBinaryModel().modelId
 
     val gbm = getGbm()
     val gbmModel = gbm.fit(dataset)
-    val gbmId = gbm.getBinaryModel().modelId
 
     val ensemble = new H2OStackedEnsemble()
       .setBaseModels(Seq(drfModel, gbmModel))
