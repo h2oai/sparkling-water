@@ -31,10 +31,10 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local-cluster[2,1,2560]")
 
-  test("SchemaUtils: flattenDataFrame should process a complex data frame with more than 200k columns after flattening") {
-    val expectedNumberOfColumns = 200000
+  test("SchemaUtils: flattenDataFrame should process a complex data frame with more than 190k columns after flattening") {
+    val expectedNumberOfColumns = 190000
     val settings =
-      TestUtils.GenerateDataFrameSettings(numberOfRows = 200, rowsPerPartition = 50, maxCollectionSize = 100)
+      TestUtils.GenerateDataFrameSettings(numberOfRows = 200, rowsPerPartition = 50, maxCollectionSize = 90)
     testFlatteningOnComplexType(settings, expectedNumberOfColumns)
   }
 
