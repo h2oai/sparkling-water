@@ -41,7 +41,7 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
   private val outputPath = "ml/build/binary.model"
   private val foldsNo = 5
 
-  test("H2O StackedEnsemble model") {
+  test("Create Stacked Ensemble model using cross validations") {
 
     val glm = getGlm()
     val glmModel = glm.fit(dataset)
@@ -57,6 +57,30 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
     val ensembleModel = ensemble.fit(dataset)
 
     ensembleModel.getMetalearnerAlgorithm() shouldBe "glm"
+  }
+
+  test("Create Stacked Ensemble using blending frame") {
+
+    val Array(trainingDF, blendingDF) = dataset.randomSplit(Array(0.6, 0.4))
+
+    val drf = new H2ODRF()
+      .setLabelCol("CAPSULE")
+      .setKeepBinaryModels(true)
+    val drfModel = drf.fit(trainingDF)
+
+    val gbm = new H2OGBM()
+      .setLabelCol("CAPSULE")
+      .setKeepBinaryModels(true)
+    val gbmModel = gbm.fit(trainingDF)
+
+    val ensemble = new H2OStackedEnsemble()
+      .setBaseModels(Seq(drfModel, gbmModel))
+      .setBlendingDataFrame(blendingDF)
+      .setLabelCol("CAPSULE")
+
+    H2OModel.listAllModels() should have length 2
+
+    ensemble.fit(trainingDF)
   }
 
   test("H2O StackedEnsemble deletes base models by default") {
@@ -101,7 +125,7 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
     H2OModel.listAllModels() should have length modelsNo
   }
 
-  ignore("H2O Stacked Ensemble pipeline serialization and deserialization") {
+  test("H2O Stacked Ensemble pipeline serialization and deserialization") {
 
     val drf = getDrf()
     val drfModel = drf.fit(dataset)

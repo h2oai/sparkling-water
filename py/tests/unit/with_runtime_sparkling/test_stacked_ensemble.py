@@ -17,10 +17,6 @@
 import pytest
 import os
 from pyspark.ml import Pipeline, PipelineModel
-from pyspark.mllib.linalg import *
-from pyspark.mllib.linalg import *
-from pyspark.sql.types import *
-from pyspark.sql.types import *
 from pyspark.sql.functions import col
 from pysparkling.ml.algos import H2OStackedEnsemble, H2OGLM, H2OGBM
 from tests import unit_test_utils
@@ -41,14 +37,15 @@ def testParamsPassedBySetters():
 
 def setParametersForTesting(algo, foldsNo):
     algo.setLabelCol("AGE")
-    algo.setNfolds(foldsNo)
-    algo.setFoldAssignment("Modulo")
+    if (foldsNo > 0) :
+        algo.setNfolds(foldsNo)
+        algo.setFoldAssignment("Modulo")
+        algo.setKeepCrossValidationPredictions(True)
     algo.setKeepBinaryModels(True)
-    algo.setKeepCrossValidationPredictions(True)
     algo.setSeed(42)
     return algo
 
-def testStackedEnsemble(classificationDataset):
+def testStackedEnsembleUsingCrossValidations(classificationDataset):
     foldsNo = 5
     glm = setParametersForTesting(H2OGLM(), foldsNo)
     glm_model = glm.fit(classificationDataset)
@@ -61,4 +58,36 @@ def testStackedEnsemble(classificationDataset):
     ensemble.setLabelCol("AGE")
 
     ensemble.fit(classificationDataset)
+
+
+def testStackedEnsembleUsingBlendingFrame(classificationDataset):
+    [trainingDateset, blendingDataset] = classificationDataset.randomSplit([0.6, 0.4], 42)
+    glm = setParametersForTesting(H2OGLM(), foldsNo = 0)
+    glm_model = glm.fit(trainingDateset)
+
+    gbm = setParametersForTesting(H2OGBM(), foldsNo = 0)
+    gbm_model = gbm.fit(trainingDateset)
+
+    ensemble = H2OStackedEnsemble()
+    ensemble.setBlendingDataFrame(blendingDataset)
+    ensemble.setBaseModels([glm_model, gbm_model])
+    ensemble.setLabelCol("AGE")
+
+    ensemble.fit(trainingDateset)
+
+
+# def testStackedEnsembleKeepsBaseModelsWhenRequested(classificationDataset):
+#     foldsNo = 5
+#     glm = setParametersForTesting(H2OGLM(), foldsNo)
+#     glm_model = glm.fit(classificationDataset)
+#
+#     gbm = setParametersForTesting(H2OGBM(), foldsNo)
+#     gbm_model = gbm.fit(classificationDataset)
+#
+#     ensemble = H2OStackedEnsemble()
+#     ensemble.setBaseModels([glm_model, gbm_model])
+#     ensemble.setDeleteBaseModels(False)
+#     ensemble.setLabelCol("AGE")
+#
+#     ensemble.fit(classificationDataset)
 

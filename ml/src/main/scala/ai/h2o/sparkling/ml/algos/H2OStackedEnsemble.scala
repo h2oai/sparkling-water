@@ -41,12 +41,14 @@ class H2OStackedEnsemble(override val uid: String)
 
   def this() = this(Identifiable.randomUID(classOf[H2OStackedEnsemble].getSimpleName))
 
+  private var baseModels: Seq[H2OMOJOModel] = Seq.empty
+
   private var baseModelsIds: Seq[String] = Seq.empty
 
   private var deleteBaseModels = true
 
   def setBaseModels(models: Seq[H2OMOJOModel]): this.type  = {
-    checkBaseModelParameters(models)
+    baseModels = models
     setBaseModelsIds(models.map(m => m.mojoFileName))
   }
 
@@ -73,9 +75,7 @@ class H2OStackedEnsemble(override val uid: String)
 
   override def fit(dataset: Dataset[_]): H2OStackedEnsembleMOJOModel = {
 
-    if (baseModelsIds.length < 2) {
-      throw new IllegalArgumentException("Algorithm needs at least two base models.")
-    }
+    checkBaseModelParameters(baseModels)
 
     val (train, valid) = prepareDatasetForFitting(dataset)
 
@@ -120,20 +120,29 @@ class H2OStackedEnsemble(override val uid: String)
 
   def checkBaseModelParameters(models: Seq[H2OMOJOModel]) = {
 
-    if (!haveModelsSameParamValue("nfolds", models)) {
-      throw new IllegalArgumentException(
-        "Base models need to have consistent number of folds.")
+    if (baseModelsIds.length < 2) {
+      throw new IllegalArgumentException("Algorithm needs at least two base models.")
     }
 
-    if (!haveModelsSameParamValue("foldAssignment", models)) {
-      throw new IllegalArgumentException(
-        "Base models need to have consistent fold assignment scheme.")
-    }
+    if (models.nonEmpty) {
+      if (getBlendingDataFrame() == null) {
 
-    if (!haveModelsParamValue("keepCrossValidationPredictions", models, true)) {
-      throw new IllegalArgumentException(
-        "Base models need to be fit first with the 'keepCrossValidationPredictions' parameter " +
-          "set to true in order to allow access to cross validations.")
+        if (!haveModelsSameParamValue("nfolds", models)) {
+          throw new IllegalArgumentException(
+            "Base models need to have consistent number of folds.")
+        }
+
+        if (!haveModelsSameParamValue("foldAssignment", models)) {
+          throw new IllegalArgumentException(
+            "Base models need to have consistent fold assignment scheme.")
+        }
+
+        if (!haveModelsParamValue("keepCrossValidationPredictions", models, true)) {
+          throw new IllegalArgumentException(
+            "Base models need to be fit first with the 'keepCrossValidationPredictions' parameter " +
+              "set to true in order to allow access to cross validations.")
+        }
+      }
     }
   }
 
