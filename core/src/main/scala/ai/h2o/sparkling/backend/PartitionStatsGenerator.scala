@@ -24,47 +24,46 @@ import org.apache.spark.sql.Row
   */
 private[backend] object PartitionStatsGenerator {
 
-  def getPartitionStats(
-      rdd: RDD[Row],
-      maybeFeatureColumnsForConstantCheck: Option[Seq[String]] = None): PartitionStats = {
+  def getPartitionStats(rdd: RDD[Row], maybeColumnsForConstantCheck: Option[Seq[String]] = None): PartitionStats = {
     val partitionStats = rdd
       .mapPartitionsWithIndex {
         case (partitionIdx, iterator) =>
-          maybeFeatureColumnsForConstantCheck
-            .map(rowCountWithFeatureColumnsConstantCheck(partitionIdx, iterator, _))
-            .getOrElse(rowCountWithoutFeatureColumnsConstantCheck(partitionIdx, iterator))
+          maybeColumnsForConstantCheck
+            .map(rowCountWithColumnsConstantCheck(partitionIdx, iterator, _))
+            .getOrElse(rowCountWithoutColumnsConstantCheck(partitionIdx, iterator))
       }
       .fold((Map.empty, Set.empty))((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
-    val areFeatureColumnsConstant = if (partitionStats._2.isEmpty || maybeFeatureColumnsForConstantCheck.isEmpty) {
+    val areProvidedColumnsConstant = if (partitionStats._2.isEmpty || maybeColumnsForConstantCheck.isEmpty) {
       None
     } else {
       Some(partitionStats._2.size < 2)
     }
-    PartitionStats(partitionStats._1, areFeatureColumnsConstant)
+    PartitionStats(partitionStats._1, areProvidedColumnsConstant)
   }
 
-  private def rowCountWithoutFeatureColumnsConstantCheck(partitionIdx: Int, iterator: Iterator[Row]) =
+  private def rowCountWithoutColumnsConstantCheck(partitionIdx: Int, iterator: Iterator[Row]) =
     Iterator.single(Map(partitionIdx -> iterator.size), Set.empty)
 
-  private def rowCountWithFeatureColumnsConstantCheck(
+  private def rowCountWithColumnsConstantCheck(
       partitionIdx: Int,
       iterator: Iterator[Row],
       columnsForConstantCheck: Seq[String]) = {
-    var atMostTwoDistinctFeatureColumnValues = Set[Map[String, Any]]()
+    var atMostTwoDistinctColumnSetValues = Set[Map[String, Any]]()
     var recordCount = 0
-    var featureColumnsFlattened: Option[Seq[String]] = None
+    var constantCheckColumnsFlattened: Option[Seq[String]] = None
     while (iterator.hasNext) {
       val row = iterator.next()
-      if (featureColumnsFlattened.isEmpty) {
-        featureColumnsFlattened = Some(findFlattenedColumnNamesByPrefix(columnsForConstantCheck, row.schema.fieldNames))
+      if (constantCheckColumnsFlattened.isEmpty) {
+        constantCheckColumnsFlattened = Some(
+          findFlattenedColumnNamesByPrefix(columnsForConstantCheck, row.schema.fieldNames))
       }
-      if (atMostTwoDistinctFeatureColumnValues.size < 2) {
-        atMostTwoDistinctFeatureColumnValues += row.getValuesMap(featureColumnsFlattened.get)
+      if (atMostTwoDistinctColumnSetValues.size < 2) {
+        atMostTwoDistinctColumnSetValues += row.getValuesMap(constantCheckColumnsFlattened.get)
       }
       recordCount += 1
     }
-    Iterator.single(Map(partitionIdx -> recordCount), atMostTwoDistinctFeatureColumnValues)
+    Iterator.single(Map(partitionIdx -> recordCount), atMostTwoDistinctColumnSetValues)
   }
 
   private def findFlattenedColumnNamesByPrefix(
