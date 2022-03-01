@@ -62,17 +62,17 @@ class PartitionStatsGeneratorTestSuite extends FunSuite with SparkTestContext wi
   }
 
   test("should not fail given an empty dataset") {
-    val inputWithOnePartition = Seq.empty[String].toDF.rdd
+    val emptyInput = Seq.empty[String].toDF.rdd
 
-    val result = PartitionStatsGenerator.getPartitionStats(inputWithOnePartition, Some(Seq("id")))
+    val result = PartitionStatsGenerator.getPartitionStats(emptyInput, Some(Seq("id")))
 
     result.areFeatureColumnsConstant shouldBe None
   }
 
   test("should not fail given one element dataset") {
-    val inputWithOnePartition = Seq(dataset.head).toDF(datasetCols: _*).rdd
+    val oneElementInput = Seq(dataset.head).toDF(datasetCols: _*).rdd
 
-    val result = PartitionStatsGenerator.getPartitionStats(inputWithOnePartition, Some(Seq("id")))
+    val result = PartitionStatsGenerator.getPartitionStats(oneElementInput, Some(Seq("id")))
 
     result.areFeatureColumnsConstant.value shouldBe true
     result.partitionSizes should have size 1

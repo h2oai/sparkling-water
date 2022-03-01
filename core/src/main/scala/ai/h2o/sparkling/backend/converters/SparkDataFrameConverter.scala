@@ -23,6 +23,7 @@ import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.{H2OContext, H2OFrame, SparkTimeZone}
 import org.apache.spark.expose.Logging
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.storage.StorageLevel
 
 object SparkDataFrameConverter extends Logging {
 
@@ -49,7 +50,12 @@ object SparkDataFrameConverter extends Logging {
     // we are dealing with Dataset[Row]
     val flatDataFrame = flattenDataFrame(df)
     val schema = flatDataFrame.schema
-    val rdd = flatDataFrame.rdd.cache()
+    val rdd = flatDataFrame.rdd
+    if (hc.getConf.runsInInternalClusterMode) {
+      rdd.persist(StorageLevel.DISK_ONLY)
+    } else {
+      rdd.persist()
+    }
 
     val elemMaxSizes = collectMaxElementSizes(rdd, schema)
     val vecIndices = collectVectorLikeTypes(schema).toArray

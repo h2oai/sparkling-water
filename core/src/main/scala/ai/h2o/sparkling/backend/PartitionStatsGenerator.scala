@@ -50,14 +50,14 @@ private[backend] object PartitionStatsGenerator {
   private def rowCountWithFeatureColumnsConstantCheck(
       partitionIdx: Int,
       iterator: Iterator[Row],
-      featureColumns: Seq[String]) = {
+      columnsForConstantCheck: Seq[String]) = {
     var atMostTwoDistinctFeatureColumnValues = Set[Map[String, Any]]()
     var recordCount = 0
     var featureColumnsFlattened: Option[Seq[String]] = None
     while (iterator.hasNext) {
       val row = iterator.next()
       if (featureColumnsFlattened.isEmpty) {
-        featureColumnsFlattened = Some(findFlattenedColumnNamesByPrefix(featureColumns, row.schema.fieldNames))
+        featureColumnsFlattened = Some(findFlattenedColumnNamesByPrefix(columnsForConstantCheck, row.schema.fieldNames))
       }
       if (atMostTwoDistinctFeatureColumnValues.size < 2) {
         atMostTwoDistinctFeatureColumnValues += row.getValuesMap(featureColumnsFlattened.get)
