@@ -27,6 +27,7 @@ from tests.unit.with_runtime_sparkling.algo_test_utils import *
 def classificationDataset(prostateDataset):
     return prostateDataset.withColumn("CAPSULE", col("CAPSULE").cast("string"))
 
+
 def testParamsPassedByConstructor():
     assertParamsViaConstructor("H2OStackedEnsemble")
 
@@ -36,7 +37,7 @@ def testParamsPassedBySetters():
 
 
 def setParametersForTesting(algo, foldsNo):
-    algo.setLabelCol("AGE")
+    algo.setLabelCol("CAPSULE")
     if (foldsNo > 0) :
         algo.setNfolds(foldsNo)
         algo.setFoldAssignment("Modulo")
@@ -45,49 +46,70 @@ def setParametersForTesting(algo, foldsNo):
     algo.setSeed(42)
     return algo
 
+
 def testStackedEnsembleUsingCrossValidations(classificationDataset):
     foldsNo = 5
     glm = setParametersForTesting(H2OGLM(), foldsNo)
-    glm_model = glm.fit(classificationDataset)
-
     gbm = setParametersForTesting(H2OGBM(), foldsNo)
-    gbm_model = gbm.fit(classificationDataset)
 
     ensemble = H2OStackedEnsemble()
-    ensemble.setBaseModels([glm_model, gbm_model])
-    ensemble.setLabelCol("AGE")
+    ensemble.setBaseAlgorithms([glm, gbm])
+    ensemble.setLabelCol("CAPSULE")
+    ensemble.setSeed(42)
 
-    ensemble.fit(classificationDataset)
+    model = ensemble.fit(classificationDataset)
+    assert model.transform(classificationDataset).count() == 380
 
 
 def testStackedEnsembleUsingBlendingFrame(classificationDataset):
     [trainingDateset, blendingDataset] = classificationDataset.randomSplit([0.6, 0.4], 42)
     glm = setParametersForTesting(H2OGLM(), foldsNo = 0)
-    glm_model = glm.fit(trainingDateset)
-
     gbm = setParametersForTesting(H2OGBM(), foldsNo = 0)
-    gbm_model = gbm.fit(trainingDateset)
 
     ensemble = H2OStackedEnsemble()
     ensemble.setBlendingDataFrame(blendingDataset)
-    ensemble.setBaseModels([glm_model, gbm_model])
-    ensemble.setLabelCol("AGE")
+    ensemble.setBaseAlgorithms([glm, gbm])
+    ensemble.setLabelCol("CAPSULE")
+    ensemble.setSeed(42)
 
     ensemble.fit(trainingDateset)
 
+    model = ensemble.fit(classificationDataset)
+    assert model.transform(classificationDataset).count() == 380
 
-# def testStackedEnsembleKeepsBaseModelsWhenRequested(classificationDataset):
-#     foldsNo = 5
-#     glm = setParametersForTesting(H2OGLM(), foldsNo)
-#     glm_model = glm.fit(classificationDataset)
-#
-#     gbm = setParametersForTesting(H2OGBM(), foldsNo)
-#     gbm_model = gbm.fit(classificationDataset)
-#
-#     ensemble = H2OStackedEnsemble()
-#     ensemble.setBaseModels([glm_model, gbm_model])
-#     ensemble.setDeleteBaseModels(False)
-#     ensemble.setLabelCol("AGE")
-#
-#     ensemble.fit(classificationDataset)
 
+def testStackedEnsembleKeepsBaseModelsWhenRequested(classificationDataset):
+    foldsNo = 5
+    glm = setParametersForTesting(H2OGLM(), foldsNo)
+    gbm = setParametersForTesting(H2OGBM(), foldsNo)
+
+    ensemble = H2OStackedEnsemble()
+    ensemble.setBaseAlgorithms([glm, gbm])
+    ensemble.setKeepBaseModels(True)
+    ensemble.setLabelCol("CAPSULE")
+
+    ensemble.fit(classificationDataset)
+
+    baseModels = ensemble.getBaseModels()
+    assert len(baseModels) == 2
+    assert baseModels[0].uid.startswith("GLM")
+    assert baseModels[1].uid.startswith("GBM")
+
+    # cleanup
+    ensemble.deleteBaseModels()
+    assert len(ensemble.getBaseModels()) == 0
+
+def testDeserializationOfUnfittedPipelineWithStackedEnsemble(classificationDataset):
+    foldsNo = 5
+    glm = setParametersForTesting(H2OGLM(), foldsNo)
+    gbm = setParametersForTesting(H2OGBM(), foldsNo)
+
+    ensemble = H2OStackedEnsemble()
+    ensemble.setBaseAlgorithms([glm, gbm])
+    ensemble.setLabelCol("CAPSULE")
+    ensemble.setSeed(42)
+
+    pipeline = Pipeline(stages=[ensemble])
+    pipeline.write().overwrite().save("file://" + os.path.abspath("build/stacked_ensemble_pipeline"))
+    loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/stacked_ensemble_pipeline"))
+    loadedPipeline.fit(classificationDataset)

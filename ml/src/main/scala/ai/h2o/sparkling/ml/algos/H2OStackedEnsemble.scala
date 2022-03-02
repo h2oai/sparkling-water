@@ -21,6 +21,7 @@ import ai.h2o.sparkling.ml.models.{H2OBinaryModel, H2OMOJOModel, H2OStackedEnsem
 import ai.h2o.sparkling.ml.params.H2OStackedEnsembleParams
 import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
+import hex.Model
 import hex.ensemble.StackedEnsembleModel.StackedEnsembleParameters
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.param._
@@ -28,7 +29,6 @@ import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.Dataset
 
-import scala.collection.JavaConverters
 import scala.reflect.ClassTag
 
 /**
@@ -39,52 +39,46 @@ class H2OStackedEnsemble(override val uid: String)
   extends H2OSupervisedAlgorithm[StackedEnsembleParameters]
   with H2OStackedEnsembleParams {
 
+  type BaseAlgorithm = H2OAlgorithm[_ <: Model.Parameters]
+  type BaseAlgorithms = Array[BaseAlgorithm]
+
   def this() = this(Identifiable.randomUID(classOf[H2OStackedEnsemble].getSimpleName))
 
-  private var baseModels: Seq[H2OMOJOModel] = Seq.empty
+  private var baseModels: Array[H2OMOJOModel] = Array.empty
 
-  private var baseModelsIds: Seq[String] = Seq.empty
+  private var keepBaseModels = false
 
-  private var deleteBaseModels = true
-
-  def setBaseModels(models: Seq[H2OMOJOModel]): this.type  = {
-    baseModels = models
-    setBaseModelsIds(models.map(m => m.mojoFileName))
-  }
-
-  def setBaseModelsIds(modelIds: Seq[String]): this.type  = {
-
-    if(!modelIds.forall(id => H2OBinaryModel.exists(id))) {
-      throw new IllegalArgumentException(
-        "Base models need to be fit first with the 'keepBinaryModels' parameter " +
-          "set to true in order to access binary model.")
-    }
-
-    baseModelsIds = modelIds
+  def setKeepBaseModels(keepBaseModels: Boolean): this.type  = {
+    this.keepBaseModels = keepBaseModels
     this
   }
 
-  def setBaseModelsIds(modelIds: java.util.List[String]): this.type = {
-    setBaseModelsIds(JavaConverters.asScalaBuffer(modelIds))
+  def getBaseModels(): Array[H2OMOJOModel] = {
+    baseModels
   }
 
-  def setDeleteBaseModels(deleteModels: Boolean): this.type  = {
-    deleteBaseModels = deleteModels
-    this
+  def deleteBaseModels(): Unit = {
+    baseModelsIds().foreach(H2OModel(_).tryDelete())
+    baseModels = Array.empty
+  }
+
+  private def baseModelsIds(): Seq[String] = {
+    baseModels.map(_.mojoFileName)
   }
 
   override def fit(dataset: Dataset[_]): H2OStackedEnsembleMOJOModel = {
 
-    checkBaseModelParameters(baseModels)
+    checkBaseAlgorithmsSetup(getBaseAlgorithms())
 
     val (train, valid) = prepareDatasetForFitting(dataset)
-
     prepareH2OTrainFrameForFitting(train)
+
+    baseModels = getBaseAlgorithms().map(alg => alg.trainH2OModel(train, valid))
 
     val params = getH2OAlgorithmParams(train) ++
       Map("training_frame" -> train.frameId,
         "model_id" -> convertModelIdToKey(getModelId()),
-        "base_models" -> baseModelsIds.mkString("[", ",", "]")) ++
+        "base_models" -> baseModelsIds().mkString("[", ",", "]")) ++
       valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
 
     val modelId = trainAndGetDestinationKey(s"/99/ModelBuilders/stackedensemble", params)
@@ -104,6 +98,7 @@ class H2OStackedEnsemble(override val uid: String)
     }
 
     deleteRegisteredH2OFrames()
+
     if (getKeepBinaryModels()) {
       val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
       binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId)))
@@ -111,50 +106,48 @@ class H2OStackedEnsemble(override val uid: String)
       model.tryDelete()
     }
 
-    if (deleteBaseModels) {
-      baseModelsIds.foreach(H2OModel(_).tryDelete())
+    if (!keepBaseModels) {
+      deleteBaseModels()
     }
 
     result
   }
 
-  def checkBaseModelParameters(models: Seq[H2OMOJOModel]) = {
+  def checkBaseAlgorithmsSetup(algos: BaseAlgorithms): Unit = {
 
-    if (baseModelsIds.length < 2) {
-      throw new IllegalArgumentException("Algorithm needs at least two base models.")
+    if (algos.length < 2) {
+      throw new IllegalArgumentException("Stacked Ensemble needs at least two base algorithms.")
     }
 
-    if (models.nonEmpty) {
-      if (getBlendingDataFrame() == null) {
+    if (getBlendingDataFrame() == null) {
 
-        if (!haveModelsSameParamValue("nfolds", models)) {
-          throw new IllegalArgumentException(
-            "Base models need to have consistent number of folds.")
-        }
+      if (!haveAlgorithmsSameParamValue("nfolds", algos)) {
+        throw new IllegalArgumentException(
+          "Base models need to have consistent number of folds.")
+      }
 
-        if (!haveModelsSameParamValue("foldAssignment", models)) {
-          throw new IllegalArgumentException(
-            "Base models need to have consistent fold assignment scheme.")
-        }
+      if (!haveAlgorithmsSameParamValue("foldAssignment", algos)) {
+        throw new IllegalArgumentException(
+          "Base models need to have consistent fold assignment scheme.")
+      }
 
-        if (!haveModelsParamValue("keepCrossValidationPredictions", models, true)) {
-          throw new IllegalArgumentException(
-            "Base models need to be fit first with the 'keepCrossValidationPredictions' parameter " +
-              "set to true in order to allow access to cross validations.")
-        }
+      if (!haveAlgorithmsGivenParamValue("keepCrossValidationPredictions", algos, true)) {
+        throw new IllegalArgumentException(
+          "Base models need to be fit first with the 'keepCrossValidationPredictions' parameter " +
+            "set to true in order to allow access to cross validations.")
       }
     }
   }
 
-  private def haveModelsSameParamValue(paramName:String, models: Seq[H2OMOJOModel]):Boolean = {
-    val firstModel = models.head
-    val param = firstModel.getParam(paramName)
-    val firstValue = firstModel.getOrDefault(param)
-    haveModelsParamValue(paramName, models, firstValue)
+  private def haveAlgorithmsSameParamValue(paramName:String, algos: BaseAlgorithms): Boolean = {
+    val firstAlgorithm = algos.head
+    val param = firstAlgorithm.getParam(paramName)
+    val firstValue = firstAlgorithm.getOrDefault(param)
+    haveAlgorithmsGivenParamValue(paramName, algos, firstValue)
   }
 
-  private def haveModelsParamValue(paramName: String, models: Seq[H2OMOJOModel], value: Any) = {
-    models.forall(m => m.getOrDefault(m.getParam(paramName)) == value)
+  private def haveAlgorithmsGivenParamValue(paramName: String, algos: BaseAlgorithms, value: Any): Boolean = {
+    algos.forall(alg => alg.getOrDefault(alg.getParam(paramName)) == value)
   }
 
   @DeveloperApi

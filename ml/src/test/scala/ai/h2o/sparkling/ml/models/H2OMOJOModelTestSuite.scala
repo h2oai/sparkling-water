@@ -183,6 +183,12 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     assertEqual(mojoModel, model, inputDf)
   }
 
+  test("[MOJO] Load from mojo file - stacked ensemble model") {
+    val (inputDf, mojoModel) = savedStackedEnsembleModel()
+    val (_, model) = stackedEnsembleModelFixture()
+    assertEqual(mojoModel, model, inputDf)
+  }
+
   test("should not fail when handling boolean column also when loading mojo from file") {
     val prostateDFWithBooleanColumn =
       prostateDataFrame.withColumn("DCAPS", when($"DCAPS".equalTo("2"), true).otherwise(false))
@@ -375,21 +381,22 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       .setLabelCol("CAPSULE")
       .setNfolds(5)
       .setFoldAssignment("Modulo")
+      .setSeed(42)
       .setKeepBinaryModels(true)
       .setKeepCrossValidationPredictions(true)
-    val drfModel = drf.fit(inputDf)
 
     val gbm = new H2OGBM()
       .setLabelCol("CAPSULE")
       .setNfolds(5)
       .setFoldAssignment("Modulo")
+      .setSeed(42)
       .setKeepBinaryModels(true)
       .setKeepCrossValidationPredictions(true)
-    val gbmModel = gbm.fit(inputDf)
 
     val ensemble = new H2OStackedEnsemble()
-      .setBaseModels(Seq(drfModel, gbmModel))
+      .setBaseAlgorithms(Array(drf, gbm))
       .setLabelCol("CAPSULE")
+      .setSeed(42)
 
     (inputDf, ensemble.fit(inputDf))
   }
@@ -419,6 +426,13 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("deep_learning_prostate.mojo"),
       "deep_learning_prostate.mojo")
+    (prostateDataFrame, mojo)
+  }
+
+  private def savedStackedEnsembleModel() = {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("stacked_ensemble_prostate.mojo"),
+      "stacked_ensemble_prostate.mojo")
     (prostateDataFrame, mojo)
   }
 

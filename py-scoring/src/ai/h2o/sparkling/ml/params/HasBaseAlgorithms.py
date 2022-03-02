@@ -15,16 +15,19 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.models import H2OMOJOModel
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from pyspark.ml.param import *
 
-class H2OStackedEnsembleExtras:
 
-    def setKeepBaseModels(self, keep_models):
-        self._java_obj.setKeepBaseModels(keep_models)
+class HasBaseAlgorithms(Params):
+    baseAlgorithms = Param(
+        Params._dummy(),
+        "baseAlgorithms",
+        "Algorithms used by a meta learner.",
+        H2OTypeConverters.toNullableListJavaObject())
 
-    def getBaseModels(self):
-        return [H2OMOJOModel(m) for m in self._java_obj.getBaseModels()]
+    def getBaseAlgorithms(self):
+        return self.getOrDefault(self.baseAlgorithms)
 
-    def deleteBaseModels(self):
-        self._java_obj.deleteBaseModels()
-
+    def setBaseAlgorithms(self, algos):
+        return self._set(baseAlgorithms=algos)

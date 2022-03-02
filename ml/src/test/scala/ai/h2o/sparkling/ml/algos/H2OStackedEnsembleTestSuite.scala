@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.internals.H2OModel
-import ai.h2o.sparkling.ml.models.{H2OBinaryModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
@@ -44,19 +43,21 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
   test("Create Stacked Ensemble model using cross validations") {
 
     val glm = getGlm()
-    val glmModel = glm.fit(dataset)
-
     val gbm = getGbm()
-    val gbmModel = gbm.fit(dataset)
 
     val ensemble = new H2OStackedEnsemble()
-      .setBaseModels(Seq(glmModel, gbmModel))
+      .setBaseAlgorithms(Array(glm, gbm))
       .setMetalearnerAlgorithm("GLM")
       .setLabelCol("CAPSULE")
+      .setSeed(42)
 
-    val ensembleModel = ensemble.fit(dataset)
+    val Array(train, test) = dataset.randomSplit(Array(0.8, 0.2), 42)
+    val ensembleModel = ensemble.fit(train)
 
     ensembleModel.getMetalearnerAlgorithm() shouldBe "glm"
+
+    val predictions = ensembleModel.transform(test)
+    predictions.distinct().count() shouldBe 56
   }
 
   test("Create Stacked Ensemble using blending frame") {
@@ -66,86 +67,87 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
     val drf = new H2ODRF()
       .setLabelCol("CAPSULE")
       .setKeepBinaryModels(true)
-    val drfModel = drf.fit(trainingDF)
 
     val gbm = new H2OGBM()
       .setLabelCol("CAPSULE")
       .setKeepBinaryModels(true)
-    val gbmModel = gbm.fit(trainingDF)
 
     val ensemble = new H2OStackedEnsemble()
-      .setBaseModels(Seq(drfModel, gbmModel))
+      .setBaseAlgorithms(Array(drf, gbm))
       .setBlendingDataFrame(blendingDF)
       .setLabelCol("CAPSULE")
+      .setSeed(42)
 
-    H2OModel.listAllModels() should have length 2
+    val ensembleModel = ensemble.fit(trainingDF)
 
-    ensemble.fit(trainingDF)
+    val predictions = ensembleModel.transform(dataset)
+    predictions.distinct().count() shouldBe 380
   }
 
   test("H2O StackedEnsemble deletes base models by default") {
 
     val drf = getDrf()
-    val drfModel = drf.fit(dataset)
-
     val gbm = getGbm()
-    val gbmModel = gbm.fit(dataset)
 
     val ensemble = new H2OStackedEnsemble()
-      .setBaseModels(Seq(drfModel, gbmModel))
+      .setBaseAlgorithms(Array(drf, gbm))
       .setLabelCol("CAPSULE")
+      .setSeed(42)
 
-    // 2 algos * ( 1 model + 5 cross validation models)
-    val modelsNo = 2 * (1 + foldsNo)
-    H2OModel.listAllModels() should have length modelsNo
+    H2OModel.listAllModels() should have length 0
 
     ensemble.fit(dataset)
 
+    ensemble.getBaseModels() should have length 0
     H2OModel.listAllModels() should have length 0
   }
 
   test("H2O StackedEnsemble doesn't remove base models if requested") {
 
     val drf = getDrf()
-    val drfModel = drf.fit(dataset)
-
     val gbm = getGbm()
-    val gbmModel = gbm.fit(dataset)
 
     val ensemble = new H2OStackedEnsemble()
-      .setBaseModels(Seq(drfModel, gbmModel))
+      .setBaseAlgorithms(Array(drf, gbm))
       .setLabelCol("CAPSULE")
-      .setDeleteBaseModels(false)
+      .setKeepBaseModels(true)
+      .setSeed(42)
 
-    val modelsNo = 2 * (1 + foldsNo)
-    H2OModel.listAllModels() should have length modelsNo
+    H2OModel.listAllModels() should have length 0
 
     ensemble.fit(dataset)
 
+    ensemble.getBaseModels() should have length 2
+
+    // 2 algos * ( 1 model + 5 cross validation models )
+    val modelsNo = 2 * (1 + foldsNo)
     H2OModel.listAllModels() should have length modelsNo
+
+    // cleanup
+    ensemble.deleteBaseModels()
+    H2OModel.listAllModels() should have length 0
   }
 
   test("H2O Stacked Ensemble pipeline serialization and deserialization") {
 
     val drf = getDrf()
-    val drfModel = drf.fit(dataset)
-
     val gbm = getGbm()
-    val gbmModel = gbm.fit(dataset)
 
     val ensemble = new H2OStackedEnsemble()
-      .setBaseModels(Seq(drfModel, gbmModel))
+      .setBaseAlgorithms(Array(drf, gbm))
       .setLabelCol("CAPSULE")
+      .setSeed(42)
 
     val pipeline = new Pipeline().setStages(Array(ensemble))
     pipeline.write.overwrite().save("ml/build/stacked_ensemble_pipeline")
     val loadedPipeline = Pipeline.load("ml/build/stacked_ensemble_pipeline")
+
     val model = loadedPipeline.fit(dataset)
 
     model.write.overwrite().save("ml/build/stacked_ensemble_pipeline_model")
     val loadedModel = PipelineModel.load("ml/build/stacked_ensemble_pipeline_model")
 
-    loadedModel.transform(dataset).count()
+    loadedModel.transform(dataset).count() shouldBe 380
   }
 
 
@@ -154,6 +156,7 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
       .setLabelCol("CAPSULE")
       .setNfolds(foldsNo)
       .setFoldAssignment("Modulo")
+      .setSeed(42)
       .setKeepBinaryModels(true)
       .setKeepCrossValidationPredictions(true)
   }
@@ -163,6 +166,7 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
       .setLabelCol("CAPSULE")
       .setNfolds(foldsNo)
       .setFoldAssignment("Modulo")
+      .setSeed(42)
       .setKeepBinaryModels(true)
       .setKeepCrossValidationPredictions(true)
   }
@@ -172,6 +176,7 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
       .setLabelCol("CAPSULE")
       .setNfolds(foldsNo)
       .setFoldAssignment("Modulo")
+      .setSeed(42)
       .setKeepBinaryModels(true)
       .setKeepCrossValidationPredictions(true)
   }

@@ -30,6 +30,8 @@ class StackedEnsembleConfiguration extends SingleAlgorithmConfiguration {
       ("H2OStackedEnsembleParams", classOf[StackedEnsembleParametersV99], classOf[StackedEnsembleParameters]))
 
     val blendingFrame = ExplicitField("blending_frame", "HasBlendingDataFrame", null, Some("blendingDataFrame"), None)
+    val baseAlgorithms = ExplicitField("base_algorithms", "HasBaseAlgorithms", null, Some("baseAlgorithms"), None)
+
     val explicitDefaultValues =
       Map[String, Any]("model_id" -> null, "metalearner_fold_assignment" -> FoldAssignmentScheme.AUTO)
 
@@ -40,9 +42,9 @@ class StackedEnsembleConfiguration extends SingleAlgorithmConfiguration {
         h2oSchemaClass,
         h2oParameterClass,
         ignoredParameters = Seq("__meta", "base_models", "training_frame", "validation_frame"),
-        explicitFields = Seq(blendingFrame),
+        explicitFields = Seq(blendingFrame, baseAlgorithms),
         deprecatedFields = Seq.empty,
-        explicitDefaultValues, // = Map.empty,
+        explicitDefaultValues,
         typeExceptions = Map.empty,
         defaultValueSource = DefaultValueSource.Field,
         defaultValuesOfCommonParameters = AlgorithmConfigurations.defaultValuesOfAlgorithmCommonParameters,
