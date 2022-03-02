@@ -52,9 +52,9 @@ class PartitionStatsGeneratorTestSuite extends FunSuite with SparkTestContext wi
   }
 
   test("should correctly count values") {
-    val inputWithOnePartition = dataset.toDF(datasetCols: _*).rdd.coalesce(numPartitions = 2)
+    val inputWithTwoPartitions = dataset.toDF(datasetCols: _*).rdd.coalesce(numPartitions = 2)
 
-    val result = PartitionStatsGenerator.getPartitionStats(inputWithOnePartition, Some(Seq("id")))
+    val result = PartitionStatsGenerator.getPartitionStats(inputWithTwoPartitions, Some(Seq("id")))
 
     result.areFeatureColumnsConstant.value shouldBe false
     result.partitionSizes should have size 2
