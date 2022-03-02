@@ -282,8 +282,9 @@ def buildConda() {
                 for (packageDetails in packages) {
                     dir(packageDetails.path) {
                         for (pyVersion in pythonVersions) {
-                            sh """
-                               . /envs/sw_env_python3.6/bin/activate
+                            sh """ 
+                               . ~/miniconda/etc/profile.d/conda.sh 
+                               conda activate sw_env_python3.6
     
                                conda build ${packageDetails.name} --output-folder "." --no-anaconda-upload --py ${pyVersion}
     
@@ -295,6 +296,8 @@ def buildConda() {
                                conda convert \$PACKAGE_PATH -p linux-64 -o ../../../dist/build/dist/py/conda/
                                conda convert \$PACKAGE_PATH -p win-64 -o ../../../dist/build/dist/py/conda/
                                conda convert \$PACKAGE_PATH -p osx-64 -o ../../../dist/build/dist/py/conda/
+                               
+                               conda deactivate
                                """
                         }
                     }
@@ -352,9 +355,11 @@ def publishToPipy() {
                     dir("$projectName/build/pkg") {
                         params.commons.withPipyCredentials {
                             sh """
-                               . /envs/sw_env_python3.6/bin/activate
+                               . ~/miniconda/etc/profile.d/conda.sh
+                               conda activate sw_env_python3.6
                                python setup.py sdist
                                twine upload dist/* -u $PIPY_USERNAME -p $PIPY_PASSWORD
+                               conda deactivate
                                """
                         }
                     }

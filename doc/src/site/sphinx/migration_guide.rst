@@ -3,6 +3,13 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
+From 3.38 to 3.40
+-----------------
+
+- The parameter ``namedMojoOutputColumns`` and methods ``getNamedMojoOutputColumns``, ``setNamedMojoOutputColumns``
+  on ``H2OAlgorithmCommonParams`` have been removed without replacement. The behaviour will stay the same as it was
+  for "true" value which was the default value in the past.
+
 From 3.36 to 3.38
 -----------------
 

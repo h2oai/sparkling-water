@@ -79,7 +79,6 @@ ext {
   rProjects = [project(':sparkling-water-r'), project(':sparkling-water-r-cran')]
   docProjects = [project(':sparkling-water-doc')]
 
-  supportedScalaBaseVersions = ['2.11': '2.11.12', '2.12' : '2.12.10']
   scalaTestVersions = ['2.11': '2.2.1', '2.12': '3.0.8']
   numpyVersions = ['2': '1.16.6', '3': '1.19.5']
 }
@@ -128,8 +127,8 @@ configure(allprojects) { project ->
   apply plugin: "com.diffplug.gradle.spotless"
   // Version of main components
   ext {
-    scalaBaseVersion = loadVersionSpecificProp("scalaBaseVersion", versionSpecificProps)
-    scalaVersion = supportedScalaBaseVersions[scalaBaseVersion]
+    scalaVersion = loadVersionSpecificProp("scalaVersion", versionSpecificProps)
+    scalaBaseVersion = scalaVersion.substring(0, 4)
     scalaTestVersion = scalaTestVersions[scalaBaseVersion]
     // h2oBuild property is defined in gradle.properties
     h2oVersion = "$h2oMajorVersion.$h2oBuild"

@@ -32,8 +32,9 @@ static String getSparklingVersion(props) {
 
 def shWithSWPyEnv(script) {
     def scriptWithPrefix =  """
-        . /envs/sw_env_python3.6/bin/activate
+        conda activate sw_env_python3.6
         ${script}
+        conda deactivate
     """
     return sh(script: scriptWithPrefix, returnStdout: true)
 }
