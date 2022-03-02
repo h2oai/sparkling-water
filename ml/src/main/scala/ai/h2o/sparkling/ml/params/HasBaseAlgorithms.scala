@@ -23,10 +23,7 @@ import hex.Model
 
 trait HasBaseAlgorithms extends H2OAlgoParamsBase {
 
-  private val base_algorithms = new NullableAlgoArrayParam(
-    this,
-    "baseAlgorithms",
-    "An array of base algorithms")
+  private val base_algorithms = new NullableAlgoArrayParam(this, "baseAlgorithms", "An array of base algorithms")
 
   setDefault(base_algorithms -> null)
 

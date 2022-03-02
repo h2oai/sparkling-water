@@ -48,7 +48,7 @@ class H2OStackedEnsemble(override val uid: String)
 
   private var keepBaseModels = false
 
-  def setKeepBaseModels(keepBaseModels: Boolean): this.type  = {
+  def setKeepBaseModels(keepBaseModels: Boolean): this.type = {
     this.keepBaseModels = keepBaseModels
     this
   }
@@ -76,10 +76,15 @@ class H2OStackedEnsemble(override val uid: String)
     baseModels = getBaseAlgorithms().map(alg => alg.trainH2OModel(train, valid))
 
     val params = getH2OAlgorithmParams(train) ++
-      Map("training_frame" -> train.frameId,
+      Map(
+        "training_frame" -> train.frameId,
         "model_id" -> convertModelIdToKey(getModelId()),
         "base_models" -> baseModelsIds().mkString("[", ",", "]")) ++
-      valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
+      valid
+        .map { fr =>
+          Map("validation_frame" -> fr.frameId)
+        }
+        .getOrElse(Map())
 
     val modelId = trainAndGetDestinationKey(s"/99/ModelBuilders/stackedensemble", params)
     val model = H2OModel(modelId)
@@ -122,13 +127,11 @@ class H2OStackedEnsemble(override val uid: String)
     if (getBlendingDataFrame() == null) {
 
       if (!haveAlgorithmsSameParamValue("nfolds", algos)) {
-        throw new IllegalArgumentException(
-          "Base models need to have consistent number of folds.")
+        throw new IllegalArgumentException("Base models need to have consistent number of folds.")
       }
 
       if (!haveAlgorithmsSameParamValue("foldAssignment", algos)) {
-        throw new IllegalArgumentException(
-          "Base models need to have consistent fold assignment scheme.")
+        throw new IllegalArgumentException("Base models need to have consistent fold assignment scheme.")
       }
 
       if (!haveAlgorithmsGivenParamValue("keepCrossValidationPredictions", algos, true)) {
@@ -139,7 +142,7 @@ class H2OStackedEnsemble(override val uid: String)
     }
   }
 
-  private def haveAlgorithmsSameParamValue(paramName:String, algos: BaseAlgorithms): Boolean = {
+  private def haveAlgorithmsSameParamValue(paramName: String, algos: BaseAlgorithms): Boolean = {
     val firstAlgorithm = algos.head
     val param = firstAlgorithm.getParam(paramName)
     val firstValue = firstAlgorithm.getOrDefault(param)
@@ -151,11 +154,12 @@ class H2OStackedEnsemble(override val uid: String)
   }
 
   @DeveloperApi
-  override def transformSchema(schema: StructType): StructType =  schema
+  override def transformSchema(schema: StructType): StructType = schema
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 
-  override protected def paramTag: ClassTag[StackedEnsembleParameters] = scala.reflect.classTag[StackedEnsembleParameters]
+  override protected def paramTag: ClassTag[StackedEnsembleParameters] =
+    scala.reflect.classTag[StackedEnsembleParameters]
 
   override private[sparkling] def getInputCols(): Array[String] = getFeaturesCols()
 

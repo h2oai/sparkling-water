@@ -150,7 +150,6 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
     loadedModel.transform(dataset).count() shouldBe 380
   }
 
-
   private def getGbm() = {
     new H2OGBM()
       .setLabelCol("CAPSULE")

@@ -39,7 +39,7 @@ abstract class H2OEstimator[P <: Model.Parameters: ClassTag]
     result
   }
 
-  private [sparkling] def trainH2OModel(train: H2OFrame, valid: Option[H2OFrame]): H2OMOJOModel = {
+  private[sparkling] def trainH2OModel(train: H2OFrame, valid: Option[H2OFrame]): H2OMOJOModel = {
 
     val params = getH2OAlgorithmParams(train) ++
       Map("training_frame" -> train.frameId, "model_id" -> convertModelIdToKey(getModelId())) ++

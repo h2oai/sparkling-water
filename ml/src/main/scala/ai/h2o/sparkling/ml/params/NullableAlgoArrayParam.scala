@@ -25,14 +25,19 @@ import org.json4s.jackson.JsonMethods.{compact, parse, render}
 
 import scala.collection.JavaConverters._
 
-class NullableAlgoArrayParam(parent: Params, name: String, doc: String, isValid: Array[H2OAlgorithm[_ <: Model.Parameters]] => Boolean)
+class NullableAlgoArrayParam(
+    parent: Params,
+    name: String,
+    doc: String,
+    isValid: Array[H2OAlgorithm[_ <: Model.Parameters]] => Boolean)
   extends Param[Array[H2OAlgorithm[_ <: Model.Parameters]]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)
 
   /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
-  def w(value: java.util.List[H2OAlgorithm[_ <: Model.Parameters]]): ParamPair[Array[H2OAlgorithm[_ <: Model.Parameters]]] = {
+  def w(value: java.util.List[H2OAlgorithm[_ <: Model.Parameters]])
+      : ParamPair[Array[H2OAlgorithm[_ <: Model.Parameters]]] = {
     w(value.asScala.toArray)
   }
 
