@@ -42,4 +42,3 @@ from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OFeatureMOJOModel
 from ai.h2o.sparkling.ml.models.H2OCoxPHMOJOModel import H2OCoxPHMOJOModel
 from ai.h2o.sparkling.ml.models.H2ORuleFitMOJOModel import H2ORuleFitMOJOModel
 from ai.h2o.sparkling.ml.models.H2OStackedEnsembleMOJOModel import H2OStackedEnsembleMOJOModel
-
