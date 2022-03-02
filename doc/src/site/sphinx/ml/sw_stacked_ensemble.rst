@@ -37,13 +37,13 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             val rawSparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
             val dataset = rawSparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
 
-        Train base models the Stack Ensemble will operate on. It's important to keep the same folding across
-        the base models. Furthermore, setKeepCrossValidationPredictions has to be set to *true*, as the cross-validated
-        predicted values are used internally by Stacked Ensemble (for metalearning). Moreover, as the Stacked Ensemble
-        combines the base models inside an H2O cluster, the base models have to be available there and therefore
-        setKeepBinaryModels has to be set to *true* as well. Stacked Ensemble will delete base models (incl. binary)
-        by default. If there is any reason to keep the models, call **setDeleteBaseModels** with a *false* argument
-        to retain them.
+        Setup the algorithms the StackedEnsemble will operate with. StackedEnsemble will automatically train the corresponding
+        (base) models and pass them to H2O backend when needed. There are currently two options how a meta-learner
+        in StackedEnsemble combines the base models. It either utilizes cross validated predictions or uses a blending frame.
+        In the former case, it's important to keep the same folding across the base models and set
+        *setKeepCrossValidationPredictions* to *true* as the cross-validated predicted values will be used by meta-learner.
+        Furthermore, as the Stacked Ensemble combines the base models inside an H2O backend the base models have to be
+        available there as well and therefore *setKeepBinaryModels* has to be set to *true* too.
 
         .. code:: scala
 
@@ -54,7 +54,6 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
                 .setFoldAssignment("Modulo")
                 .setKeepBinaryModels(true)
                 .setKeepCrossValidationPredictions(true)
-            val drfModel = drf.fit(dataset)
 
             val gbm = new H2OGBM()
               .setLabelCol("CAPSULE")
@@ -62,17 +61,36 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
               .setFoldAssignment("Modulo")
               .setKeepBinaryModels(true)
               .setKeepCrossValidationPredictions(true)
-            val gbmModel = gbm.fit(dataset)
 
-        Then, train a stacked ensemble using the (base) models available.
+        Then, specify the algorithms when setting up the StackedEnsemble and train it.
 
         .. code:: scala
 
             val ensemble = new H2OStackedEnsemble()
-                .setBaseModels(Seq(drfModel, gbmModel))
+                .setBaseAlgorithms(Array(drf, gbm))
                 .setLabelCol("CAPSULE")
 
-            val ensembleModel = ensemble.fit(dataset)
+            ensemble.fit(dataset)
+
+        Inside the *fit* method, StackedEnsemble will internally create, utilize and delete models corresponding
+        to the input algorithms. If there is any reason to make use of those models, call **setKeepBaseModels** with
+        a *true* argument to retain them. Then, models can be obtained by calling a *getBaseModels*
+        method of the StackedEnsemble algorithm. However, now it's your responsibility to delete the models
+        when they are no more needed. A method *deleteBaseModels* can become handy in such cases.
+        Altogether, an advanced StackedEnsemble usage would look like this:
+
+        .. code:: scala
+
+            val ensemble = new H2OStackedEnsemble()
+                .setBaseAlgorithms(Array(drf, gbm))
+                .setLabelCol("CAPSULE")
+                .setKeepBaseModels(true)
+
+            ensemble.fit(dataset)
+
+            val baseModels:Array[H2OMOJOModel] = ensemble.getBaseModels()
+            ...
+            ensemble.deleteBaseModels()
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
@@ -112,13 +130,13 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             sparkDF = hc.asSparkFrame(frame)
             dataset = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
 
-        Train base models the Stack Ensemble will operate on. It's important to keep the same folding across
-        the base models. Furthermore, setKeepCrossValidationPredictions has to be set to *true*, as the cross-validated
-        predicted values are used internally by Stacked Ensemble (for metalearning). Moreover, as the Stacked Ensemble
-        combines the base models inside an H2O cluster, the base models have to be available there and therefore
-        setKeepBinaryModels has to be set to *true* as well. Stacked Ensemble will delete base models (incl. binary)
-        by default. If there is any reason to keep the models, call **setDeleteBaseModels** with a *false* argument
-        to retain them.
+        Setup the algorithms the StackedEnsemble will operate with. StackedEnsemble will automatically train the corresponding
+        (base) models and pass them to H2O backend when needed. There are currently two options how a meta-learner
+        in StackedEnsemble combines the base models. It either utilizes cross validated predictions or uses a blending frame.
+        In the former case, it's important to keep the same folding across the base models and set
+        *setKeepCrossValidationPredictions* to *true* as the cross-validated predicted values will be used by meta-learner.
+        Furthermore, as the Stacked Ensemble combines the base models inside an H2O backend the base models have to be
+        available there as well and therefore *setKeepBinaryModels* has to be set to *true* too.
 
         .. code:: python
 
@@ -129,7 +147,6 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             drf.setFoldAssignment("Modulo")
             drf.setKeepBinaryModels(True)
             drf.setKeepCrossValidationPredictions(True)
-            drf_model = drf.fit(dataset)
 
             gbm = H2OGBM()
             gbm.setLabelCol("CAPSULE")
@@ -137,17 +154,36 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             gbm.setFoldAssignment("Modulo")
             gbm.setKeepBinaryModels(True)
             gbm.setKeepCrossValidationPredictions(True)
-            gbm_model = gbm.fit(dataset)
 
-        Then, train a stacked ensemble using the (base) models available.
+        Then, specify the algorithms when setting up the StackedEnsemble and train it.
 
         .. code:: python
 
             ensemble = H2OStackedEnsemble()
-            ensemble.setBaseModels([drf_model, gbm_model])
+            ensemble.setBaseAlgorithms([drf, gbm])
             ensemble.setLabelCol("CAPSULE")
 
             ensemble_model = ensemble.fit(dataset)
+
+        Inside the *fit* method, StackedEnsemble will internally create, utilize and delete models corresponding
+        to the input algorithms. If there is any reason to make use of those models, call **setKeepBaseModels** with
+        a *true* argument to retain them. Then, models can be obtained by calling a *getBaseModels*
+        method of the StackedEnsemble algorithm. However, now it's your responsibility to delete the models
+        when they are no more needed. A method *deleteBaseModels* can become handy in such cases.
+        Altogether, an advanced StackedEnsemble usage would look like this:
+
+        .. code:: python
+
+            ensemble = H2OStackedEnsemble()
+            ensemble.setBaseAlgorithms([drf, gbm])
+            ensemble.setLabelCol("CAPSULE")
+            ensemble.setKeepBaseModels(True)
+
+            ensemble_model = ensemble.fit(dataset)
+
+            baseModels = ensemble.getBaseModels()
+            ...
+            ensemble.deleteBaseModels()
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
