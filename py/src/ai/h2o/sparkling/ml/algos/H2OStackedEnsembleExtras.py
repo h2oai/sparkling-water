@@ -27,4 +27,3 @@ class H2OStackedEnsembleExtras:
 
     def deleteBaseModels(self):
         self._java_obj.deleteBaseModels()
-
