@@ -37,7 +37,9 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     .withColumn("CAPSULE", col("CAPSULE").cast("string"))
 
-  private val outputPath = "ml/build/binary.model"
+  private lazy val trainingDataset = dataset.limit(300).cache()
+  private lazy val testingDataset = dataset.except(trainingDataset).cache()
+
   private val foldsNo = 5
 
   test("Create Stacked Ensemble model using cross validations") {
@@ -52,13 +54,12 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
       .setSeed(42)
       .setScoreTrainingSamples(0)
 
-    val Array(train, test) = dataset.randomSplit(Array(0.8, 0.2), seed = 42)
-    val ensembleModel = ensemble.fit(train)
+    val ensembleModel = ensemble.fit(trainingDataset)
 
     ensembleModel.getMetalearnerAlgorithm() shouldBe "glm"
 
-    val predictions = ensembleModel.transform(test)
-    predictions.distinct().count() shouldBe 56
+    val predictions = ensembleModel.transform(testingDataset)
+    predictions.distinct().count() shouldBe 80
   }
 
   test("Create Stacked Ensemble using blending frame") {
