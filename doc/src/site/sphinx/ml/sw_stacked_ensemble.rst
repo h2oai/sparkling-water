@@ -86,7 +86,7 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
                 .setLabelCol("CAPSULE")
                 .setKeepBaseModels(true)
 
-            ensemble.fit(dataset)
+            val ensembleModel = ensemble.fit(dataset)
 
             val baseModels:Array[H2OMOJOModel] = ensemble.getBaseModels()
             ...
@@ -181,7 +181,7 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
 
             ensemble_model = ensemble.fit(dataset)
 
-            baseModels = ensemble.getBaseModels()
+            base_models = ensemble.getBaseModels()
             ...
             ensemble.deleteBaseModels()
 

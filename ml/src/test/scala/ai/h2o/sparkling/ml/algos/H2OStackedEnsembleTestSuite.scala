@@ -50,8 +50,9 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
       .setMetalearnerAlgorithm("GLM")
       .setLabelCol("CAPSULE")
       .setSeed(42)
+      .setScoreTrainingSamples(0)
 
-    val Array(train, test) = dataset.randomSplit(Array(0.8, 0.2), 42)
+    val Array(train, test) = dataset.randomSplit(Array(0.8, 0.2), seed = 42)
     val ensembleModel = ensemble.fit(train)
 
     ensembleModel.getMetalearnerAlgorithm() shouldBe "glm"
@@ -62,7 +63,7 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
 
   test("Create Stacked Ensemble using blending frame") {
 
-    val Array(trainingDF, blendingDF) = dataset.randomSplit(Array(0.6, 0.4))
+    val Array(trainingDF, blendingDF) = dataset.randomSplit(Array(0.6, 0.4), seed = 42)
 
     val drf = new H2ODRF()
       .setLabelCol("CAPSULE")
