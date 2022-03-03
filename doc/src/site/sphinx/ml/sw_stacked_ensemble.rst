@@ -9,6 +9,32 @@ of prediction algorithms (base models). For further details about the algorithm 
 Sparkling Water provides API in Scala and Python for Stacked Ensemble. The following sections describe how to
 utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStackedEnsemble`.
 
+.. |start cluster| replace:: Start H2O cluster inside the Spark environment
+
+.. |get data| replace:: Parse the data using H2O and convert them to Spark Frame
+
+.. |setup base algorithms| replace:: Setup the algorithms the StackedEnsemble will operate with. StackedEnsemble will
+    automatically train the corresponding (base) models and pass them to H2O backend when needed. There are currently
+    two options how a meta-learner in StackedEnsemble combines the base models. It either utilizes cross validated
+    predictions or uses a blending frame. In the former case, it's important to keep the same folding across
+    the base models and set *setKeepCrossValidationPredictions* to *true* as the cross-validated predicted values
+    will be used by meta-learner. Furthermore, as the Stacked Ensemble combines the base models inside an H2O backend
+    the base models have to be available there as well and therefore *setKeepBinaryModels* has to be set to *true* too.
+
+.. |setup algorithm and train| replace:: Then, specify the algorithms when setting up the StackedEnsemble and train it.
+
+.. |advanced usage| replace:: Inside the *fit* method, StackedEnsemble will internally create, utilize and delete
+    models corresponding to the input algorithms. If there is any reason to make use of those models,
+    call **setKeepBaseModels** with a *true* argument to retain them. Then, models can be obtained by calling
+    a *getBaseModels* method of the StackedEnsemble algorithm. However, now it's your responsibility to delete
+    the models when they are no more needed. A method *deleteBaseModels* can become handy in such cases.
+    Altogether, an advanced StackedEnsemble usage would look like this:
+
+.. |get details| replace:: You can also get raw model details by calling the *getModelDetails()* method
+    available on the model as:
+
+.. |run predictions| replace:: Run Predictions
+
 .. content-tabs::
 
     .. tab-container:: Scala
@@ -20,7 +46,7 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
 
             ./bin/sparkling-shell
 
-        Start H2O cluster inside the Spark environment
+        |start cluster|
 
         .. code:: scala
 
@@ -28,7 +54,7 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             import java.net.URI
             val hc = H2OContext.getOrCreate()
 
-        Parse the data using H2O and convert them to Spark Frame
+        |get data|
 
         .. code:: scala
 
@@ -37,13 +63,7 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             val rawSparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
             val dataset = rawSparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
 
-        Setup the algorithms the StackedEnsemble will operate with. StackedEnsemble will automatically train the corresponding
-        (base) models and pass them to H2O backend when needed. There are currently two options how a meta-learner
-        in StackedEnsemble combines the base models. It either utilizes cross validated predictions or uses a blending frame.
-        In the former case, it's important to keep the same folding across the base models and set
-        *setKeepCrossValidationPredictions* to *true* as the cross-validated predicted values will be used by meta-learner.
-        Furthermore, as the Stacked Ensemble combines the base models inside an H2O backend the base models have to be
-        available there as well and therefore *setKeepBinaryModels* has to be set to *true* too.
+        |setup base algorithms|
 
         .. code:: scala
 
@@ -62,7 +82,7 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
               .setKeepBinaryModels(true)
               .setKeepCrossValidationPredictions(true)
 
-        Then, specify the algorithms when setting up the StackedEnsemble and train it.
+        |setup algorithm and train|
 
         .. code:: scala
 
@@ -72,12 +92,7 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
 
             ensemble.fit(dataset)
 
-        Inside the *fit* method, StackedEnsemble will internally create, utilize and delete models corresponding
-        to the input algorithms. If there is any reason to make use of those models, call **setKeepBaseModels** with
-        a *true* argument to retain them. Then, models can be obtained by calling a *getBaseModels*
-        method of the StackedEnsemble algorithm. However, now it's your responsibility to delete the models
-        when they are no more needed. A method *deleteBaseModels* can become handy in such cases.
-        Altogether, an advanced StackedEnsemble usage would look like this:
+        |advanced usage|
 
         .. code:: scala
 
@@ -92,13 +107,13 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             ...
             ensemble.deleteBaseModels()
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+        |get details|
 
         .. code:: scala
 
             ensembleModel.getModelDetails()
 
-        Run Predictions
+        |run predictions|
 
         .. code:: scala
 
@@ -114,14 +129,14 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
 
             ./bin/pysparkling
 
-        Start H2O cluster inside the Spark environment
+        |start cluster|
 
         .. code:: python
 
             from pysparkling import *
             hc = H2OContext.getOrCreate()
 
-        Parse the data using H2O and convert them to Spark Frame
+        |get data|
 
         .. code:: python
 
@@ -130,13 +145,7 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             sparkDF = hc.asSparkFrame(frame)
             dataset = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
 
-        Setup the algorithms the StackedEnsemble will operate with. StackedEnsemble will automatically train the corresponding
-        (base) models and pass them to H2O backend when needed. There are currently two options how a meta-learner
-        in StackedEnsemble combines the base models. It either utilizes cross validated predictions or uses a blending frame.
-        In the former case, it's important to keep the same folding across the base models and set
-        *setKeepCrossValidationPredictions* to *true* as the cross-validated predicted values will be used by meta-learner.
-        Furthermore, as the Stacked Ensemble combines the base models inside an H2O backend the base models have to be
-        available there as well and therefore *setKeepBinaryModels* has to be set to *true* too.
+        |setup base algorithms|
 
         .. code:: python
 
@@ -155,7 +164,7 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             gbm.setKeepBinaryModels(True)
             gbm.setKeepCrossValidationPredictions(True)
 
-        Then, specify the algorithms when setting up the StackedEnsemble and train it.
+        |setup algorithm and train|
 
         .. code:: python
 
@@ -165,12 +174,7 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
 
             ensemble_model = ensemble.fit(dataset)
 
-        Inside the *fit* method, StackedEnsemble will internally create, utilize and delete models corresponding
-        to the input algorithms. If there is any reason to make use of those models, call **setKeepBaseModels** with
-        a *true* argument to retain them. Then, models can be obtained by calling a *getBaseModels*
-        method of the StackedEnsemble algorithm. However, now it's your responsibility to delete the models
-        when they are no more needed. A method *deleteBaseModels* can become handy in such cases.
-        Altogether, an advanced StackedEnsemble usage would look like this:
+        |advanced usage|
 
         .. code:: python
 
@@ -185,13 +189,13 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             ...
             ensemble.deleteBaseModels()
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+        |get details|
 
         .. code:: python
 
             ensemble_model.getModelDetails()
 
-        Run Predictions
+        |run predictions|
 
         .. code:: python
 
