@@ -33,10 +33,10 @@ abstract class H2OEstimator[P <: Model.Parameters: ClassTag]
     val (train, valid) = prepareDatasetForFitting(dataset)
     prepareH2OTrainFrameForFitting(train)
 
-    val result = trainH2OModel(train, valid)
+    val mojoModel = trainH2OModel(train, valid)
 
     deleteRegisteredH2OFrames()
-    result
+    mojoModel
   }
 
   private[sparkling] def trainH2OModel(train: H2OFrame, valid: Option[H2OFrame]): H2OMOJOModel = {
