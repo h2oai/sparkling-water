@@ -353,10 +353,26 @@ abstract class H2OMOJOModel
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
+  class SerializationWarningsObject extends Serializable {
+    import java.io.ObjectInputStream
+    import java.io.ObjectOutputStream
+
+    private def printWarning(): Unit = {
+      val message = s"Warning: H2OMOJOModel and its child classes are not meant to be serialized and deserialized with " +
+        "Java serialization. Serialized and deserialized model will loose its capability to score. " +
+        s"Use the save(path: String) method on the model and the H2OMOJOModel.load(path: String) method instead."
+      Console.println(message)
+    }
+
+    private def readObject(inputStream: ObjectInputStream): Unit = printWarning()
+
+    private def writeObject(outputStream: ObjectOutputStream): Unit = printWarning()
+  }
+
   val nonSerializableField = if (System.getProperty("spark.testing", "false").toBoolean) {
     new Object() // Object is not serializable.
   } else {
-    null
+    new SerializationWarningsObject()
   }
 
   override def toString: String = {
