@@ -68,7 +68,9 @@ class H2OStackedEnsemble(override val uid: String)
 
   override def fit(dataset: Dataset[_]): H2OStackedEnsembleMOJOModel = {
 
-    checkBaseAlgorithmsSetup(getBaseAlgorithms())
+    if (getBaseAlgorithms().length < 2) {
+      throw new IllegalArgumentException("Stacked Ensemble needs at least two base algorithms to operate.")
+    }
 
     val (train, valid) = prepareDatasetForFitting(dataset)
     prepareH2OTrainFrameForFitting(train)
@@ -116,41 +118,6 @@ class H2OStackedEnsemble(override val uid: String)
     }
 
     result
-  }
-
-  def checkBaseAlgorithmsSetup(algos: BaseAlgorithms): Unit = {
-
-    if (algos.length < 2) {
-      throw new IllegalArgumentException("Stacked Ensemble needs at least two base algorithms.")
-    }
-
-    if (getBlendingDataFrame() == null) {
-
-      if (!haveAlgorithmsSameParamValue("nfolds", algos)) {
-        throw new IllegalArgumentException("Base models need to have consistent number of folds.")
-      }
-
-      if (!haveAlgorithmsSameParamValue("foldAssignment", algos)) {
-        throw new IllegalArgumentException("Base models need to have consistent fold assignment scheme.")
-      }
-
-      if (!haveAlgorithmsGivenParamValue("keepCrossValidationPredictions", algos, true)) {
-        throw new IllegalArgumentException(
-          "Base models need to be fit first with the 'keepCrossValidationPredictions' parameter " +
-            "set to true in order to allow access to cross validations.")
-      }
-    }
-  }
-
-  private def haveAlgorithmsSameParamValue(paramName: String, algos: BaseAlgorithms): Boolean = {
-    val firstAlgorithm = algos.head
-    val param = firstAlgorithm.getParam(paramName)
-    val firstValue = firstAlgorithm.getOrDefault(param)
-    haveAlgorithmsGivenParamValue(paramName, algos, firstValue)
-  }
-
-  private def haveAlgorithmsGivenParamValue(paramName: String, algos: BaseAlgorithms, value: Any): Boolean = {
-    algos.forall(alg => alg.getOrDefault(alg.getParam(paramName)) == value)
   }
 
   @DeveloperApi
