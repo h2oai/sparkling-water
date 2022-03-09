@@ -44,28 +44,6 @@ class H2OStackedEnsemble(override val uid: String)
 
   def this() = this(Identifiable.randomUID(classOf[H2OStackedEnsemble].getSimpleName))
 
-  private var baseModels: Array[H2OMOJOModel] = Array.empty
-
-  private var keepBaseModels = false
-
-  def setKeepBaseModels(keepBaseModels: Boolean): this.type = {
-    this.keepBaseModels = keepBaseModels
-    this
-  }
-
-  def getBaseModels(): Array[H2OMOJOModel] = {
-    baseModels
-  }
-
-  def deleteBaseModels(): Unit = {
-    baseModelsIds().foreach(H2OModel(_).tryDelete())
-    baseModels = Array.empty
-  }
-
-  private def baseModelsIds(): Seq[String] = {
-    baseModels.map(_.mojoFileName)
-  }
-
   override def fit(dataset: Dataset[_]): H2OStackedEnsembleMOJOModel = {
 
     if (getBaseAlgorithms().length < 2) {
@@ -75,13 +53,13 @@ class H2OStackedEnsemble(override val uid: String)
     val (train, valid) = prepareDatasetForFitting(dataset)
     prepareH2OTrainFrameForFitting(train)
 
-    baseModels = getBaseAlgorithms().map(alg => alg.trainH2OModel(train, valid))
+    val baseModels = getBaseAlgorithms().map(alg => alg.trainH2OModel(train, valid))
 
     val params = getH2OAlgorithmParams(train) ++
       Map(
         "training_frame" -> train.frameId,
         "model_id" -> convertModelIdToKey(getModelId()),
-        "base_models" -> baseModelsIds().mkString("[", ",", "]")) ++
+        "base_models" -> modelsIdsToString(baseModels)) ++
       valid
         .map { fr =>
           Map("validation_frame" -> fr.frameId)
@@ -113,11 +91,21 @@ class H2OStackedEnsemble(override val uid: String)
       model.tryDelete()
     }
 
-    if (!keepBaseModels) {
-      deleteBaseModels()
-    }
+    deleteModels(baseModels)
 
     result
+  }
+
+  private def modelsIdsToString(baseModels: Array[H2OMOJOModel]) = {
+    modelsIds(baseModels).mkString("[", ",", "]")
+  }
+
+  private def modelsIds(baseModels: Seq[H2OMOJOModel]): Seq[String] = {
+    baseModels.map(_.mojoFileName)
+  }
+
+  private def deleteModels(baseModels: Seq[H2OMOJOModel]): Unit = {
+    modelsIds(baseModels).foreach(H2OModel(_).tryDelete())
   }
 
   @DeveloperApi

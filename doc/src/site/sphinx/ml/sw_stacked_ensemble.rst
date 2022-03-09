@@ -23,13 +23,6 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
 
 .. |setup algorithm and train| replace:: Then, specify the algorithms when setting up the StackedEnsemble and train it.
 
-.. |advanced usage| replace:: Inside the *fit* method, StackedEnsemble will internally create, utilize and delete
-    models corresponding to the input algorithms. If there is any reason to make use of those models,
-    call **setKeepBaseModels** with a *true* argument to retain them. Then, models can be obtained by calling
-    a *getBaseModels* method of the StackedEnsemble algorithm. However, now it's your responsibility to delete
-    the models when they are no more needed. A method *deleteBaseModels* can become handy in such cases.
-    Altogether, an advanced StackedEnsemble usage would look like this:
-
 .. |get details| replace:: You can also get raw model details by calling the *getModelDetails()* method
     available on the model as:
 
@@ -91,21 +84,6 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
                 .setLabelCol("CAPSULE")
 
             ensemble.fit(dataset)
-
-        |advanced usage|
-
-        .. code:: scala
-
-            val ensemble = new H2OStackedEnsemble()
-                .setBaseAlgorithms(Array(drf, gbm))
-                .setLabelCol("CAPSULE")
-                .setKeepBaseModels(true)
-
-            val ensembleModel = ensemble.fit(dataset)
-
-            val baseModels:Array[H2OMOJOModel] = ensemble.getBaseModels()
-            ...
-            ensemble.deleteBaseModels()
 
         |get details|
 
@@ -173,21 +151,6 @@ utilize Stacked Ensemble in both languages. See also :ref:`parameters_H2OStacked
             ensemble.setLabelCol("CAPSULE")
 
             ensemble_model = ensemble.fit(dataset)
-
-        |advanced usage|
-
-        .. code:: python
-
-            ensemble = H2OStackedEnsemble()
-            ensemble.setBaseAlgorithms([drf, gbm])
-            ensemble.setLabelCol("CAPSULE")
-            ensemble.setKeepBaseModels(True)
-
-            ensemble_model = ensemble.fit(dataset)
-
-            base_models = ensemble.getBaseModels()
-            ...
-            ensemble.deleteBaseModels()
 
         |get details|
 

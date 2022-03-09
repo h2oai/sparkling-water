@@ -78,27 +78,6 @@ def testStackedEnsembleUsingBlendingFrame(classificationDataset):
     assert model.transform(classificationDataset).count() == 380
 
 
-def testStackedEnsembleKeepsBaseModelsWhenRequested(classificationDataset):
-    foldsNo = 5
-    glm = setParametersForTesting(H2OGLM(), foldsNo)
-    gbm = setParametersForTesting(H2OGBM(), foldsNo)
-
-    ensemble = H2OStackedEnsemble()
-    ensemble.setBaseAlgorithms([glm, gbm])
-    ensemble.setKeepBaseModels(True)
-    ensemble.setLabelCol("CAPSULE")
-
-    ensemble.fit(classificationDataset)
-
-    baseModels = ensemble.getBaseModels()
-    assert len(baseModels) == 2
-    assert baseModels[0].uid.startswith("GLM")
-    assert baseModels[1].uid.startswith("GBM")
-
-    # cleanup
-    ensemble.deleteBaseModels()
-    assert len(ensemble.getBaseModels()) == 0
-
 def testDeserializationOfUnfittedPipelineWithStackedEnsemble(classificationDataset):
     foldsNo = 5
     glm = setParametersForTesting(H2OGLM(), foldsNo)

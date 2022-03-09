@@ -15,15 +15,6 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.models import H2OMOJOModel
-
 class H2OStackedEnsembleExtras:
 
-    def setKeepBaseModels(self, keep_models):
-        self._java_obj.setKeepBaseModels(keep_models)
-
-    def getBaseModels(self):
-        return [H2OMOJOModel(m) for m in self._java_obj.getBaseModels()]
-
-    def deleteBaseModels(self):
-        self._java_obj.deleteBaseModels()
+    pass

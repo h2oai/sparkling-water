@@ -86,7 +86,7 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
     predictions.distinct().count() shouldBe 380
   }
 
-  test("H2O StackedEnsemble deletes base models by default") {
+  test("H2O StackedEnsemble deletes base models") {
 
     val drf = getDrf()
     val gbm = getGbm()
@@ -100,33 +100,6 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
 
     ensemble.fit(dataset)
 
-    ensemble.getBaseModels() should have length 0
-    H2OModel.listAllModels() should have length 0
-  }
-
-  test("H2O StackedEnsemble doesn't remove base models if requested") {
-
-    val drf = getDrf()
-    val gbm = getGbm()
-
-    val ensemble = new H2OStackedEnsemble()
-      .setBaseAlgorithms(Array(drf, gbm))
-      .setLabelCol("CAPSULE")
-      .setKeepBaseModels(true)
-      .setSeed(42)
-
-    H2OModel.listAllModels() should have length 0
-
-    ensemble.fit(dataset)
-
-    ensemble.getBaseModels() should have length 2
-
-    // 2 algos * ( 1 model + 5 cross validation models )
-    val modelsNo = 2 * (1 + foldsNo)
-    H2OModel.listAllModels() should have length modelsNo
-
-    // cleanup
-    ensemble.deleteBaseModels()
     H2OModel.listAllModels() should have length 0
   }
 
