@@ -46,6 +46,8 @@ task createScalaDockerfile(type: Dockerfile) {
   from 'spark:$spark_version'
   copyFile("sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar", "/opt/spark/jars/sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar")
   copyFile("scala/kubernetesTest.jar", "/opt/sparkling-water/tests/kubernetesTest.jar")
+  copyFile("bin/*", "/opt/spark/bin/")
+  copyFile("gradle.properties", "/opt/spark/gradle.properties")
 }
 
 task createRDockerfile(type: Dockerfile) {
@@ -94,6 +96,7 @@ task createPythonDockerfile(type: Dockerfile) {
   if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("3.0.0")) {
     user "0"
   }
+  copyFile("sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar", "/opt/spark/jars/sparkling-water-assembly_${scalaBaseVersion}-${version}-all.jar")
   copyFile("h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
   runCommand "pip3 install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip"
   runCommand "pip install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip"
@@ -108,6 +111,8 @@ task createPythonDockerfile(type: Dockerfile) {
                 """
   }
   copyFile("python/initTest.py", "/opt/sparkling-water/tests/initTest.py")
+  copyFile("bin/*", "/opt/spark/bin/")
+  copyFile("gradle.properties", "/opt/spark/gradle.properties")
   if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("3.0.0")) {
     arg "spark_uid=185"
     user '${spark_uid}'

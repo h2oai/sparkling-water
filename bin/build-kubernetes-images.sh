@@ -47,6 +47,8 @@ if [ "$1" = "scala" ]; then
   echo "Building Docker Image for Sparkling Water(Scala) ..."
   cp "$FAT_JAR_FILE" "$WORKDIR"
   cp -R "$TOPDIR/kubernetes/scala/" "$WORKDIR/scala"
+  cp -R "$TOPDIR/bin/" "$WORKDIR/bin"
+  cp $TOPDIR/gradle.properties "$WORKDIR/gradle.properties"
   docker build --build-arg "spark_version=$INSTALLED_SPARK_FULL_VERSION" -t "sparkling-water-scala:$VERSION" -f "$WORKDIR/Dockerfile-Scala" "$WORKDIR"
   echo "Done!"
 fi
@@ -55,7 +57,10 @@ if [ "$1" = "python" ]; then
   cp "$K8DIR/Dockerfile-Python" "$WORKDIR"
   echo "Building Docker Image for PySparkling(Python) ..."
   cp "$PY_ZIP_FILE" "$WORKDIR"
+  cp "$FAT_JAR_FILE" "$WORKDIR"
   cp -R "$TOPDIR/kubernetes/python/" "$WORKDIR/python"
+  cp -R "$TOPDIR/bin/" "$WORKDIR/bin"
+  cp $TOPDIR/gradle.properties "$WORKDIR/gradle.properties"
   docker build --build-arg "spark_version=$INSTALLED_SPARK_FULL_VERSION" -t "sparkling-water-python:$VERSION" -f "$WORKDIR/Dockerfile-Python" "$WORKDIR"
   echo "Done!"
 fi
