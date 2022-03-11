@@ -39,9 +39,6 @@ class H2OStackedEnsemble(override val uid: String)
   extends H2OSupervisedAlgorithm[StackedEnsembleParameters]
   with H2OStackedEnsembleParams {
 
-  type BaseAlgorithm = H2OAlgorithm[_ <: Model.Parameters]
-  type BaseAlgorithms = Array[BaseAlgorithm]
-
   def this() = this(Identifiable.randomUID(classOf[H2OStackedEnsemble].getSimpleName))
 
   override def fit(dataset: Dataset[_]): H2OStackedEnsembleMOJOModel = {
