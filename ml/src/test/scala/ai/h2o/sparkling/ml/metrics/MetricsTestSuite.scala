@@ -60,7 +60,7 @@ class MetricsTestSuite extends FunSuite with Matchers with SparkTestContext {
       | "Gini": 5.0,
       | "mean_per_class_error": 6.0,
       |
-      | ${confusionMatrix},
+      | "cm": ${confusionMatrix},
       | "thresholds_and_metric_scores": null,
       | "max_criteria_and_metric_scores": null,
       | "gains_lift_table": null
@@ -68,10 +68,7 @@ class MetricsTestSuite extends FunSuite with Matchers with SparkTestContext {
       |""".stripMargin
 
   def jsonWithoutConfusionMatrix: JsonObject = {
-    val confusionMatrix =
-      """
-        | "cm": null
-        |""".stripMargin
+    val confusionMatrix = "null"
 
     JsonParser.parseString(jsonTemplate(confusionMatrix)).getAsJsonObject
   }
@@ -79,34 +76,34 @@ class MetricsTestSuite extends FunSuite with Matchers with SparkTestContext {
   def jsonContainingConfusionMatrix: JsonObject = {
     val confusionMatrix =
       """
-        | "cm":{"__meta":{"schema_version":3,"schema_name":"ConfusionMatrixV3","schema_type":"ConfusionMatrix"},
-        |        "table":{"__meta":{"schema_version":3,"schema_name":"TwoDimTableV3","schema_type":"TwoDimTable"},
-        |        "name":"Confusion Matrix","description":"Row labels: Actual class; Column labels: Predicted class",
-        |        "columns":[{"__meta":{"schema_version":-1,"schema_name":"ColumnSpecsBase","schema_type":"Iced"},
-        |                    "name":"0",
-        |                    "type":"long",
-        |                    "format":"%d",
-        |                    "description":"0"},
-        |                   {"__meta":{"schema_version":-1,"schema_name":"ColumnSpecsBase","schema_type":"Iced"},
-        |                    "name":"1",
-        |                    "type":"long",
-        |                    "format":"%d",
-        |                    "description":"1"},
-        |                   {"__meta":{"schema_version":-1,"schema_name":"ColumnSpecsBase","schema_type":"Iced"},
-        |                    "name":"Error",
-        |                    "type":"double",
-        |                    "format":"%.4f",
-        |                    "description":"Error"},
-        |                   {"__meta":{"schema_version":-1,"schema_name":"ColumnSpecsBase","schema_type":"Iced"},
-        |                    "name":"Rate",
-        |                    "type":"string",
-        |                    "format":"= %8s",
-        |                    "description":"Rate"}],
-        |        "rowcount":3,
-        |        "data":[[190,34,224],
-        |                [37,119,156],
-        |                [0.16,0.22,0.18],
-        |                ["37 / 227","34 / 153","71 / 380"]]}}
+        |{"__meta":{"schema_version":3,"schema_name":"ConfusionMatrixV3","schema_type":"ConfusionMatrix"},
+        |  "table":{"__meta":{"schema_version":3,"schema_name":"TwoDimTableV3","schema_type":"TwoDimTable"},
+        |  "name":"Confusion Matrix","description":"Row labels: Actual class; Column labels: Predicted class",
+        |  "columns":[{"__meta":{"schema_version":-1,"schema_name":"ColumnSpecsBase","schema_type":"Iced"},
+        |              "name":"0",
+        |              "type":"long",
+        |              "format":"%d",
+        |              "description":"0"},
+        |             {"__meta":{"schema_version":-1,"schema_name":"ColumnSpecsBase","schema_type":"Iced"},
+        |              "name":"1",
+        |              "type":"long",
+        |              "format":"%d",
+        |              "description":"1"},
+        |             {"__meta":{"schema_version":-1,"schema_name":"ColumnSpecsBase","schema_type":"Iced"},
+        |              "name":"Error",
+        |              "type":"double",
+        |              "format":"%.4f",
+        |              "description":"Error"},
+        |             {"__meta":{"schema_version":-1,"schema_name":"ColumnSpecsBase","schema_type":"Iced"},
+        |              "name":"Rate",
+        |              "type":"string",
+        |              "format":"= %8s",
+        |              "description":"Rate"}],
+        |  "rowcount":3,
+        |  "data":[[190,34,224],
+        |          [37,119,156],
+        |          [0.16,0.22,0.18],
+        |          ["37 / 227","34 / 153","71 / 380"]]}}
         |""".stripMargin
 
     JsonParser.parseString(jsonTemplate(confusionMatrix)).getAsJsonObject
