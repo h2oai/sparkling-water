@@ -126,7 +126,7 @@ object ModelMetricsTemplate
       s"""if (json.get("${metric.h2oName}").isJsonNull) null else json.get("${metric.h2oName}").getAsString()"""
     case x if x.getSimpleName == "TwoDimTableV3" => s"""toWrapper(jsonFieldToDataFrame(json, "${metric.h2oName}"))"""
     case x if x.getSimpleName == "ConfusionMatrixV3" =>
-      s"""toWrapper(jsonFieldToDataFrame(json.getAsJsonObject("${metric.h2oName}"), "table"))"""
+      s"""toWrapper(nestedJsonFieldToDataFrame(json, "${metric.h2oName}", "table"))"""
   }
 
   private def generateValueAssignments(metrics: Seq[Metric]): String = {
@@ -141,7 +141,7 @@ object ModelMetricsTemplate
              |          logError("Unsuccessful try to extract '${metric.h2oName}' from " + context, e)
              |      }
              |    }"""
-        val mandatioryCheck = if (MetricFieldExceptions.optional().contains(metric.h2oName)) {
+        val mandatoryCheck = if (MetricFieldExceptions.optional().contains(metric.h2oName)) {
           ""
         } else {
           s""" else {
@@ -153,7 +153,7 @@ object ModelMetricsTemplate
              |      }
              |    }""".stripMargin
         }
-        parsing + mandatioryCheck
+        parsing + mandatoryCheck
       }
       .mkString("\n\n")
   }
