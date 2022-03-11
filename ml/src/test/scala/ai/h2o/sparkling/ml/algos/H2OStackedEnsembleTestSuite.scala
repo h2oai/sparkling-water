@@ -58,7 +58,10 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
 
     ensembleModel.getMetalearnerAlgorithm() shouldBe "glm"
 
-    val predictions = ensembleModel.transform(testingDataset)
+    val predictions = ensembleModel
+      .transform(testingDataset)
+      .select("detailed_prediction")
+
     predictions.distinct().count() shouldBe 80
   }
 
@@ -82,7 +85,10 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
 
     val ensembleModel = ensemble.fit(trainingDF)
 
-    val predictions = ensembleModel.transform(dataset)
+    val predictions = ensembleModel
+      .transform(dataset)
+      .select("detailed_prediction")
+
     predictions.distinct().count() shouldBe 380
   }
 
@@ -122,7 +128,10 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
     model.write.overwrite().save("ml/build/stacked_ensemble_pipeline_model")
     val loadedModel = PipelineModel.load("ml/build/stacked_ensemble_pipeline_model")
 
-    loadedModel.transform(dataset).count() shouldBe 380
+    loadedModel
+      .transform(dataset)
+      .select("detailed_prediction")
+      .count() shouldBe 380
   }
 
   private def getGbm() = {
