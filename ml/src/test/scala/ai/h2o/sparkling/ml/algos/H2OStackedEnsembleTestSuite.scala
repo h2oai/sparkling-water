@@ -37,8 +37,8 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     .withColumn("CAPSULE", col("CAPSULE").cast("string"))
 
-  private lazy val trainingDataset = dataset.limit(300).cache()
-  private lazy val testingDataset = dataset.except(trainingDataset).cache()
+  private lazy val trainingDataset = dataset.where("ID <= 300").cache()
+  private lazy val testingDataset = dataset.where("ID > 300").cache()
 
   private val foldsNo = 5
 
@@ -67,15 +67,18 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
 
   test("Create Stacked Ensemble using blending frame") {
 
-    val Array(trainingDF, blendingDF) = dataset.randomSplit(Array(0.6, 0.4), seed = 42)
+    val trainingDF = trainingDataset.where("ID <= 200")
+    val blendingDF = trainingDataset.where("ID > 200")
 
     val drf = new H2ODRF()
       .setLabelCol("CAPSULE")
       .setKeepBinaryModels(true)
+      .setSeed(42)
 
     val gbm = new H2OGBM()
       .setLabelCol("CAPSULE")
       .setKeepBinaryModels(true)
+      .setSeed(42)
 
     val ensemble = new H2OStackedEnsemble()
       .setBaseAlgorithms(Array(drf, gbm))
@@ -86,10 +89,10 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
     val ensembleModel = ensemble.fit(trainingDF)
 
     val predictions = ensembleModel
-      .transform(dataset)
+      .transform(testingDataset)
       .select("detailed_prediction")
 
-    predictions.distinct().count() shouldBe 380
+    predictions.distinct().count() shouldBe 57
   }
 
   test("H2O StackedEnsemble deletes base models") {
@@ -123,15 +126,16 @@ class H2OStackedEnsembleTestSuite extends FunSuite with Matchers with SharedH2OT
     pipeline.write.overwrite().save("ml/build/stacked_ensemble_pipeline")
     val loadedPipeline = Pipeline.load("ml/build/stacked_ensemble_pipeline")
 
-    val model = loadedPipeline.fit(dataset)
+    val model = loadedPipeline.fit(trainingDataset)
 
     model.write.overwrite().save("ml/build/stacked_ensemble_pipeline_model")
     val loadedModel = PipelineModel.load("ml/build/stacked_ensemble_pipeline_model")
 
-    loadedModel
-      .transform(dataset)
+    val predictions = loadedModel
+      .transform(testingDataset)
       .select("detailed_prediction")
-      .count() shouldBe 380
+
+    predictions.distinct().count() shouldBe 80
   }
 
   private def getGbm() = {
