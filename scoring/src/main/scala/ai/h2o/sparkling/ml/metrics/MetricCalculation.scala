@@ -17,127 +17,54 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import java.io.File
-
-import ai.h2o.sparkling.ml.internals.H2OModelCategory
-import ai.h2o.sparkling.ml.models.{H2OMOJOModel, RowConverter}
+import ai.h2o.sparkling.ml.models.RowConverter
 import ai.h2o.sparkling.ml.utils.{DatasetShape, SchemaUtils}
 import com.google.gson.{GsonBuilder, JsonObject}
 import hex._
 import hex.ModelMetrics.IndependentMetricBuilder
-import hex.ModelMetricsBinomialGLM.{ModelMetricsMultinomialGLM, ModelMetricsOrdinalGLM}
-import hex.genmodel.MojoModel
-import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import org.apache.spark.SparkFiles
+import org.apache.spark.{ExposeUtils, ml, mllib}
 import org.apache.spark.sql.DataFrame
 import water.api.{Schema, SchemaServer}
 import water.api.schemas3._
-import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.types.DoubleType
+import org.apache.spark.sql.types.{ArrayType, DoubleType, FloatType, StringType}
 
 trait MetricCalculation {
-  self: H2OMOJOModel =>
 
-  /**
-    * Returns an object holding all metrics of the Double type and also more complex performance information
-    * calculated on a data frame passed as a parameter.
-    */
-  def getMetricsObject(dataFrame: DataFrame): H2OMetrics = {
-    val gson = getMetricGson(dataFrame)
-
-    val h2oMojo = unwrapMojoModel()
-    val modelCategory = H2OModelCategory.fromString(getModelCategory())
-
-    H2OMetrics.loadMetrics(gson, "realtime_metrics", h2oMojo._algoName, modelCategory, getDataFrameSerializer)
-  }
-
-  /**
-    * Returns a map of all metrics of the Double type calculated on a data frame passed as a parameter.
-    */
-  def getMetrics(dataFrame: DataFrame): Map[String, Double] = {
-    val gson = getMetricGson(dataFrame)
-    val conversionInput = new JsonObject()
-    conversionInput.add("realtime_metrics", gson)
-
-    extractMetrics(conversionInput, "realtime_metrics")
-  }
-
-  private[sparkling] def getActualValuesExtractor(): (RowData, EasyPredictModelWrapper) => Array[Double] = {
-    (rowData: RowData, wrapper: EasyPredictModelWrapper) =>
-      {
-        val rawData = new Array[Double](wrapper.m.nfeatures())
-        wrapper.fillRawData(rowData, rawData)
-      }
-  }
-
-  private[sparkling] def getPredictionGetter(): (EasyPredictModelWrapper, RowData, Double) => Array[Double] = {
-    (wrapper: EasyPredictModelWrapper, rowData: RowData, offset: Double) =>
-      {
-        wrapper.preamble(wrapper.m.getModelCategory, rowData, offset)
-      }
-  }
-
-  private[sparkling] def getMetricGson(dataFrame: DataFrame): JsonObject = {
-    val (preparedDF, offsetColOption, weightColOption) = validateAndPrepareDataFrameForMetricCalculation(dataFrame)
-    val configInitializers = getEasyPredictModelWrapperConfigurationInitializers()
-    MetricCalculationClosure.getMetricGson(
-      uid,
-      mojoFileName,
-      preparedDF,
-      offsetColOption,
-      weightColOption,
-      configInitializers,
-      getActualValuesExtractor(),
-      getPredictionGetter())
-  }
-
-  private[sparkling] def validateAndPrepareDataFrameForMetricCalculation(
-      dataFrame: DataFrame): (DataFrame, Option[String], Option[String]) = {
+  private[sparkling] def getFlattenDataFrame(dataFrame: DataFrame): DataFrame = {
     val flatDataFrame = DatasetShape.getDatasetShape(dataFrame.schema) match {
       case DatasetShape.Flat => dataFrame
       case DatasetShape.StructsOnly | DatasetShape.Nested =>
         SchemaUtils.appendFlattenedStructsToDataFrame(dataFrame, RowConverter.temporaryColumnPrefix)
     }
+    flatDataFrame
+  }
 
-    if (hasParam("labelCol")) {
-      val labelCol = getOrDefault(getParam("labelCol")).toString
-      if (labelCol != null && !flatDataFrame.columns.contains(labelCol)) {
+  private[sparkling] def validateDataFrameForMetricCalculation(
+      flatDataFrame: DataFrame,
+      labelCol: String,
+      offsetColOption: Option[String],
+      weightColOption: Option[String]): Unit = {
+
+    if (labelCol != null && !flatDataFrame.columns.contains(labelCol)) {
+      throw new IllegalArgumentException(
+        s"DataFrame passed as a parameter does not contain label column '$labelCol'.")
+    }
+
+    if (offsetColOption.isDefined) {
+      val offsetCol = offsetColOption.get
+      if (!flatDataFrame.columns.contains(offsetCol)) {
         throw new IllegalArgumentException(
-          s"DataFrame passed as a parameter does not contain label column '$labelCol'.")
+          s"DataFrame passed as a parameter does not contain offset column '$offsetCol'.")
       }
     }
-    val (offsetColCastedDF, offsetColOption) =
-      if (hasParam("offsetCol") && getOrDefault(getParam("offsetCol")) != null) {
-        val offsetCol = getOrDefault(getParam("offsetCol")).toString
-        if (!flatDataFrame.columns.contains(offsetCol)) {
-          throw new IllegalArgumentException(
-            s"DataFrame passed as a parameter does not contain offset column '$offsetCol'.")
-        }
-        (flatDataFrame.withColumn(offsetCol, col(offsetCol).cast(DoubleType)), Some(offsetCol))
-      } else {
-        (flatDataFrame, None)
-      }
 
-    val weightColTuple = if (hasParam("weightCol") && getOrDefault(getParam("weightCol")) != null) {
-      val weightCol = getOrDefault(getParam("weightCol")).toString
+    if (weightColOption.isDefined) {
+      val weightCol = weightColOption.get
       if (!flatDataFrame.columns.contains(weightCol)) {
         throw new IllegalArgumentException(
           s"DataFrame passed as a parameter does not contain weight column '$weightCol'.")
       }
-      (offsetColCastedDF.withColumn(weightCol, col(weightCol).cast(DoubleType)), offsetColOption, Some(weightCol))
-    } else {
-      (offsetColCastedDF, offsetColOption, None)
     }
-    weightColTuple
-  }
-
-}
-
-object MetricCalculationClosure {
-
-  private[sparkling] def makeMetricBuilder(mojoModel: MojoModel, mojoFileName: String): IndependentMetricBuilder[_] = {
-    val mojoFile = new File(SparkFiles.get(mojoFileName))
-    MojoModel.loadMetricBuilder(mojoModel, mojoFile).asInstanceOf[IndependentMetricBuilder[_]]
   }
 
   private[sparkling] def metricsToSchema(metrics: ModelMetrics): Schema[_, _] = {
@@ -147,42 +74,34 @@ object MetricCalculationClosure {
     schemas.foreach(SchemaServer.register)
     val schema = SchemaServer.schema(3, metrics)
     schema match {
-      case s: ModelMetricsBinomialGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsBinomialGLM])
       case s: ModelMetricsBinomialV3[ModelMetricsBinomial, _] =>
         s.fillFromImpl(metrics.asInstanceOf[ModelMetricsBinomial])
-      case s: ModelMetricsMultinomialGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsMultinomialGLM])
       case s: ModelMetricsMultinomialV3[ModelMetricsMultinomial, _] =>
         s.fillFromImpl(metrics.asInstanceOf[ModelMetricsMultinomial])
-      case s: ModelMetricsOrdinalGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsOrdinalGLM])
-      case s: ModelMetricsOrdinalV3[ModelMetricsOrdinal, _] => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsOrdinal])
-      case s: ModelMetricsRegressionCoxPHV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegressionCoxPH])
-      case s: ModelMetricsRegressionGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegressionGLM])
       case s: ModelMetricsRegressionV3[ModelMetricsRegression, _] =>
         s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegression])
-      case s: ModelMetricsClusteringV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsClustering])
-      case s: ModelMetricsHGLMV3[ModelMetricsHGLM, _] => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsHGLM])
-      case s: ModelMetricsAutoEncoderV3 => s.fillFromImpl(metrics)
-      case s: ModelMetricsBaseV3[_, _] => s.fillFromImpl(metrics)
     }
     schema
   }
 
   private[sparkling] def getMetricGson(
-      uid: String,
-      mojoFileName: String,
-      preparedDF: DataFrame,
+      createMetricBuilder: () => IndependentMetricBuilder[_],
+      dataFrame: DataFrame,
+      predictionCol: String,
+      labelCol: String,
       offsetColOption: Option[String],
       weightColOption: Option[String],
-      configInitializers: Seq[H2OMOJOModel.EasyPredictModelWrapperConfigurationInitializer],
-      extractActualValues: (RowData, EasyPredictModelWrapper) => Array[Double],
-      getPrediction: (EasyPredictModelWrapper, RowData, Double) => Array[Double]): JsonObject = {
-    val filledMetricsBuilder = preparedDF.rdd
+      domain: Array[String]): JsonObject = {
+    val flatDF = getFlattenDataFrame(dataFrame)
+    val predictionType = flatDF.schema.fields.find(f => f.name == predictionCol).get.dataType
+    val predictionColIndex = flatDF.schema.indexOf(predictionCol)
+    val actualType = flatDF.schema.fields.find(f => f.name == labelCol).get.dataType
+    val actualColIndex = flatDF.schema.indexOf(labelCol)
+    val filledMetricsBuilder = flatDF.rdd
       .mapPartitions[IndependentMetricBuilder[_]] { rows =>
-        val wrapper = H2OMOJOModel.loadEasyPredictModelWrapper(uid, mojoFileName, configInitializers)
-        val metricBuilder = makeMetricBuilder(wrapper.getModel.asInstanceOf[MojoModel], mojoFileName)
+        val metricBuilder = createMetricBuilder()
         while (rows.hasNext) {
           val row = rows.next()
-          val rowData = RowConverter.toH2ORowData(row)
           val offset = offsetColOption match {
             case Some(offsetCol) => row.getDouble(row.fieldIndex(offsetCol))
             case None => 0.0d
@@ -191,9 +110,26 @@ object MetricCalculationClosure {
             case Some(weightCol) => row.getDouble(row.fieldIndex(weightCol))
             case None => 1.0d
           }
-          val prediction = getPrediction(wrapper, rowData, offset)
-          val actualValues = extractActualValues(rowData, wrapper)
-          metricBuilder.perRow(prediction, actualValues, weight, offset)
+          val prediction = predictionType match {
+            case ArrayType(DoubleType, _) => row.getSeq[Double](predictionColIndex).toArray
+            case ArrayType(FloatType, _) => row.getSeq[Float](predictionColIndex).map(_.toDouble).toArray
+            case DoubleType => Array(row.getDouble(predictionColIndex))
+            case FloatType => Array(row.getFloat(predictionColIndex).toDouble)
+            case v if ExposeUtils.isMLVectorUDT(v) =>
+              val vector = row.getAs[ml.linalg.Vector](predictionColIndex)
+              vector.toDense.values
+            case _: mllib.linalg.VectorUDT =>
+              val vector = row.getAs[mllib.linalg.Vector](predictionColIndex)
+              vector.toDense.values
+          }
+          val actualValue = actualType match {
+            case StringType =>
+              val label = row.getString(actualColIndex)
+              domain.indexOf(label).toDouble
+            case DoubleType => row.getDouble(actualColIndex)
+            case FloatType => row.getFloat(actualColIndex)
+          }
+          metricBuilder.perRow(prediction, Array(actualValue), weight, offset)
         }
         Iterator.single(metricBuilder)
       }

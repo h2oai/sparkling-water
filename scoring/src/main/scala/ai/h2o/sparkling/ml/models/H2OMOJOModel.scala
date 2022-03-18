@@ -56,7 +56,6 @@ abstract class H2OMOJOModel
   with SpecificMOJOParameters
   with H2OBaseMOJOParams
   with HasFeatureTypesOnMOJO
-  with MetricCalculation
   with Logging {
 
   H2OMOJOCache.startCleanupThread()
