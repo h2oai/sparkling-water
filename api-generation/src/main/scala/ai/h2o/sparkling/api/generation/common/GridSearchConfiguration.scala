@@ -24,8 +24,10 @@ import hex.grid.HyperSpaceSearchCriteria.{CartesianSearchCriteria, RandomDiscret
 import hex.schemas.HyperSpaceSearchCriteriaV99
 import hex.schemas.HyperSpaceSearchCriteriaV99.{CartesianSearchCriteriaV99, RandomDiscreteValueSearchCriteriaV99}
 
-trait GridSearchConfiguration {
-  def gridSearchParameterConfiguration: Seq[ParameterSubstitutionContext] = {
+class GridSearchConfiguration extends SingleAlgorithmConfiguration {
+
+  override def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
+
     class DummySearchCriteria extends HyperSpaceSearchCriteriaV99[HyperSpaceSearchCriteria, DummySearchCriteria]
 
     val gridSearchParameters = Seq[(String, Class[_], Class[_], Seq[String])](
@@ -61,13 +63,14 @@ trait GridSearchConfiguration {
         generateParamTag = false)
   }
 
-  def gridSearchAlgorithmContext: AlgorithmSubstitutionContext = {
-    AlgorithmSubstitutionContext(
-      namespace = "ai.h2o.sparkling.ml.algos",
-      "H2OGridSearch",
-      null,
-      "H2OAlgorithm",
-      Seq("H2OGridSearchExtras"),
-      false)
+  override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
+    Seq(
+      AlgorithmSubstitutionContext(
+        namespace = "ai.h2o.sparkling.ml.algos",
+        "H2OGridSearch",
+        null,
+        "H2OAlgorithm",
+        Seq("H2OGridSearchExtras"),
+        false))
   }
 }

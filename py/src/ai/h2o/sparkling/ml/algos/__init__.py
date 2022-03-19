@@ -27,3 +27,4 @@ from ai.h2o.sparkling.ml.algos.H2ODRF import H2ODRF
 from ai.h2o.sparkling.ml.algos.H2OCoxPH import H2OCoxPH
 from ai.h2o.sparkling.ml.algos.H2OIsolationForest import H2OIsolationForest
 from ai.h2o.sparkling.ml.algos.H2ORuleFit import H2ORuleFit
+from ai.h2o.sparkling.ml.algos.H2OStackedEnsemble import H2OStackedEnsemble

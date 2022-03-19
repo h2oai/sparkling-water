@@ -6,8 +6,10 @@ import ai.h2o.automl.AutoMLBuildSpec.{AutoMLBuildControl, AutoMLBuildModels, Aut
 import ai.h2o.sparkling.ml.utils.H2OAutoMLSortMetric
 import water.automl.api.schemas3.AutoMLBuildSpecV99.{AutoMLBuildControlV99, AutoMLBuildModelsV99, AutoMLInputV99, AutoMLStoppingCriteriaV99}
 
-trait AutoMLConfiguration extends AlgorithmConfigurations {
-  def autoMLParameterConfiguration: Seq[ParameterSubstitutionContext] = {
+class AutoMLConfiguration extends SingleAlgorithmConfiguration {
+
+  override def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
+
     import DefaultValueSource._
 
     val autoMLParameters = Seq[(String, Class[_], Class[_], DefaultValueSource)](
@@ -28,29 +30,32 @@ trait AutoMLConfiguration extends AlgorithmConfigurations {
         h2oParameterClass,
         AutoMLIgnoredParameters.all,
         explicitFields =
-          if (entityName == "H2OAutoMLInputParams") Seq(ignoredCols, leaderboardFrame, blendingFrame) else Seq.empty,
+          if (entityName == "H2OAutoMLInputParams")
+            Seq(AlgorithmConfigurations.ignoredCols, leaderboardFrame, blendingFrame)
+          else Seq.empty,
         deprecatedFields = Seq.empty,
         explicitDefaultValues =
           Map("include_algos" -> ai.h2o.automl.Algo.values().map(_.name()), "response_column" -> "label"),
         defaultValueFieldPrefix = "",
         typeExceptions = Map("sort_metric" -> classOf[H2OAutoMLSortMetric]),
         defaultValueSource = source,
-        defaultValuesOfCommonParameters = defaultValuesOfAlgorithmCommonParameters ++
+        defaultValuesOfCommonParameters = AlgorithmConfigurations.defaultValuesOfAlgorithmCommonParameters ++
           Map("monotoneConstraints" -> new util.HashMap[String, Double]()),
         generateParamTag = false)
   }
 
-  def autoMLAlgorithmContext: AlgorithmSubstitutionContext = {
-    AlgorithmSubstitutionContext(
-      namespace = "ai.h2o.sparkling.ml.algos",
-      "H2OAutoML",
-      null,
-      "H2OSupervisedAlgorithmWithFoldColumn",
-      Seq("H2OAutoMLExtras"),
-      false)
+  override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
+    Seq(
+      AlgorithmSubstitutionContext(
+        namespace = "ai.h2o.sparkling.ml.algos",
+        "H2OAutoML",
+        null,
+        "H2OSupervisedAlgorithmWithFoldColumn",
+        Seq("H2OAutoMLExtras"),
+        false))
   }
 
-  def problemSpecificAutoMLAlgorithmContext: ProblemSpecificAlgorithmSubstitutionContext = {
-    ProblemSpecificAlgorithmSubstitutionContext(null, "H2OAutoML", null, "ai.h2o.sparkling.ml.algos", Seq.empty)
+  override def problemSpecificAlgorithmConfiguration: Seq[ProblemSpecificAlgorithmSubstitutionContext] = {
+    Seq(ProblemSpecificAlgorithmSubstitutionContext(null, "H2OAutoML", null, "ai.h2o.sparkling.ml.algos", Seq.empty))
   }
 }

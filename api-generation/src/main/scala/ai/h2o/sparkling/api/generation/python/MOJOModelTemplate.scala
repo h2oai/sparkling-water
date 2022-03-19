@@ -82,7 +82,8 @@ object MOJOModelTemplate
          |            raise TypeError("Invalid type.")
          |
          |""".stripMargin +
-        generateGetterMethods(parameters) + "\n\n" +
+        generateGetterMethods(parameters) +
+        "\n\n    # Outputs\n" +
         generateGetterMethods(outputs)
     }
   }

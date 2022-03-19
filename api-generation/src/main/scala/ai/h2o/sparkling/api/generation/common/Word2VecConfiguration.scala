@@ -3,9 +3,10 @@ package ai.h2o.sparkling.api.generation.common
 import hex.schemas.Word2VecV3.Word2VecParametersV3
 import hex.word2vec.Word2VecModel.Word2VecParameters
 
-trait Word2VecConfiguration extends AlgorithmConfigurations {
+class Word2VecConfiguration {
 
   val explicitDefaultValues = Map[String, Any]("model_id" -> null)
+
   def word2VecParametersSubstitutionContext: ParameterSubstitutionContext = {
     ParameterSubstitutionContext(
       namespace = "ai.h2o.sparkling.ml.params",
@@ -18,7 +19,7 @@ trait Word2VecConfiguration extends AlgorithmConfigurations {
       explicitDefaultValues = explicitDefaultValues,
       typeExceptions = Map.empty,
       defaultValueSource = DefaultValueSource.Field,
-      defaultValuesOfCommonParameters = defaultValuesOfAlgorithmCommonParameters,
+      defaultValuesOfCommonParameters = AlgorithmConfigurations.defaultValuesOfAlgorithmCommonParameters,
       generateParamTag = true)
   }
 }
