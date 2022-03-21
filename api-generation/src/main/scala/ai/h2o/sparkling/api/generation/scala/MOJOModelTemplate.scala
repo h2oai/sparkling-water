@@ -46,7 +46,6 @@ object MOJOModelTemplate
     val imports = Seq(
       "com.google.gson.JsonObject",
       "ai.h2o.sparkling.ml.params.ParameterConstructorMethods",
-      "ai.h2o.sparkling.ml.metrics._",
       "hex.genmodel.MojoModel",
       "org.apache.spark.expose.Logging",
       "ai.h2o.sparkling.utils.DataFrameSerializationWrappers._") ++
@@ -60,9 +59,7 @@ object MOJOModelTemplate
         .replace("Estimator", "MOJOModel")
         .replaceFirst("Base$", "MOJOBase"),
       "ParameterConstructorMethods",
-      "Logging") ++
-      explicitFieldImplementations ++
-      algorithmSubstitutionContext.extraInheritedEntitiesOnMOJO
+      "Logging") ++ explicitFieldImplementations
 
     val entityName = algorithmSubstitutionContext.entityName
     val entityParameters = "(override val uid: String)"
@@ -214,11 +211,6 @@ object MOJOModelTemplate
          |
          |  override def getCrossValidationMetricsObject(): $metrics = {
          |    val value = super.getCrossValidationMetricsObject()
-         |    if (value == null) null else value.asInstanceOf[$metrics]
-         |  }
-         |
-         |  override def getMetricsObject(dataFrame: org.apache.spark.sql.DataFrame): $metrics = {
-         |    val value = super.getMetricsObject(dataFrame)
          |    if (value == null) null else value.asInstanceOf[$metrics]
          |  }""".stripMargin
   }
