@@ -63,15 +63,13 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       trainingDataset: DataFrame,
       validationDataset: DataFrame,
       trainingMetricsTolerance: Double = 0.0,
-      validationMetricsTolerance: Double = 0.0,
-      skipExtraMetrics: Boolean = false): Unit = {
+      validationMetricsTolerance: Double = 0.0): Unit = {
     MetricsAssertions.assertEssentialMetrics(
       model,
       trainingDataset,
       validationDataset,
       trainingMetricsTolerance,
-      validationMetricsTolerance,
-      skipExtraMetrics)
+      validationMetricsTolerance)
 
     if (trainingMetricsTolerance < Double.PositiveInfinity) {
       val trainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OMultinomialMetrics]
@@ -151,15 +149,14 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
   }
 
   {
-    val algorithmsAndTolerances: Seq[(() => H2OSupervisedAlgorithm[_], Double, Double, Boolean)] = Seq(
-      (() => new H2ODeepLearning(), 0.00001, 0.00000001, false),
-      (() => new H2OXGBoost(), 0.00001, 0.00000001, false),
-      (() => new H2OGBM(), 0.00001, 0.00000001, false),
-      (() => new H2OGLM(), 0.00001, 0.00000001, false),
-      (() => new H2ODRF(), Double.PositiveInfinity, 0.00000001, false),
-      (() => new H2ORuleFit(), 0.0001, 0.00001, true))
+    val algorithmsAndTolerances: Seq[(() => H2OSupervisedAlgorithm[_], Double, Double)] = Seq(
+      (() => new H2ODeepLearning(), 0.00001, 0.00000001),
+      (() => new H2OXGBoost(), 0.00001, 0.00000001),
+      (() => new H2OGBM(), 0.00001, 0.00000001),
+      (() => new H2OGLM(), 0.00001, 0.00000001),
+      (() => new H2ODRF(), Double.PositiveInfinity, 0.00000001))
 
-    for ((algorithmGetter, trainingMetricsTolerance, validationMetricsTolerance, skipExtraMetrics) <- algorithmsAndTolerances) {
+    for ((algorithmGetter, trainingMetricsTolerance, validationMetricsTolerance) <- algorithmsAndTolerances) {
       val algorithmName = algorithmGetter().getClass.getSimpleName
 
       test(s"test calculation of multinomial $algorithmName metrics on arbitrary dataset") {
@@ -178,8 +175,7 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
           trainingDataset,
           validationDataset,
           trainingMetricsTolerance,
-          validationMetricsTolerance,
-          skipExtraMetrics)
+          validationMetricsTolerance)
       }
 
       test(s"test calculation of multinomial $algorithmName metrics with weightCol set on arbitrary dataset") {
@@ -199,8 +195,7 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
           trainingDataset,
           validationDataset,
           trainingMetricsTolerance,
-          validationMetricsTolerance,
-          skipExtraMetrics)
+          validationMetricsTolerance)
       }
     }
   }
@@ -224,71 +219,6 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
 
         assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance, validationMetricsTolerance)
       }
-    }
-  }
-  {
-    // TODO: Investigate differences when data frames have more partitions
-    def gamTrainingDataset = trainingDataset.repartition(1)
-    def gamValidationDataset = validationDataset.repartition(1)
-
-    test("test calculation of multinomial H2OGAM metrics on arbitrary dataset") {
-      val algo = new H2OGAM()
-        .setValidationDataFrame(gamValidationDataset)
-        .setSeed(1)
-        .setFeaturesCols("sepal_len", "sepal_wid", "petal_len")
-        .setGamCols(Array("petal_len"))
-        .setColumnsToCategorical("class")
-        .setAucType("MACRO_OVR")
-        .setLabelCol("class")
-      val model = algo.fit(gamTrainingDataset)
-
-      assertMetrics(
-        model,
-        gamTrainingDataset,
-        gamValidationDataset,
-        trainingMetricsTolerance = 0.0001,
-        validationMetricsTolerance = 0.00000001)
-    }
-
-    // H2OGAM renames Gam cols when offset columns is set (petal_len -> petal_len_0_center__8)
-    ignore("test calculation of multinomial H2OGAM metrics with offsetCol set on arbitrary dataset") {
-      val algo = new H2OGAM()
-        .setValidationDataFrame(gamValidationDataset)
-        .setSeed(1)
-        .setFeaturesCols("sepal_len", "sepal_wid", "petal_len")
-        .setGamCols(Array("petal_len"))
-        .setColumnsToCategorical("class")
-        .setAucType("MACRO_OVR")
-        .setLabelCol("class")
-        .setOffsetCol("ID")
-      val model = algo.fit(gamTrainingDataset)
-
-      assertMetrics(
-        model,
-        gamTrainingDataset,
-        gamValidationDataset,
-        trainingMetricsTolerance = 0.0001,
-        validationMetricsTolerance = 0.00000001)
-    }
-
-    test("test calculation of multinomial H2OGAM metrics with weightCol set on arbitrary dataset") {
-      val algo = new H2OGAM()
-        .setValidationDataFrame(gamValidationDataset)
-        .setSeed(1)
-        .setFeaturesCols("sepal_len", "sepal_wid", "petal_len")
-        .setGamCols(Array("petal_len"))
-        .setColumnsToCategorical("class")
-        .setAucType("MACRO_OVR")
-        .setLabelCol("class")
-        .setWeightCol("WEIGHT")
-      val model = algo.fit(gamTrainingDataset)
-
-      assertMetrics(
-        model,
-        gamTrainingDataset,
-        gamValidationDataset,
-        trainingMetricsTolerance = 0.0001,
-        validationMetricsTolerance = 0.00000001)
     }
   }
 }

@@ -72,15 +72,13 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       trainingDataset: DataFrame,
       validationDataset: DataFrame,
       trainingMetricsTolerance: Double = 0.0,
-      validationMetricsTolerance: Double = 0.0,
-      skipExtraMetrics: Boolean = false): Unit = {
+      validationMetricsTolerance: Double = 0.0): Unit = {
     MetricsAssertions.assertEssentialMetrics(
       model,
       trainingDataset,
       validationDataset,
       trainingMetricsTolerance,
-      validationMetricsTolerance,
-      skipExtraMetrics)
+      validationMetricsTolerance)
 
     if (trainingMetricsTolerance < Double.PositiveInfinity) {
       val trainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OBinomialMetrics]
@@ -158,15 +156,14 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
   }
 
   {
-    val algorithmsAndTolerances: Seq[(() => H2OSupervisedAlgorithm[_], Double, Double, Boolean)] = Seq(
-      (() => new H2ODeepLearning(), 0.00001, 0.000001, false),
-      (() => new H2OXGBoost(), 0.0001, 0.0001, false),
-      (() => new H2OGBM(), 0.0001, 0.0001, false),
-      (() => new H2OGLM(), 0.00001, 0.000001, false),
-      (() => new H2ODRF(), Double.PositiveInfinity, 0.0001, false))
-    // TODO: investigate differences - (() => new H2ORuleFit(), Double.PositiveInfinity, 0.0005, true))
+    val algorithmsAndTolerances: Seq[(() => H2OSupervisedAlgorithm[_], Double, Double)] = Seq(
+      (() => new H2ODeepLearning(), 0.00001, 0.000001),
+      (() => new H2OXGBoost(), 0.0001, 0.0001),
+      (() => new H2OGBM(), 0.0001, 0.0001),
+      (() => new H2OGLM(), 0.00001, 0.000001),
+      (() => new H2ODRF(), Double.PositiveInfinity, 0.0001))
 
-    for ((algorithmGetter, trainingMetricsTolerance, validationMetricsTolerance, skipExtraMetrics) <- algorithmsAndTolerances) {
+    for ((algorithmGetter, trainingMetricsTolerance, validationMetricsTolerance) <- algorithmsAndTolerances) {
       val algorithmName = algorithmGetter().getClass.getSimpleName
 
       test(s"test calculation of binomial $algorithmName metrics on arbitrary dataset") {
@@ -183,8 +180,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
           trainingDataset,
           validationDataset,
           trainingMetricsTolerance,
-          validationMetricsTolerance,
-          skipExtraMetrics)
+          validationMetricsTolerance)
       }
 
       test(s"test calculation of binomial $algorithmName metrics with weightCol set on arbitrary dataset") {
@@ -202,8 +198,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
           trainingDataset,
           validationDataset,
           trainingMetricsTolerance,
-          validationMetricsTolerance,
-          skipExtraMetrics)
+          validationMetricsTolerance)
       }
     }
   }
@@ -225,54 +220,6 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
 
         assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance, validationMetricsTolerance)
       }
-    }
-  }
-
-  {
-    // TODO: Investigate differences when data frames have more partitions
-    def gamTrainingDataset = trainingDataset.repartition(1)
-    def gamValidationDataset = validationDataset.repartition(1)
-
-    test(s"test calculation of binomial H2OGAM metrics on arbitrary dataset") {
-      val algorithm = new H2OGAM()
-      algorithm
-        .setValidationDataFrame(gamValidationDataset)
-        .setSeed(1L)
-        .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
-        .setGamCols(Array("PSA"))
-        .setLabelCol("CAPSULE")
-      val model = algorithm.fit(gamTrainingDataset)
-
-      assertMetrics(model, gamTrainingDataset, gamValidationDataset, 0.00001, 0.00000001)
-    }
-
-    // H2OGAM renames Gam cols when offset columns is set (PSA -> PSA_0_center__8)
-    ignore(s"test calculation of binomial H2OGAM metrics with offsetCol set on arbitrary dataset") {
-      val algorithm = new H2OGAM()
-      algorithm
-        .setValidationDataFrame(gamValidationDataset)
-        .setSeed(1L)
-        .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
-        .setGamCols(Array("PSA"))
-        .setLabelCol("CAPSULE")
-        .setOffsetCol("ID")
-      val model = algorithm.fit(gamTrainingDataset)
-
-      assertMetrics(model, gamTrainingDataset, gamValidationDataset, 0.00001, 0.00000001)
-    }
-
-    test(s"test calculation of binomial H2OGAM metrics with weightCol set on arbitrary dataset") {
-      val algorithm = new H2OGAM()
-      algorithm
-        .setValidationDataFrame(gamValidationDataset)
-        .setSeed(1L)
-        .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
-        .setGamCols(Array("PSA"))
-        .setLabelCol("CAPSULE")
-        .setWeightCol("ID")
-      val model = algorithm.fit(gamTrainingDataset)
-
-      assertMetrics(model, gamTrainingDataset, gamValidationDataset, 0.00001, 0.00000001)
     }
   }
 }

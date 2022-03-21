@@ -85,16 +85,14 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
   }
 
   {
-    val algorithmsAndTolerances: Seq[(() => H2OSupervisedAlgorithm[_], Double, Double, Boolean)] = Seq(
-      (() => new H2ODeepLearning(), 0.00001, 0.00000001, false),
-      (() => new H2OXGBoost(), 0.00001, 0.00000001, false),
-      (() => new H2OGBM(), 0.0001, 0.00000001, false),
-      (() => new H2OGLM(), 0.00001, 0.00000001, false),
-      (() => new H2ODRF(), Double.PositiveInfinity, 0.00000001, false)) // ignore comparision on the training dataset
-    // H2O runtime produces additional GLM metrics
-    // TODO: investigate differences  (() => new H2ORuleFit(), 0.001, 0.00000001, true))
+    val algorithmsAndTolerances: Seq[(() => H2OSupervisedAlgorithm[_], Double, Double)] = Seq(
+      (() => new H2ODeepLearning(), 0.00001, 0.00000001),
+      (() => new H2OXGBoost(), 0.00001, 0.00000001),
+      (() => new H2OGBM(), 0.0001, 0.00000001),
+      (() => new H2OGLM(), 0.00001, 0.00000001),
+      (() => new H2ODRF(), Double.PositiveInfinity, 0.00000001)) // ignore comparision on the training dataset
 
-    for ((algorithmGetter, trainingMetricsTolerance, validationMetricsTolerance, skipExtraMetrics) <- algorithmsAndTolerances) {
+    for ((algorithmGetter, trainingMetricsTolerance, validationMetricsTolerance) <- algorithmsAndTolerances) {
       val algorithmName = algorithmGetter().getClass.getSimpleName
 
       test(s"test calculation of regression $algorithmName metrics on arbitrary dataset") {
@@ -111,8 +109,7 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
           trainingDataset,
           validationDataset,
           trainingMetricsTolerance,
-          validationMetricsTolerance,
-          skipExtraMetrics)
+          validationMetricsTolerance)
       }
 
       test(s"test calculation of regression $algorithmName metrics with weight column set on arbitrary dataset ") {
@@ -130,8 +127,7 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
           trainingDataset,
           validationDataset,
           trainingMetricsTolerance,
-          validationMetricsTolerance,
-          skipExtraMetrics)
+          validationMetricsTolerance)
       }
     }
   }
@@ -139,7 +135,7 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
     val algorithmsAndTolerances: Seq[(H2OSupervisedAlgorithm[_], Double, Double)] = Seq(
       (new H2OXGBoost(), 0.00001, 0.00000001),
       (new H2OGBM(), 0.001, 0.00000001),
-      (new H2OGLM(), 0.00001, 0.00000001)) // H2ORuleFit and H2ODRF doesn't support offset column
+      (new H2OGLM(), 0.00001, 0.00000001))
 
     for ((algorithm, trainingMetricsTolerance, validationMetricsTolerance) <- algorithmsAndTolerances) {
       val algorithmName = algorithm.getClass.getSimpleName
@@ -159,53 +155,6 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
           trainingMetricsTolerance,
           validationMetricsTolerance)
       }
-    }
-  }
-  {
-    // TODO: investigate why GAM there are differences when more partitions are used
-    def gamTrainingDataset = trainingDataset.repartition(1)
-    def gamValidationDataset = validationDataset.repartition(1)
-
-    test(s"test calculation of regression H2OGAM metrics on arbitrary dataset") {
-      val algorithm = new H2OGAM()
-      algorithm
-        .setValidationDataFrame(gamValidationDataset)
-        .setSeed(1L)
-        .setGamCols(Array(Array("PSA")))
-        .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
-        .setLabelCol("AGE")
-      val model = algorithm.fit(gamTrainingDataset)
-
-      MetricsAssertions.assertEssentialMetrics(model, gamTrainingDataset, gamValidationDataset, 0.00001, 0.00000001)
-    }
-
-    test(s"test calculation of regression H2OGAM metrics with weight column set on arbitrary dataset") {
-      val algorithm = new H2OGAM()
-      algorithm
-        .setValidationDataFrame(gamValidationDataset)
-        .setSeed(1L)
-        .setGamCols(Array(Array("PSA")))
-        .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
-        .setLabelCol("AGE")
-        .setWeightCol("ID")
-      val model = algorithm.fit(gamTrainingDataset)
-
-      MetricsAssertions.assertEssentialMetrics(model, gamTrainingDataset, gamValidationDataset, 0.00001, 0.00000001)
-    }
-
-    // H2OGAM renames Gam cols when offset columns is set (PSA -> PSA_0_center__8)
-    ignore(s"test calculation of regression H2OGAM metrics with offset column set on arbitrary dataset") {
-      val algorithm = new H2OGAM()
-      algorithm
-        .setValidationDataFrame(gamValidationDataset)
-        .setSeed(1L)
-        .setGamCols(Array(Array("PSA")))
-        .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
-        .setLabelCol("AGE")
-        .setOffsetCol("ID")
-      val model = algorithm.fit(gamTrainingDataset)
-
-      MetricsAssertions.assertEssentialMetrics(model, gamTrainingDataset, gamValidationDataset, 0.00001, 0.00000001)
     }
   }
 }
