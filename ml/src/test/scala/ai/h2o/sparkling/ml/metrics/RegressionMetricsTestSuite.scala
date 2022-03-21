@@ -102,12 +102,19 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
           .set(algorithm.getParam("seed"), 1L)
           .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
           .setLabelCol("AGE")
+
         val model = algorithm.fit(trainingDataset)
+        val trainingMetrics = H2ORegressionMetrics.calculate(
+          dataFrame = model.transform(trainingDataset),
+          labelCol = "AGE")
+        val validationMetrics = H2ORegressionMetrics.calculate(
+          dataFrame = model.transform(validationDataset),
+          labelCol = "AGE")
 
         MetricsAssertions.assertEssentialMetrics(
           model,
-          trainingDataset,
-          validationDataset,
+          trainingMetrics,
+          validationMetrics,
           trainingMetricsTolerance,
           validationMetricsTolerance)
       }
@@ -120,12 +127,21 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
           .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
           .setLabelCol("AGE")
           .setWeightCol("ID")
+
         val model = algorithm.fit(trainingDataset)
+        val trainingMetrics = H2ORegressionMetrics.calculate(
+          dataFrame = model.transform(trainingDataset),
+          labelCol = "AGE",
+          weightColOption = Some("ID"))
+        val validationMetrics = H2ORegressionMetrics.calculate(
+          dataFrame = model.transform(validationDataset),
+          labelCol = "AGE",
+          weightColOption = Some("ID"))
 
         MetricsAssertions.assertEssentialMetrics(
           model,
-          trainingDataset,
-          validationDataset,
+          trainingMetrics,
+          validationMetrics,
           trainingMetricsTolerance,
           validationMetricsTolerance)
       }
@@ -146,12 +162,21 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
           .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
           .setLabelCol("AGE")
           .setOffsetCol("ID")
+
         val model = algorithm.fit(trainingDataset)
+        val trainingMetrics = H2ORegressionMetrics.calculate(
+          dataFrame = model.transform(trainingDataset),
+          labelCol = "AGE",
+          offsetColOption = Some("ID"))
+        val validationMetrics = H2ORegressionMetrics.calculate(
+          dataFrame = model.transform(validationDataset),
+          labelCol = "AGE",
+          offsetColOption = Some("ID"))
 
         MetricsAssertions.assertEssentialMetrics(
           model,
-          trainingDataset,
-          validationDataset,
+          trainingMetrics,
+          validationMetrics,
           trainingMetricsTolerance,
           validationMetricsTolerance)
       }

@@ -69,19 +69,18 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
 
   private def assertMetrics(
       model: H2OMOJOModel,
-      trainingDataset: DataFrame,
-      validationDataset: DataFrame,
+      trainingMetricObject: H2OBinomialMetrics,
+      validationMetricObject: H2OBinomialMetrics,
       trainingMetricsTolerance: Double = 0.0,
       validationMetricsTolerance: Double = 0.0): Unit = {
     MetricsAssertions.assertEssentialMetrics(
       model,
-      trainingDataset,
-      validationDataset,
+      trainingMetricObject,
+      validationMetricObject,
       trainingMetricsTolerance,
       validationMetricsTolerance)
 
     if (trainingMetricsTolerance < Double.PositiveInfinity) {
-      val trainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OBinomialMetrics]
       val expectedTrainingMetricObject = model.getTrainingMetricsObject().asInstanceOf[H2OBinomialMetrics]
 
       // Confusion matrix is not correctly calculated in H2O-3 runtime.
@@ -103,7 +102,6 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     }
 
     if (validationMetricsTolerance < Double.PositiveInfinity) {
-      val validationMetricObject = model.getMetricsObject(validationDataset).asInstanceOf[H2OBinomialMetrics]
       val expectedValidationMetricObject = model.getValidationMetricsObject().asInstanceOf[H2OBinomialMetrics]
 
       // Confusion matrix is not correctly calculated in H2O-3 runtime.
@@ -173,12 +171,23 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
           .set(algorithm.getParam("seed"), 1L)
           .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
           .setLabelCol("CAPSULE")
+
         val model = algorithm.fit(trainingDataset)
+        val domain = model.getDomainValues()("CAPSULE")
+        val trainingMetricObject = H2OBinomialMetrics.calculate(
+          model.transform(trainingDataset),
+          domain,
+          labelCol = "CAPSULE")
+        val validationMetricObject = H2OBinomialMetrics.calculate(
+          model.transform(validationDataset),
+          domain,
+          labelCol = "CAPSULE")
+
 
         assertMetrics(
           model,
-          trainingDataset,
-          validationDataset,
+          trainingMetricObject,
+          trainingMetricObject,
           trainingMetricsTolerance,
           validationMetricsTolerance)
       }
@@ -191,12 +200,24 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
           .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
           .setLabelCol("CAPSULE")
           .setWeightCol("WEIGHT")
+
         val model = algorithm.fit(trainingDataset)
+        val domain = model.getDomainValues()("CAPSULE")
+        val trainingMetricObject = H2OBinomialMetrics.calculate(
+          model.transform(trainingDataset),
+          domain,
+          labelCol = "CAPSULE",
+          weightColOption = Some("WEIGHT"))
+        val validationMetricObject = H2OBinomialMetrics.calculate(
+          model.transform(validationDataset),
+          domain,
+          labelCol = "CAPSULE",
+          weightColOption = Some("WEIGHT"))
 
         assertMetrics(
           model,
-          trainingDataset,
-          validationDataset,
+          trainingMetricObject,
+          validationMetricObject,
           trainingMetricsTolerance,
           validationMetricsTolerance)
       }
@@ -216,9 +237,26 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
           .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
           .setLabelCol("CAPSULE")
           .setOffsetCol("ID")
-        val model = algorithm.fit(trainingDataset)
 
-        assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance, validationMetricsTolerance)
+        val model = algorithm.fit(trainingDataset)
+        val domain = model.getDomainValues()("CAPSULE")
+        val trainingMetricObject = H2OBinomialMetrics.calculate(
+          model.transform(trainingDataset),
+          domain,
+          labelCol = "CAPSULE",
+          offsetColOption = Some("ID"))
+        val validationMetricObject = H2OBinomialMetrics.calculate(
+          model.transform(validationDataset),
+          domain,
+          labelCol = "CAPSULE",
+          offsetColOption = Some("ID"))
+
+        assertMetrics(
+          model,
+          trainingMetricObject,
+          validationMetricObject,
+          trainingMetricsTolerance,
+          validationMetricsTolerance)
       }
     }
   }

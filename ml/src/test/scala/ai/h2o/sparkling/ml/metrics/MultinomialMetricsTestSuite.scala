@@ -60,19 +60,18 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
 
   private def assertMetrics(
       model: H2OMOJOModel,
-      trainingDataset: DataFrame,
-      validationDataset: DataFrame,
+      trainingMetricObject: H2OMultinomialMetrics,
+      validationMetricObject: H2OMultinomialMetrics,
       trainingMetricsTolerance: Double = 0.0,
       validationMetricsTolerance: Double = 0.0): Unit = {
     MetricsAssertions.assertEssentialMetrics(
       model,
-      trainingDataset,
-      validationDataset,
+      trainingMetricObject,
+      validationMetricObject,
       trainingMetricsTolerance,
       validationMetricsTolerance)
 
     if (trainingMetricsTolerance < Double.PositiveInfinity) {
-      val trainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OMultinomialMetrics]
       val expectedTrainingMetricObject = model.getTrainingMetricsObject().asInstanceOf[H2OMultinomialMetrics]
       TestUtils.assertDataFramesAreEqual(
         trainingMetricObject.getMultinomialAUCTable(),
@@ -95,7 +94,6 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
     }
 
     if (validationMetricsTolerance < Double.PositiveInfinity) {
-      val validationMetricObject = model.getMetricsObject(validationDataset).asInstanceOf[H2OMultinomialMetrics]
       val expectedValidationMetricObject = model.getValidationMetricsObject().asInstanceOf[H2OMultinomialMetrics]
       TestUtils.assertDataFramesAreEqual(
         validationMetricObject.getMultinomialAUCTable(),
@@ -168,12 +166,22 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
           .setColumnsToCategorical("class")
           .set(algorithm.getParam("aucType"), "MACRO_OVR")
           .setLabelCol("class")
+
         val model = algorithm.fit(trainingDataset)
+        val domain = model.getDomainValues()("class")
+        val trainingMetricObject = H2OMultinomialMetrics.calculate(
+          model.transform(trainingDataset),
+          domain,
+          labelCol = "class")
+        val validationMetricObject = H2OMultinomialMetrics.calculate(
+          model.transform(validationDataset),
+          domain,
+          labelCol = "class")
 
         assertMetrics(
           model,
-          trainingDataset,
-          validationDataset,
+          trainingMetricObject,
+          validationMetricObject,
           trainingMetricsTolerance,
           validationMetricsTolerance)
       }
@@ -188,12 +196,24 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
           .set(algorithm.getParam("aucType"), "MACRO_OVR")
           .setLabelCol("class")
           .setWeightCol("WEIGHT")
+
         val model = algorithm.fit(trainingDataset)
+        val domain = model.getDomainValues()("class")
+        val trainingMetricObject = H2OMultinomialMetrics.calculate(
+          model.transform(trainingDataset),
+          domain,
+          labelCol = "class",
+          weightColOption = Some("WEIGHT"))
+        val validationMetricObject = H2OMultinomialMetrics.calculate(
+          model.transform(validationDataset),
+          domain,
+          labelCol = "class",
+          weightColOption = Some("WEIGHT"))
 
         assertMetrics(
           model,
-          trainingDataset,
-          validationDataset,
+          trainingMetricObject,
+          validationMetricObject,
           trainingMetricsTolerance,
           validationMetricsTolerance)
       }
@@ -215,9 +235,26 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
           .set(algorithm.getParam("aucType"), "MACRO_OVR")
           .setLabelCol("class")
           .setOffsetCol("ID")
-        val model = algorithm.fit(trainingDataset)
 
-        assertMetrics(model, trainingDataset, validationDataset, trainingMetricsTolerance, validationMetricsTolerance)
+        val model = algorithm.fit(trainingDataset)
+        val domain = model.getDomainValues()("class")
+        val trainingMetricObject = H2OMultinomialMetrics.calculate(
+          model.transform(trainingDataset),
+          domain,
+          labelCol = "class",
+          offsetColOption = Some("ID"))
+        val validationMetricObject = H2OMultinomialMetrics.calculate(
+          model.transform(validationDataset),
+          domain,
+          labelCol = "class",
+          offsetColOption = Some("ID"))
+
+        assertMetrics(
+          model,
+          trainingMetricObject,
+          validationMetricObject,
+          trainingMetricsTolerance,
+          validationMetricsTolerance)
       }
     }
   }

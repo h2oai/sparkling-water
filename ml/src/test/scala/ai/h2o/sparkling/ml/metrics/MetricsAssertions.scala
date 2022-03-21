@@ -25,7 +25,8 @@ object MetricsAssertions extends Matchers {
   def assertMetricsObjectAgainstMetricsMap(
       metricsObject: H2OMetrics,
       metrics: Map[String, Double],
-      ignoredGetters: Set[String] = Set("getCustomMetricValue")): Unit = {
+      ignoredGetters: Set[String] = Set("getCustomMetricValue"),
+      tolerance: Double = 0.0): Unit = {
     for (getter <- metricsObject.getClass.getMethods
          if getter.getName.startsWith("get")
          if !ignoredGetters.contains("getCustomMetricValue")
@@ -37,8 +38,10 @@ object MetricsAssertions extends Matchers {
       val metricValue = metrics.get(metricName).get
       if (metricValue.isNaN) {
         assert(value.asInstanceOf[Double].isNaN)
+      } else if (tolerance > 0.0) {
+        metricValue shouldBe (asInstanceOf[Double] +- tolerance)
       } else {
-        value shouldEqual metricValue
+        metricValue shouldBe value
       }
     }
   }
@@ -69,30 +72,23 @@ object MetricsAssertions extends Matchers {
 
   def assertEssentialMetrics(
       model: H2OMOJOModel,
-      trainingDataset: DataFrame,
-      validationDataset: DataFrame,
+      trainingMetricsObject: H2OMetrics,
+      validationMetricsObject: H2OMetrics,
       trainingMetricsTolerance: Double = 0.0,
-      validationMetricsTolerance: Double = 0.0,
-      skipExtraMetrics: Boolean = false): Unit = {
-    val trainingMetrics = model.getMetrics(trainingDataset)
-    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
-    val validationMetrics = model.getMetrics(validationDataset)
-    val validationMetricsObject = model.getMetricsObject(validationDataset)
+      validationMetricsTolerance: Double = 0.0): Unit = {
     val expectedTrainingMetrics = model.getTrainingMetrics()
     val expectedValidationMetrics = model.getValidationMetrics()
-
-    MetricsAssertions.assertEqual(
-      expectedTrainingMetrics,
-      trainingMetrics,
-      tolerance = trainingMetricsTolerance,
-      skipExtraMetrics = skipExtraMetrics)
-    MetricsAssertions.assertEqual(
-      expectedValidationMetrics,
-      validationMetrics,
-      tolerance = validationMetricsTolerance,
-      skipExtraMetrics = skipExtraMetrics)
     val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
-    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(
+      trainingMetricsObject,
+      expectedTrainingMetrics,
+      ignoredGetters,
+      trainingMetricsTolerance)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(
+      validationMetricsObject,
+      expectedValidationMetrics,
+      ignoredGetters,
+      validationMetricsTolerance)
   }
 }
