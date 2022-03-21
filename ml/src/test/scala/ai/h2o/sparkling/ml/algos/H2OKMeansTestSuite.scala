@@ -18,18 +18,11 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import com.google.gson.GsonBuilder
-import hex.genmodel.MojoModel
-import hex.genmodel.easy.EasyPredictModelWrapper
-import hex.kmeans.KMeansModel
-import hex.schemas.KMeansModelV3
-import org.apache.commons.io.IOUtils
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import water.AutoBuffer
 
 @RunWith(classOf[JUnitRunner])
 class H2OKMeansTestSuite extends FunSuite with Matchers with SharedH2OTestContext {

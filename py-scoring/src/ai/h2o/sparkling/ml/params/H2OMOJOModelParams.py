@@ -33,21 +33,6 @@ class H2OMOJOModelParams:
     def getDomainValues(self):
         return H2OTypeConverters.scalaMapStringDictStringToStringDictString(self._java_obj.getDomainValues())
 
-    def getMetrics(self, dataFrame):
-        """
-        :return: A map of all metrics of the float type calculated on a data frame passed as a parameter.
-        """
-        self._transfer_params_to_java()
-        return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getMetrics(dataFrame._jdf))
-
-    def getMetricsObject(self, dataFrame):
-        """
-        :return: An object holding all metrics of the float type and also more complex performance information
-        calculated on a data frame passed as a parameter.
-        """
-        self._transfer_params_to_java()
-        return H2OMetricsFactory.fromJavaObject(self._java_obj.getMetricsObject(dataFrame._jdf))
-
     def getTrainingMetrics(self):
         """
         :return: A map of all metrics of the float type calculated on the training dataset.

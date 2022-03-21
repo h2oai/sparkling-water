@@ -49,15 +49,6 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", methods = list(
   getDomainValues = function() {
     invoke(.self$jmojo, "getDomainValues")
   },
-  getMetrics = function(sparkFrame) {
-    sparkFrame <- spark_dataframe(sparkFrame)
-    invoke(.self$jmojo, "getMetrics", sparkFrame)
-  },
-  getMetricsObject = function(sparkFrame) {
-    sparkFrame <- spark_dataframe(sparkFrame)
-    metrics <- invoke(.self$jmojo, "getMetricsObject", sparkFrame)
-    H2OMetricsFactory.fromJavaObject(metrics)
-  },
   getTrainingMetrics = function() {
     invoke(.self$jmojo, "getTrainingMetrics")
   },
