@@ -29,7 +29,7 @@ class MetricsTestSuite extends FunSuite with Matchers with SparkTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
-  var maybeSparkTesting:Option[String] = _
+  var maybeSparkTesting: Option[String] = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -113,7 +113,7 @@ class MetricsTestSuite extends FunSuite with Matchers with SparkTestContext {
     val m = new H2OBinomialMetrics()
 
     System.setProperty("spark.testing", "false")
-    m.setMetrics(jsonWithoutConfusionMatrix,"test")
+    m.setMetrics(jsonWithoutConfusionMatrix, "test")
 
     m.getConfusionMatrix() shouldBe null
   }
@@ -122,7 +122,7 @@ class MetricsTestSuite extends FunSuite with Matchers with SparkTestContext {
     val m = new H2OBinomialMetrics()
 
     System.setProperty("spark.testing", "true")
-    m.setMetrics(jsonWithoutConfusionMatrix,"test")
+    m.setMetrics(jsonWithoutConfusionMatrix, "test")
 
     m.getConfusionMatrix() shouldBe null
   }
@@ -131,19 +131,19 @@ class MetricsTestSuite extends FunSuite with Matchers with SparkTestContext {
     val m = new H2OBinomialMetrics()
 
     System.setProperty("spark.testing", "false")
-    m.setMetrics(jsonContainingConfusionMatrix,"test")
+    m.setMetrics(jsonContainingConfusionMatrix, "test")
 
     m.getConfusionMatrix() should not be null
-    m.getConfusionMatrix().count() should be (3)
+    m.getConfusionMatrix().count() shouldBe 3
   }
 
   test("Filling confusion matrix with real values in test (spark.testing == true)") {
     val m = new H2OBinomialMetrics()
 
     System.setProperty("spark.testing", "true")
-    m.setMetrics(jsonContainingConfusionMatrix,"test")
+    m.setMetrics(jsonContainingConfusionMatrix, "test")
 
     m.getConfusionMatrix() should not be null
-    m.getConfusionMatrix().count() should be (3)
+    m.getConfusionMatrix().count() shouldBe 3
   }
 }
