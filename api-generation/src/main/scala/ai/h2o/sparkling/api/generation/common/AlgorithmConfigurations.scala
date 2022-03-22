@@ -44,7 +44,16 @@ import hex.tree.isofor.IsolationForestModel.IsolationForestParameters
 import hex.tree.xgboost.XGBoostModel
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 
-trait AlgorithmConfigurations extends ConfigurationsBase {
+object AlgorithmConfigurations {
+
+  val defaultValuesOfCommonParameters = Map(
+    "convertUnknownCategoricalLevelsToNa" -> false,
+    "convertInvalidNumbersToNa" -> false,
+    "validationDataFrame" -> null,
+    "splitRatio" -> 1.0,
+    "columnsToCategorical" -> Array.empty[String],
+    "keepBinaryModels" -> false,
+    "dataFrameSerializer" -> "ai.h2o.sparkling.utils.JSONDataFrameSerializer")
 
   val defaultValuesOfAlgorithmCommonParameters = Map(
     "featuresCols" -> Array.empty[String],
@@ -55,7 +64,14 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
     "withLeafNodeAssignments" -> false,
     "withStageResults" -> false) ++ defaultValuesOfCommonParameters
 
-  override def parametersConfiguration: Seq[ParameterSubstitutionContext] = super.parametersConfiguration ++ {
+  val ignoredCols = ExplicitField("ignored_columns", "HasIgnoredCols", null, None, Some("HasIgnoredColsOnMOJO"))
+}
+
+class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
+
+  import AlgorithmConfigurations.ignoredCols
+
+  override def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
     val monotonicity = ExplicitField(
       "monotone_constraints",
       "HasMonotoneConstraints",
@@ -140,15 +156,11 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
         explicitDefaultValues,
         typeExceptions = Map.empty,
         defaultValueSource = DefaultValueSource.Field,
-        defaultValuesOfCommonParameters = defaultValuesOfAlgorithmCommonParameters,
+        defaultValuesOfCommonParameters = AlgorithmConfigurations.defaultValuesOfAlgorithmCommonParameters,
         generateParamTag = true)
   }
 
-  private def isUnsupervised(entityName: String): Boolean = {
-    Array("H2OKMeansParams", "H2OIsolationForestParams").contains(entityName)
-  }
-
-  override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = super.algorithmConfiguration ++ {
+  override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
 
     val withDistribution = "DistributionBasedH2OTrainFramePreparation"
     val withFamily = "FamilyBasedH2OTrainFramePreparation"
@@ -183,7 +195,7 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
         specificMetricsClass = metricsClass)
   }
 
-  def problemSpecificAlgorithmConfiguration: Seq[ProblemSpecificAlgorithmSubstitutionContext] = {
+  override def problemSpecificAlgorithmConfiguration: Seq[ProblemSpecificAlgorithmSubstitutionContext] = {
 
     val algorithms = Seq[(String, Seq[String])](
       ("H2OXGBoost", Seq("distribution")),
@@ -203,7 +215,7 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
         parametersToCheck)
   }
 
-  override def modelOutputConfiguration: Seq[ModelOutputSubstitutionContext] = super.modelOutputConfiguration ++ {
+  override def modelOutputConfiguration: Seq[ModelOutputSubstitutionContext] = {
     val modelOutputs = Seq[(String, Class[_])](
       ("H2OXGBoostModelOutputs", classOf[XGBoostModelOutputV3]),
       ("H2OGBMModelOutputs", classOf[GBMModelOutputV3]),

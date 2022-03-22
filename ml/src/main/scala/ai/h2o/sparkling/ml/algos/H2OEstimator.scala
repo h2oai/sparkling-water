@@ -1,6 +1,6 @@
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.H2OContext
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.utils.RestCommunication
 import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.ml.models.{H2OBinaryModel, H2OMOJOModel, H2OMOJOSettings}
@@ -32,6 +32,15 @@ abstract class H2OEstimator[P <: Model.Parameters: ClassTag]
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val (train, valid) = prepareDatasetForFitting(dataset)
     prepareH2OTrainFrameForFitting(train)
+
+    val mojoModel = trainH2OModel(train, valid)
+
+    deleteRegisteredH2OFrames()
+    mojoModel
+  }
+
+  private[sparkling] def trainH2OModel(train: H2OFrame, valid: Option[H2OFrame]): H2OMOJOModel = {
+
     val params = getH2OAlgorithmParams(train) ++
       Map("training_frame" -> train.frameId, "model_id" -> convertModelIdToKey(getModelId())) ++
       valid
@@ -51,7 +60,6 @@ abstract class H2OEstimator[P <: Model.Parameters: ClassTag]
     if (H2OContext.get().forall(_.getConf.isModelPrintAfterTrainingEnabled)) {
       println(result)
     }
-    deleteRegisteredH2OFrames()
     if (getKeepBinaryModels()) {
       val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
       binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId)))

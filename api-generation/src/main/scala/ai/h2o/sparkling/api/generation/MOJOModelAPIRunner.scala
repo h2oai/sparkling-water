@@ -19,12 +19,7 @@ package ai.h2o.sparkling.api.generation
 
 import ai.h2o.sparkling.api.generation.common._
 
-object MOJOModelAPIRunner
-  extends APIRunnerBase
-  with AutoMLConfiguration
-  with AlgorithmConfigurations
-  with FeatureEstimatorConfigurations
-  with MetricsConfigurations {
+object MOJOModelAPIRunner extends APIRunnerBase with MetricsConfigurations {
 
   private val mojoTemplates = Map("scala" -> scala.MOJOModelTemplate, "py" -> python.MOJOModelTemplate)
   private val mojoFactoryTemplates =
@@ -38,24 +33,35 @@ object MOJOModelAPIRunner
     val languageExtension = args(0)
     val destinationDir = args(1)
 
-    if (languageExtension != "R") {
-      val mojoConfiguration = algorithmConfiguration.map { algorithmContext =>
-        algorithmContext.copy(
-          namespace = "ai.h2o.sparkling.ml.models",
-          entityName = algorithmContext.entityName + "MOJOModel")
-      }
+    val configurationSources: Seq[ConfigurationSource] =
+      Seq(new AlgorithmConfigurations(), new FeatureEstimatorConfigurations(), new StackedEnsembleConfiguration())
 
-      for (((mojoContext, parameterContext), modelOutputContext) <- mojoConfiguration
-             .zip(parametersConfiguration)
-             .zip(modelOutputConfiguration)) {
-        val content = mojoTemplates(languageExtension)(mojoContext, parameterContext, modelOutputContext)
-        writeResultToFile(content, mojoContext, languageExtension, destinationDir)
-      }
+    var allMojos: Seq[AlgorithmSubstitutionContext] = Seq.empty
 
-      val entityName = if (languageExtension == "py") "H2OMOJOModel" else "H2OMOJOModelFactory"
-      val mojoFactoryContext = mojoConfiguration.head.copy(entityName = entityName)
-      val content = mojoFactoryTemplates(languageExtension)(mojoConfiguration)
-      writeResultToFile(content, mojoFactoryContext, languageExtension, destinationDir)
+    for (source <- configurationSources) {
+
+      if (languageExtension != "R") {
+        val mojoConfiguration = source.algorithmConfiguration.map { algorithmContext =>
+          algorithmContext.copy(
+            namespace = "ai.h2o.sparkling.ml.models",
+            entityName = algorithmContext.entityName + "MOJOModel")
+        }
+
+        allMojos ++= mojoConfiguration
+
+        for (((mojoContext, parameterContext), modelOutputContext) <- mojoConfiguration
+               .zip(source.parametersConfiguration)
+               .zip(source.modelOutputConfiguration)) {
+          val content = mojoTemplates(languageExtension)(mojoContext, parameterContext, modelOutputContext)
+          writeResultToFile(content, mojoContext, languageExtension, destinationDir)
+        }
+
+        val entityName = if (languageExtension == "py") "H2OMOJOModel" else "H2OMOJOModelFactory"
+
+        val mojoFactoryContext = allMojos.head.copy(entityName = entityName)
+        val content = mojoFactoryTemplates(languageExtension)(allMojos)
+        writeResultToFile(content, mojoFactoryContext, languageExtension, destinationDir)
+      }
     }
 
     for (metricsContext <- metricsConfiguration) {

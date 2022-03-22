@@ -31,7 +31,20 @@ class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OAlgorithm
     this(parent, name, doc, _ => true)
 
   override def jsonEncode(value: H2OAlgorithm[_ <: Model.Parameters]): String = {
-    val encoded = if (value == null) {
+    val encoded = AlgoParam.jsonEncode(value)
+    compact(render(encoded))
+  }
+
+  override def jsonDecode(json: String): H2OAlgorithm[_ <: Model.Parameters] = {
+    val parsed = parse(json)
+    AlgoParam.jsonDecode(parsed)
+  }
+}
+
+object AlgoParam {
+
+  def jsonEncode(value: H2OAlgorithm[_ <: Model.Parameters]): JValue = {
+    if (value == null) {
       JNull
     } else {
       val algoClassName = value.getClass.getName
@@ -44,12 +57,9 @@ class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OAlgorithm
 
       ("class" -> algoClassName) ~ ("uid" -> uid) ~ ("paramMap" -> jsonParams)
     }
-    compact(render(encoded))
   }
 
-  override def jsonDecode(json: String): H2OAlgorithm[_ <: Model.Parameters] = {
-    val parsed = parse(json)
-
+  def jsonDecode(parsed: JValue): H2OAlgorithm[_ <: Model.Parameters] = {
     if (parsed == JNull) {
       null
     } else {
