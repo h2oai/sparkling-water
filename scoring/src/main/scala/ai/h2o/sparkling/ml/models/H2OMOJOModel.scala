@@ -576,7 +576,10 @@ trait H2OMOJOModelUtils extends Logging {
     }
   }
 
-  protected def nestedJsonFieldToDataFrame(outputJson: JsonObject, parentFieldName: String, fieldName: String): DataFrame = {
+  protected def nestedJsonFieldToDataFrame(
+      outputJson: JsonObject,
+      parentFieldName: String,
+      fieldName: String): DataFrame = {
     if (outputJson == null || !outputJson.has(parentFieldName) || outputJson.get(parentFieldName).isJsonNull) {
       null
     } else {
