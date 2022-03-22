@@ -21,7 +21,14 @@ import ai.h2o.sparkling.ml.metrics.H2OBinomialMetrics.getMetricGson
 import hex.DistributionFactory
 import hex.ModelMetricsRegression.IndependentMetricBuilderRegression
 import hex.genmodel.utils.DistributionFamily
+import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.DataFrame
+
+@MetricsDescription(description = "The class makes available all metrics that shared across all algorithms supporting regression.")
+class H2ORegressionMetrics(override val uid: String) extends H2ORegressionMetricsBase(uid) {
+
+  def this() = this(Identifiable.randomUID("H2ORegressionMetrics"))
+}
 
 object H2ORegressionMetrics {
 
@@ -34,7 +41,7 @@ object H2ORegressionMetrics {
       distributionFamily: String = "AUTO"): H2ORegressionMetrics = {
     val domainFamilyEnum = DistributionFamily.valueOf(distributionFamily)
     val distribution= DistributionFactory.getDistribution(domainFamilyEnum)
-    val getMetricBuilder = () => new IndependentMetricBuilderRegression[_](distribution)
+    val getMetricBuilder = () => new IndependentMetricBuilderRegression(distribution)
 
     val gson = getMetricGson(
       getMetricBuilder,

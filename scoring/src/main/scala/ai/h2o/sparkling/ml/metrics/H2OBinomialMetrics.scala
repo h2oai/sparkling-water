@@ -19,7 +19,14 @@ package ai.h2o.sparkling.ml.metrics
 
 import hex.ModelMetricsBinomial.IndependentMetricBuilderBinomial
 import hex.genmodel.utils.DistributionFamily
+import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.DataFrame
+
+@MetricsDescription(description = "The class makes available all metrics that shared across all algorithms supporting binomial classification.")
+class H2OBinomialMetrics(override val uid: String) extends H2OBinomialMetricsBase(uid) {
+
+  def this() = this(Identifiable.randomUID("H2OBinomialMetrics"))
+}
 
 object H2OBinomialMetrics extends MetricCalculation {
 
@@ -32,7 +39,7 @@ object H2OBinomialMetrics extends MetricCalculation {
       offsetColOption: Option[String] = None,
       distributionFamily: String = "AUTO"): H2OBinomialMetrics = {
     val domainFamilyEnum = DistributionFamily.valueOf(distributionFamily)
-    val getMetricBuilder = () => new IndependentMetricBuilderBinomial[_](domain, domainFamilyEnum)
+    val getMetricBuilder = () => new IndependentMetricBuilderBinomial(domain, domainFamilyEnum)
 
     val gson = getMetricGson(
       getMetricBuilder,

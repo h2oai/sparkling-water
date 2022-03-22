@@ -20,7 +20,14 @@ package ai.h2o.sparkling.ml.metrics
 import ai.h2o.sparkling.ml.metrics.H2OBinomialMetrics.getMetricGson
 import hex.ModelMetricsMultinomial.IndependentMetricBuilderMultinomial
 import hex.MultinomialAucType
+import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.DataFrame
+
+@MetricsDescription(description = "The class makes available all metrics that shared across all algorithms supporting multinomial classification.")
+class H2OMultinomialMetrics(override val uid: String) extends H2OMultinomialMetricsBase(uid) {
+
+  def this() = this(Identifiable.randomUID("H2OBinomialMetrics"))
+}
 
 object H2OMultinomialMetrics {
   def calculate(
@@ -40,7 +47,7 @@ object H2OMultinomialMetrics {
       case None => null
     }
     val getMetricBuilder =
-      () => new IndependentMetricBuilderMultinomial[_](nclasses, domain, aucTypeEnum, priorDistribution)
+      () => new IndependentMetricBuilderMultinomial(nclasses, domain, aucTypeEnum, priorDistribution)
 
     val gson = getMetricGson(
       getMetricBuilder,

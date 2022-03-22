@@ -30,7 +30,7 @@ trait MetricsConfigurations {
         "The class makes available all metrics that shared across all algorithms, and ML problems." +
           " (classification, regression, dimension reduction)."),
       ModelMetricsSubstitutionContext(
-        "H2OBinomialMetrics",
+        "H2OBinomialMetricsBase",
         classOf[ModelMetricsBinomialV3[_, _]],
         Seq("H2OCommonMetrics"),
         "The class makes available all metrics that shared across all algorithms supporting binomial classification."),
@@ -40,7 +40,7 @@ trait MetricsConfigurations {
         Seq("H2OBinomialMetrics", "H2OGLMMetrics"),
         "The class makes available all binomial metrics supported by GLM algorithm."),
       ModelMetricsSubstitutionContext(
-        "H2ORegressionMetrics",
+        "H2ORegressionMetricsBase",
         classOf[ModelMetricsRegressionV3[_, _]],
         Seq("H2OCommonMetrics"),
         "The class makes available all metrics that shared across all algorithms supporting regression."),
@@ -55,7 +55,7 @@ trait MetricsConfigurations {
         Seq("H2ORegressionMetrics"),
         "The class makes available all regression metrics supported by CoxPH algorithm."),
       ModelMetricsSubstitutionContext(
-        "H2OMultinomialMetrics",
+        "H2OMultinomialMetricsBase",
         classOf[ModelMetricsMultinomialV3[_, _]],
         Seq("H2OCommonMetrics"),
         "The class makes available all metrics that shared across all algorithms supporting multinomial classification."),
