@@ -104,12 +104,10 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
           .setLabelCol("AGE")
 
         val model = algorithm.fit(trainingDataset)
-        val trainingMetrics = H2ORegressionMetrics.calculate(
-          dataFrame = model.transform(trainingDataset),
-          labelCol = "AGE")
-        val validationMetrics = H2ORegressionMetrics.calculate(
-          dataFrame = model.transform(validationDataset),
-          labelCol = "AGE")
+        val trainingMetrics =
+          H2ORegressionMetrics.calculate(dataFrame = model.transform(trainingDataset), labelCol = "AGE")
+        val validationMetrics =
+          H2ORegressionMetrics.calculate(dataFrame = model.transform(validationDataset), labelCol = "AGE")
 
         MetricsAssertions.assertEssentialMetrics(
           model,

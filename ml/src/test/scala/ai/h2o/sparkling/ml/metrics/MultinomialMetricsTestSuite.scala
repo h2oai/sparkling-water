@@ -140,7 +140,6 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       .setLabelCol("class")
     val model = algo.fit(dataset)
     assertMetrics[H2OMultinomialGLMMetrics](model)
-
     model.write.overwrite().save("ml/build/glm_multinomial_model_metrics")
     val loadedModel = H2OGLMMOJOModel.load("ml/build/glm_multinomial_model_metrics")
     assertMetrics[H2OMultinomialGLMMetrics](loadedModel)
@@ -169,14 +168,10 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
 
         val model = algorithm.fit(trainingDataset)
         val domain = model.getDomainValues()("class")
-        val trainingMetricObject = H2OMultinomialMetrics.calculate(
-          model.transform(trainingDataset),
-          domain,
-          labelCol = "class")
-        val validationMetricObject = H2OMultinomialMetrics.calculate(
-          model.transform(validationDataset),
-          domain,
-          labelCol = "class")
+        val trainingMetricObject =
+          H2OMultinomialMetrics.calculate(model.transform(trainingDataset), domain, labelCol = "class")
+        val validationMetricObject =
+          H2OMultinomialMetrics.calculate(model.transform(validationDataset), domain, labelCol = "class")
 
         assertMetrics(
           model,

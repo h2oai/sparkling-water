@@ -17,28 +17,16 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import ai.h2o.sparkling.ml.models.RowConverter
-import ai.h2o.sparkling.ml.utils.{DatasetShape, SchemaUtils}
 import com.google.gson.{GsonBuilder, JsonObject}
 import hex._
 import hex.ModelMetrics.IndependentMetricBuilder
-import org.apache.spark.{ExposeUtils, ml, mllib}
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, Row}
 import water.api.{Schema, SchemaServer}
 import water.api.schemas3._
-import org.apache.spark.sql.types.{ArrayType, DoubleType, FloatType, StringType, StructType}
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions.{col, lit}
 
 trait MetricCalculation {
-
-  private[sparkling] def getFlattenDataFrame(dataFrame: DataFrame): DataFrame = {
-    val flatDataFrame = DatasetShape.getDatasetShape(dataFrame.schema) match {
-      case DatasetShape.Flat => dataFrame
-      case DatasetShape.StructsOnly | DatasetShape.Nested =>
-        SchemaUtils.appendFlattenedStructsToDataFrame(dataFrame, RowConverter.temporaryColumnPrefix)
-    }
-    flatDataFrame
-  }
 
   private[sparkling] def validateDataFrameForMetricCalculation(
       flatDataFrame: DataFrame,
@@ -47,8 +35,7 @@ trait MetricCalculation {
       weightColOption: Option[String]): Unit = {
 
     if (labelCol != null && !flatDataFrame.columns.contains(labelCol)) {
-      throw new IllegalArgumentException(
-        s"DataFrame passed as a parameter does not contain label column '$labelCol'.")
+      throw new IllegalArgumentException(s"DataFrame passed as a parameter does not contain label column '$labelCol'.")
     }
 
     if (offsetColOption.isDefined) {
@@ -85,7 +72,11 @@ trait MetricCalculation {
     schema
   }
 
-  private[sparkling] def getMetricGson(
+  protected def getPredictionValues(dataType: DataType, domain: Array[String], row: Row): Array[Double]
+
+  protected def getActualValue(dataType: DataType, domain: Array[String], row: Row): Double
+
+  protected def getMetricGson(
       createMetricBuilder: () => IndependentMetricBuilder[_],
       dataFrame: DataFrame,
       predictionCol: String,
@@ -93,15 +84,13 @@ trait MetricCalculation {
       offsetColOption: Option[String],
       weightColOption: Option[String],
       domain: Array[String]): JsonObject = {
-    val basicDF = dataFrame.select(col(predictionCol) as "prediction", col(labelCol) as "label")
-    val withWeightColDF = weightColOption match {
-      case Some(weightCol) => basicDF.withColumn("weight", col(weightCol))
-      case None => basicDF.withColumn("weight", lit(0.0d))
-    }
-    val flatDF = weightColOption match {
-      case Some(offsetCol) => withWeightColDF.withColumn("offset", col(offsetCol))
-      case None => withWeightColDF.withColumn("offset", lit(1.0d))
-    }
+    val flatDF = dataFrame.select(col(predictionCol) as "prediction", col(labelCol) as "label", weightColOption match {
+      case Some(weightCol) => col(weightCol) cast DoubleType as "weight"
+      case None => lit(1.0d) as "weight"
+    }, offsetColOption match {
+      case Some(offsetCol) => col(offsetCol) cast DoubleType as "offset"
+      case None => lit(0.0d) as "offset"
+    })
     val predictionType = flatDF.schema.fields(0).dataType
     val actualType = flatDF.schema.fields(1).dataType
     val filledMetricsBuilder = flatDF.rdd
@@ -109,25 +98,8 @@ trait MetricCalculation {
         val metricBuilder = createMetricBuilder()
         while (rows.hasNext) {
           val row = rows.next()
-          val prediction = predictionType match {
-            case StructType(fields) if fields.forall(_.dataType == DoubleType) =>
-              row.getStruct(0).toSeq.map(_.asInstanceOf[Double]).toArray
-            case StructType(fields) if fields.forall(_.dataType == FloatType) =>
-              row.getStruct(0).toSeq.map(_.asInstanceOf[Float].toDouble).toArray
-            case ArrayType(DoubleType, _) => row.getSeq[Double](0).toArray
-            case ArrayType(FloatType, _) => row.getSeq[Float](0).map(_.toDouble).toArray
-            case DoubleType => Array(row.getDouble(0))
-            case FloatType => Array(row.getFloat(0).toDouble)
-            case v if ExposeUtils.isMLVectorUDT(v) => row.getAs[ml.linalg.Vector](0).toDense.values
-            case _: mllib.linalg.VectorUDT => row.getAs[mllib.linalg.Vector](0).toDense.values
-          }
-          val actualValue = actualType match {
-            case StringType =>
-              val label = row.getString(1)
-              domain.indexOf(label).toDouble
-            case DoubleType => row.getDouble(1)
-            case FloatType => row.getFloat(1)
-          }
+          val prediction = getPredictionValues(predictionType, domain, row)
+          val actualValue: Double = getActualValue(actualType, domain, row)
           val weight = row.getDouble(2)
           val offset = row.getDouble(3)
           metricBuilder.perRow(prediction, Array(actualValue), weight, offset)
@@ -136,6 +108,7 @@ trait MetricCalculation {
       }
       .reduce((f, s) => { f.reduce(s); f })
 
+    filledMetricsBuilder.postGlobal()
     val metrics = filledMetricsBuilder.makeModelMetrics()
     val schema = metricsToSchema(metrics)
     val json = schema.toJsonString

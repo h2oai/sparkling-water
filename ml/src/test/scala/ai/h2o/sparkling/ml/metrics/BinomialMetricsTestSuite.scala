@@ -21,7 +21,7 @@ import ai.h2o.sparkling.ml.algos._
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.functions.rand
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -84,10 +84,14 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       val expectedTrainingMetricObject = model.getTrainingMetricsObject().asInstanceOf[H2OBinomialMetrics]
 
       // Confusion matrix is not correctly calculated in H2O-3 runtime.
-      val trainingConfusionMatrix = trainingMetricObject.getConfusionMatrix().count()
-      val expectedTrainingConfusionMatrix = expectedTrainingMetricObject.getConfusionMatrix().count()
-      trainingConfusionMatrix shouldBe >(0L)
-      trainingConfusionMatrix shouldEqual expectedTrainingConfusionMatrix
+      val trainingConfusionMatrix = trainingMetricObject.getConfusionMatrix()
+      val expectedTrainingConfusionMatrix = expectedTrainingMetricObject.getConfusionMatrix()
+      if (expectedTrainingConfusionMatrix == null) {
+        trainingConfusionMatrix should be(null)
+      } else {
+        trainingConfusionMatrix.count() shouldBe >(0L)
+        trainingConfusionMatrix.count() shouldEqual expectedTrainingConfusionMatrix.count()
+      }
 
       val trainingMetricScores = trainingMetricObject.getThresholdsAndMetricScores().count()
       val expectedTrainingMetricScores = expectedTrainingMetricObject.getThresholdsAndMetricScores().count()
@@ -105,10 +109,14 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
       val expectedValidationMetricObject = model.getValidationMetricsObject().asInstanceOf[H2OBinomialMetrics]
 
       // Confusion matrix is not correctly calculated in H2O-3 runtime.
-      val validationConfusionMatrix = validationMetricObject.getConfusionMatrix().count()
-      val expectedValidationConfusionMatrix = expectedValidationMetricObject.getConfusionMatrix().count()
-      validationConfusionMatrix shouldBe >(0L)
-      validationConfusionMatrix shouldEqual expectedValidationConfusionMatrix
+      val validationConfusionMatrix = validationMetricObject.getConfusionMatrix()
+      val expectedValidationConfusionMatrix = expectedValidationMetricObject.getConfusionMatrix()
+      if (expectedValidationConfusionMatrix == null) {
+        validationConfusionMatrix should be(null)
+      } else {
+        validationConfusionMatrix.count() shouldBe >(0L)
+        validationConfusionMatrix.count() shouldEqual expectedValidationConfusionMatrix.count()
+      }
 
       val validationMetricScores = validationMetricObject.getThresholdsAndMetricScores().count()
       val expectedValidationMetricScores = expectedValidationMetricObject.getThresholdsAndMetricScores().count()
@@ -173,21 +181,17 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
           .setLabelCol("CAPSULE")
 
         val model = algorithm.fit(trainingDataset)
-        val domain = model.getDomainValues()("CAPSULE")
-        val trainingMetricObject = H2OBinomialMetrics.calculate(
-          model.transform(trainingDataset),
-          domain,
-          labelCol = "CAPSULE")
-        val validationMetricObject = H2OBinomialMetrics.calculate(
-          model.transform(validationDataset),
-          domain,
-          labelCol = "CAPSULE")
 
+        val domain = model.getDomainValues()("CAPSULE")
+        val trainingMetricObject =
+          H2OBinomialMetrics.calculate(model.transform(trainingDataset), domain, labelCol = "CAPSULE")
+        val validationMetricObject =
+          H2OBinomialMetrics.calculate(model.transform(validationDataset), domain, labelCol = "CAPSULE")
 
         assertMetrics(
           model,
           trainingMetricObject,
-          trainingMetricObject,
+          validationMetricObject,
           trainingMetricsTolerance,
           validationMetricsTolerance)
       }

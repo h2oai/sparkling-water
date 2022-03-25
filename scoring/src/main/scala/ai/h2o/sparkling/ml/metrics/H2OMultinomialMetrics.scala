@@ -17,23 +17,27 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import ai.h2o.sparkling.ml.metrics.H2OBinomialMetrics.getMetricGson
 import hex.ModelMetricsMultinomial.IndependentMetricBuilderMultinomial
 import hex.MultinomialAucType
+import org.apache.spark.{ExposeUtils, ml, mllib}
 import org.apache.spark.ml.util.Identifiable
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.types.{ArrayType, DataType, DoubleType, FloatType, StringType, StructType}
 
-@MetricsDescription(description = "The class makes available all metrics that shared across all algorithms supporting multinomial classification.")
+@MetricsDescription(
+  description =
+    "The class makes available all metrics that shared across all algorithms supporting multinomial classification.")
 class H2OMultinomialMetrics(override val uid: String) extends H2OMultinomialMetricsBase(uid) {
 
   def this() = this(Identifiable.randomUID("H2OBinomialMetrics"))
 }
 
-object H2OMultinomialMetrics {
+object H2OMultinomialMetrics extends MetricCalculation {
   def calculate(
       dataFrame: DataFrame,
       domain: Array[String],
-      predictionProbabilitiesCol: String = "detailed_prediction.probabilities",
+      predictionProbabilitiesCol: String = "detailed_prediction",
       labelCol: String = "label",
       weightColOption: Option[String] = None,
       offsetColOption: Option[String] = None,
@@ -48,10 +52,11 @@ object H2OMultinomialMetrics {
     }
     val getMetricBuilder =
       () => new IndependentMetricBuilderMultinomial(nclasses, domain, aucTypeEnum, priorDistribution)
+    val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast StringType)
 
     val gson = getMetricGson(
       getMetricBuilder,
-      dataFrame,
+      castedLabelDF,
       predictionProbabilitiesCol,
       labelCol,
       offsetColOption,
@@ -80,5 +85,28 @@ object H2OMultinomialMetrics {
       Option(offsetCol),
       Option(priorDistribution),
       aucType)
+  }
+
+  override protected def getPredictionValues(dataType: DataType, domain: Array[String], row: Row): Array[Double] = {
+    dataType match {
+      case StructType(fields)
+          if fields(0).dataType == StringType && fields(1).dataType.isInstanceOf[StructType] &&
+            fields(1).dataType.asInstanceOf[StructType].fields.forall(_.dataType == DoubleType) =>
+        val predictionStructure = row.getStruct(0)
+        val prediction = predictionStructure.getString(0)
+        val index = domain.indexOf(prediction).toDouble
+        val probabilities = predictionStructure.getStruct(1)
+
+        Array(index) ++ probabilities.toSeq.map(_.asInstanceOf[Double])
+      case ArrayType(DoubleType, _) => row.getSeq[Double](0).toArray
+      case ArrayType(FloatType, _) => row.getSeq[Float](0).map(_.toDouble).toArray
+      case v if ExposeUtils.isMLVectorUDT(v) => row.getAs[ml.linalg.Vector](0).toDense.values
+      case _: mllib.linalg.VectorUDT => row.getAs[mllib.linalg.Vector](0).toDense.values
+    }
+  }
+
+  override protected def getActualValue(dataType: DataType, domain: Array[String], row: Row): Double = {
+    val label = row.getString(1)
+    domain.indexOf(label).toDouble
   }
 }

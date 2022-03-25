@@ -65,8 +65,8 @@ class NoRuntimeMetricsTestSuite extends FunSuite with Matchers with SparkTestCon
       this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
       "multi_model_iris.mojo")
 
-    val domain = mojo.getDomainValues()("capsule")
-    val metrics = H2OMultinomialMetrics.calculate(mojo.transform(prostateDataFrame), domain, labelCol = "capsule")
+    val domain = mojo.getDomainValues()("class")
+    val metrics = H2OMultinomialMetrics.calculate(mojo.transform(irisDataFrame), domain, labelCol = "class")
     metrics shouldNot be(null)
   }
 }
