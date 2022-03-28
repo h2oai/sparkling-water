@@ -172,8 +172,8 @@ object Runner extends RestApiUtils {
       delete(endpoint, "/3/DKV", hc.getConf)
     }
     outputDir.mkdirs()
-    val sparkMaster = spark.conf.get("spark.master")
-    val outputFile = new File(outputDir, s"${sparkMaster}_${hc.getConf.backendClusterMode}_${batch.name}.txt")
+    val sparkMasterFilePrefix = spark.conf.get("spark.master").split("://").head
+    val outputFile = new File(outputDir, s"${sparkMasterFilePrefix}_${hc.getConf.backendClusterMode}_${batch.name}.txt")
     val outputStream = new FileOutputStream(outputFile)
     try {
       batch.benchmarks.foreach(_.exportMeasurements(outputStream))

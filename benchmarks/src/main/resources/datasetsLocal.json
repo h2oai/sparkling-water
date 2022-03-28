@@ -1,0 +1,20 @@
+[
+  {
+    "name" : "airlines-1m",
+    "url" : "file:///tmp/sparkling-water/benchmarks/build/data/airlines-1m.csv",
+    "isVirtual" : false,
+    "labelCol" : "Distance"
+  },
+  {
+    "name" : "airlines-10m",
+    "url" : "file:///tmp/sparkling-water/benchmarks/build/data/airlines-10m.csv",
+    "isVirtual" : false,
+    "labelCol" : "Distance"
+  },
+  {
+    "name" : "springleaf",
+    "url" : "file:///tmp/sparkling-water/benchmarks/build/data/springleaf_train_4.csv",
+    "isVirtual" : false,
+    "labelCol" : "target"
+  }
+]

@@ -18,11 +18,12 @@ dependencies {
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 }
 
-task cleanTerraform(type: Delete) {
+task cleanBenchmarkFiles(type: Delete) {
   delete "build/terraform"
+  delete "build/local"
 }
 
-task copyTerraform(dependsOn: cleanTerraform) {
+task copyBenchmarkFiles(dependsOn: cleanBenchmarkFiles) {
   doLast {
     copy {
       from 'src/main/terraform'
@@ -34,27 +35,46 @@ task copyTerraform(dependsOn: cleanTerraform) {
       include "emr_security/*.tf"
       into "build/terraform/aws/modules"
     }
+    copy {
+      from 'src/main/local'
+      include "**/*"
+      into "build/local"
+    }
+    copy {
+      from 'data'
+      include "**/*.csv"
+      into "build/local/data"
+    }
   }
 }
 
-task substituteTerraform(dependsOn: copyTerraform) {
+task substituteScripts(dependsOn: copyBenchmarkFiles) {
   doLast {
-    def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
-    def tfScripts = [
+    String baseDir = project.buildDir.toString()
+    String tfBaseDir = "${baseDir}/terraform/aws/"
+    String localBaseDir = "${baseDir}/local/"
+    List<String> scripts = [
       "${tfBaseDir}/variables.tf",
       "${tfBaseDir}/modules/emr_benchmarks_deployment/variables.tf",
-      "${tfBaseDir}/modules/emr_benchmarks_deployment/main.tf"
+      "${tfBaseDir}/modules/emr_benchmarks_deployment/main.tf",
+      "${localBaseDir}/variables.sh",
+      "${localBaseDir}/docker-compose.yml"
     ]
-    tfScripts.each { path ->
-      def contents = file(path).getText('UTF-8')
+    scripts.each { path ->
+      String contents = file(path).getText('UTF-8')
+      File packageFile = configurations.sparklingWaterAssemblyJar.singleFile
+      String benchmarksFileName = "sparkling-water-benchmarks_$scalaBaseVersion-${version}.jar"
       contents = contents
-        .replaceAll("SUBST_PACKAGE_FILE", "${configurations.sparklingWaterAssemblyJar.singleFile}")
-        .replaceAll("SUBST_BENCHMARKS_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-${version}.jar")
+        .replaceAll("SUBST_PACKAGE_FILE_NAME", "${packageFile.getName()}")
+        .replaceAll("SUBST_PACKAGE_FILE", "${packageFile}")
+        .replaceAll("SUBST_BENCHMARKS_FILE_NAME", benchmarksFileName)
+        .replaceAll("SUBST_BENCHMARKS_FILE", "$buildDir/libs/$benchmarksFileName")
         .replaceAll("SUBST_H2O_VERSION_NAME", h2oMajorName)
         .replaceAll("SUBST_H2O_VERSION", h2oVersion)
         .replaceAll("SUBST_H2O_BUILD", h2oBuild)
         .replaceAll("SUBST_SW_VERSION", version.toString())
         .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
+        .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
         .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
 
       file(path).write(contents, 'UTF-8')
@@ -66,7 +86,7 @@ task cleanOutput(type: Delete) {
   delete "output"
 }
 
-task runBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
+task runBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteScripts, cleanOutput]) {
   doLast {
     exec {
       def accessKey = project.property("aws_access_key")
@@ -87,12 +107,12 @@ task runBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substitute
       }
       environment("datasets", "datasets.json")
 
-      commandLine "./run_benchmarks.sh"
+      commandLine "./run_benchmarks_aws.sh"
     }
   }
 }
 
-task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
+task runBigDataSparkToH2OConversionBenchmarksOnAws(dependsOn: [":sparkling-water-assembly:shadowJar", substituteScripts, cleanOutput]) {
   doLast {
     exec {
       def accessKey = project.property("aws_access_key")
@@ -121,12 +141,12 @@ task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [":sparkling-water-asse
       environment("run_yarn_external", "true")
       environment("run_local_internal", "false")
 
-      commandLine "./run_benchmarks.sh"
+      commandLine "./run_benchmarks_aws.sh"
     }
   }
 }
 
-task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
+task runBigDataH2OtoSparkConversionBenchmarksOnAws(dependsOn: [":sparkling-water-assembly:shadowJar", substituteScripts, cleanOutput]) {
   doLast {
     exec {
       def accessKey = project.property("aws_access_key")
@@ -155,9 +175,9 @@ task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [":sparkling-water-asse
       environment("run_yarn_external", "true")
       environment("run_local_internal", "false")
 
-      commandLine "./run_benchmarks.sh"
+      commandLine "./run_benchmarks_aws.sh"
     }
   }
 }
 
-substituteTerraform.dependsOn build
+substituteScripts.dependsOn build

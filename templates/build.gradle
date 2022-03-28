@@ -54,14 +54,14 @@ task copyAWS(type: Copy) {
   rename "install_sparkling_water.sh", "install_sparkling_water_${version}.sh"
 }
 
-task copyTerraform(type: Copy) {
+task copyBenchmarkFiles(type: Copy) {
   from 'src/terraform'
   include "**/*.tf"
   into "build/terraform"
 }
 
-copyTerraform.dependsOn cleanTemplates
+copyBenchmarkFiles.dependsOn cleanTemplates
 copyAWS.dependsOn cleanTemplates
 substituteAWS.dependsOn copyAWS
-substituteTerraform.dependsOn copyTerraform
+substituteTerraform.dependsOn copyBenchmarkFiles
 build.dependsOn substituteAWS, substituteTerraform
