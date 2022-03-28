@@ -34,10 +34,34 @@ class H2OMultinomialMetrics(override val uid: String) extends H2OMultinomialMetr
 }
 
 object H2OMultinomialMetrics extends MetricCalculation {
+
+  /**
+    * The method calculates multinomial metrics on a provided data frame with predictions and actual values.
+    *
+    * @param dataFrame A data frame with predictions and actual values
+    * @param domain Array of response classes.
+    * @param predictionCol   The name of prediction column. The prediction column must have the same type as
+    *                        a detailed_prediction column coming from the transform method of H2OMOJOModel descendant or
+    *                        a array type or vector of doubles. First item is must be 0.0, 1.0, 2.0 representing
+    *                        indexes of response classes. The other items must be probabilities to predict given probability
+    *                        classes.
+    * @param labelCol        The name of label column that contains actual values.
+    * @param weightColOption The name of a weight column.
+    * @param offsetColOption The name of a offset column.
+    * @param priorDistributionOption Prior class probabilities needed for calculation of hit ratio table
+    * @param aucType         Type of multinomial AUC/AUCPR calculation. Possible values:
+    *                        - AUTO,
+    *                        - NONE,
+    *                        - MACRO_OVR,
+    *                        - WEIGHTED_OVR,
+    *                        - MACRO_OVO,
+    *                        - WEIGHTED_OVO
+    * @return Calculated multinomial metrics
+    */
   def calculate(
       dataFrame: DataFrame,
       domain: Array[String],
-      predictionProbabilitiesCol: String = "detailed_prediction",
+      predictionCol: String = "detailed_prediction",
       labelCol: String = "label",
       weightColOption: Option[String] = None,
       offsetColOption: Option[String] = None,
@@ -54,14 +78,8 @@ object H2OMultinomialMetrics extends MetricCalculation {
       () => new IndependentMetricBuilderMultinomial(nclasses, domain, aucTypeEnum, priorDistribution)
     val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast StringType)
 
-    val gson = getMetricGson(
-      getMetricBuilder,
-      castedLabelDF,
-      predictionProbabilitiesCol,
-      labelCol,
-      offsetColOption,
-      weightColOption,
-      domain)
+    val gson =
+      getMetricGson(getMetricBuilder, castedLabelDF, predictionCol, labelCol, offsetColOption, weightColOption, domain)
     val result = new H2OMultinomialMetrics()
     result.setMetrics(gson, "H2OMultinomialMetrics.calculate")
     result
@@ -70,7 +88,7 @@ object H2OMultinomialMetrics extends MetricCalculation {
   def calculate(
       dataFrame: DataFrame,
       domain: Array[String],
-      predictionProbabilitiesCol: String,
+      predictionCol: String,
       labelCol: String,
       weightCol: String,
       offsetCol: String,
@@ -79,7 +97,7 @@ object H2OMultinomialMetrics extends MetricCalculation {
     calculate(
       dataFrame,
       domain,
-      predictionProbabilitiesCol,
+      predictionCol,
       labelCol,
       Option(weightCol),
       Option(offsetCol),

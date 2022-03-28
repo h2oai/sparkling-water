@@ -33,16 +33,26 @@ class H2ORegressionMetrics(override val uid: String) extends H2ORegressionMetric
 
 object H2ORegressionMetrics extends MetricCalculation {
 
+  /**
+    * The method calculates regression metrics on a provided data frame with predictions and actual values.
+    *
+    * @param dataFrame A data frame with predictions and actual values
+    * @param predictionCol      The name of prediction column. The prediction column must have the same type as
+    *                           a detailed_prediction column coming from the transform method of H2OMOJOModel descendant or
+    *                           it must be of DoubleType or FloatType.
+    * @param labelCol           The name of label column that contains actual values.
+    * @param weightColOption    The name of a weight column.
+    * @param offsetColOption    The name of a offset column.
+    * @return Calculated regression metrics
+    */
   def calculate(
       dataFrame: DataFrame,
       predictionCol: String = "prediction",
       labelCol: String = "label",
       weightColOption: Option[String] = None,
-      offsetColOption: Option[String] = None,
-      distributionFamily: String = "AUTO"): H2ORegressionMetrics = {
-    val domainFamilyEnum = DistributionFamily.valueOf(distributionFamily)
+      offsetColOption: Option[String] = None): H2ORegressionMetrics = {
     val getMetricBuilder =
-      () => new IndependentMetricBuilderRegression(DistributionFactory.getDistribution(domainFamilyEnum))
+      () => new IndependentMetricBuilderRegression(DistributionFactory.getDistribution(DistributionFamily.AUTO))
 
     val gson =
       getMetricGson(getMetricBuilder, dataFrame, predictionCol, labelCol, offsetColOption, weightColOption, null)
@@ -56,9 +66,8 @@ object H2ORegressionMetrics extends MetricCalculation {
       predictionCol: String,
       labelCol: String,
       weightCol: String,
-      offsetCol: String,
-      distributionFamily: String): H2ORegressionMetrics = {
-    calculate(dataFrame, predictionCol, labelCol, Option(weightCol), Option(offsetCol), distributionFamily)
+      offsetCol: String): H2ORegressionMetrics = {
+    calculate(dataFrame, predictionCol, labelCol, Option(weightCol), Option(offsetCol))
   }
 
   override protected def getPredictionValues(dataType: DataType, domain: Array[String], row: Row): Array[Double] = {

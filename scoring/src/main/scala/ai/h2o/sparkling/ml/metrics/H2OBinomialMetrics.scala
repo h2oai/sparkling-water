@@ -35,26 +35,42 @@ class H2OBinomialMetrics(override val uid: String) extends H2OBinomialMetricsBas
 
 object H2OBinomialMetrics extends MetricCalculation {
 
+  /**
+    * The method calculates binomial metrics on a provided data frame with predictions and actual values.
+    *
+    * @param dataFrame A data frame with predictions and actual values
+    * @param domain Array of classes representing negative and positive response. Negative class must at position 0 and
+    *               positive at 1.
+    * @param predictionCol      The name of prediction column. The prediction column must have the same type as
+    *                           a detailed_prediction column coming from the transform method of H2OMOJOModel descendant or
+    *                           a array type or vector of doubles. First item is must be 0.0 or 1.0 representing
+    *                           negative or positive response. The other items must be probabilities to predict given probability
+    *                           classes.
+    * @param labelCol           The name of label column that contains actual values.
+    * @param weightColOption    The name of a weight column.
+    * @param offsetColOption    The name of a offset column.
+    * @param distributionFamily The name of distribution family. Possible values: bernoulli, quasibinomial
+    * @return Calculated binomial metrics
+    */
   def calculate(
       dataFrame: DataFrame,
       domain: Array[String],
-      predictionProbabilitiesCol: String = "detailed_prediction",
+      predictionCol: String = "detailed_prediction",
       labelCol: String = "label",
       weightColOption: Option[String] = None,
       offsetColOption: Option[String] = None,
-      distributionFamily: String = "AUTO"): H2OBinomialMetrics = {
+      distributionFamily: String = "bernoulli"): H2OBinomialMetrics = {
+    if (!Set("bernoulli", "quasibinomial").contains(distributionFamily)) {
+      throw new IllegalArgumentException(
+        s"Passed value of distributionFamily is $distributionFamily. " +
+          "Possible values are 'bernoulli', 'quasibinomial'")
+    }
     val domainFamilyEnum = DistributionFamily.valueOf(distributionFamily)
     val getMetricBuilder = () => new IndependentMetricBuilderBinomial(domain, domainFamilyEnum)
     val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast StringType)
 
-    val gson = getMetricGson(
-      getMetricBuilder,
-      castedLabelDF,
-      predictionProbabilitiesCol,
-      labelCol,
-      offsetColOption,
-      weightColOption,
-      domain)
+    val gson =
+      getMetricGson(getMetricBuilder, castedLabelDF, predictionCol, labelCol, offsetColOption, weightColOption, domain)
     val result = new H2OBinomialMetrics()
     result.setMetrics(gson, "H2OBinomialMetrics.calculate")
     result
@@ -63,19 +79,12 @@ object H2OBinomialMetrics extends MetricCalculation {
   def calculate(
       dataFrame: DataFrame,
       domain: Array[String],
-      predictionProbabilitiesCol: String,
+      predictionCol: String,
       labelCol: String,
       weightCol: String,
       offsetCol: String,
       distributionFamily: String): Unit = {
-    calculate(
-      dataFrame,
-      domain,
-      predictionProbabilitiesCol,
-      labelCol,
-      Option(weightCol),
-      Option(offsetCol),
-      distributionFamily)
+    calculate(dataFrame, domain, predictionCol, labelCol, Option(weightCol), Option(offsetCol), distributionFamily)
   }
 
   override protected def getPredictionValues(dataType: DataType, domain: Array[String], row: Row): Array[Double] = {
