@@ -169,9 +169,17 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
         val model = algorithm.fit(trainingDataset)
         val domain = model.getDomainValues()("class")
         val trainingMetricObject =
-          H2OMultinomialMetrics.calculate(model.transform(trainingDataset), domain, labelCol = "class")
+          H2OMultinomialMetrics.calculate(
+            model.transform(trainingDataset),
+            domain,
+            labelCol = "class",
+            aucType = "MACRO_OVR")
         val validationMetricObject =
-          H2OMultinomialMetrics.calculate(model.transform(validationDataset), domain, labelCol = "class")
+          H2OMultinomialMetrics.calculate(
+            model.transform(validationDataset),
+            domain,
+            labelCol = "class",
+            aucType = "MACRO_OVR")
 
         assertMetrics(
           model,
@@ -198,12 +206,14 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
           model.transform(trainingDataset),
           domain,
           labelCol = "class",
-          weightColOption = Some("WEIGHT"))
+          weightColOption = Some("WEIGHT"),
+          aucType = "MACRO_OVR")
         val validationMetricObject = H2OMultinomialMetrics.calculate(
           model.transform(validationDataset),
           domain,
           labelCol = "class",
-          weightColOption = Some("WEIGHT"))
+          weightColOption = Some("WEIGHT"),
+          aucType = "MACRO_OVR")
 
         assertMetrics(
           model,
@@ -237,12 +247,14 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
           model.transform(trainingDataset),
           domain,
           labelCol = "class",
-          offsetColOption = Some("ID"))
+          offsetColOption = Some("ID"),
+          aucType = "MACRO_OVR")
         val validationMetricObject = H2OMultinomialMetrics.calculate(
           model.transform(validationDataset),
           domain,
           labelCol = "class",
-          offsetColOption = Some("ID"))
+          offsetColOption = Some("ID"),
+          aucType = "MACRO_OVR")
 
         assertMetrics(
           model,
