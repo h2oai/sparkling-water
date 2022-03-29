@@ -48,7 +48,6 @@ object H2OMultinomialMetrics extends MetricCalculation {
     * @param labelCol        The name of label column that contains actual values.
     * @param weightColOption The name of a weight column.
     * @param offsetColOption The name of a offset column.
-    * @param priorDistributionOption Prior class probabilities needed for calculation of hit ratio table
     * @param aucType         Type of multinomial AUC/AUCPR calculation. Possible values:
     *                        - AUTO,
     *                        - NONE,
@@ -65,17 +64,12 @@ object H2OMultinomialMetrics extends MetricCalculation {
       labelCol: String = "label",
       weightColOption: Option[String] = None,
       offsetColOption: Option[String] = None,
-      priorDistributionOption: Option[Array[Double]] = None,
       aucType: String = "AUTO"): H2OMultinomialMetrics = {
 
     val aucTypeEnum = MultinomialAucType.valueOf(aucType)
     val nclasses = domain.length
-    val priorDistribution = priorDistributionOption match {
-      case Some(x) => x
-      case None => null
-    }
     val getMetricBuilder =
-      () => new IndependentMetricBuilderMultinomial(nclasses, domain, aucTypeEnum, priorDistribution)
+      () => new IndependentMetricBuilderMultinomial(nclasses, domain, aucTypeEnum, null)
     val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast StringType)
 
     val gson =
@@ -92,7 +86,6 @@ object H2OMultinomialMetrics extends MetricCalculation {
       labelCol: String,
       weightCol: String,
       offsetCol: String,
-      priorDistribution: Array[Double],
       aucType: String): H2OMultinomialMetrics = {
     calculate(
       dataFrame,
@@ -101,7 +94,6 @@ object H2OMultinomialMetrics extends MetricCalculation {
       labelCol,
       Option(weightCol),
       Option(offsetCol),
-      Option(priorDistribution),
       aucType)
   }
 

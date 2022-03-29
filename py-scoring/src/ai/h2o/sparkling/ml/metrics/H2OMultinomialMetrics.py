@@ -30,7 +30,6 @@ class H2OMultinomialMetrics(H2OMultinomialMetricsBase):
                   labelCol = "label",
                   weightCol = None,
                   offsetCol = None,
-                  priorDistribution = None,
                   aucType = "AUTO"):
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar()
@@ -40,6 +39,5 @@ class H2OMultinomialMetrics(H2OMultinomialMetricsBase):
                                                                                         labelCol,
                                                                                         weightCol,
                                                                                         offsetCol,
-                                                                                        priorDistribution,
                                                                                         aucType)
         return H2OMultinomialMetrics(javaMetrics)
