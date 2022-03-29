@@ -49,7 +49,6 @@ object H2OBinomialMetrics extends MetricCalculation {
     * @param labelCol           The name of label column that contains actual values.
     * @param weightColOption    The name of a weight column.
     * @param offsetColOption    The name of a offset column.
-    * @param distributionFamily The name of distribution family. Possible values: bernoulli, quasibinomial
     * @return Calculated binomial metrics
     */
   def calculate(
@@ -58,15 +57,8 @@ object H2OBinomialMetrics extends MetricCalculation {
       predictionCol: String = "detailed_prediction",
       labelCol: String = "label",
       weightColOption: Option[String] = None,
-      offsetColOption: Option[String] = None,
-      distributionFamily: String = "bernoulli"): H2OBinomialMetrics = {
-    if (!Set("bernoulli", "quasibinomial").contains(distributionFamily)) {
-      throw new IllegalArgumentException(
-        s"Passed value of distributionFamily is $distributionFamily. " +
-          "Possible values are 'bernoulli', 'quasibinomial'")
-    }
-    val domainFamilyEnum = DistributionFamily.valueOf(distributionFamily)
-    val getMetricBuilder = () => new IndependentMetricBuilderBinomial(domain, domainFamilyEnum)
+      offsetColOption: Option[String] = None): H2OBinomialMetrics = {
+    val getMetricBuilder = () => new IndependentMetricBuilderBinomial(domain, DistributionFamily.bernoulli)
     val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast StringType)
 
     val gson =
@@ -82,9 +74,8 @@ object H2OBinomialMetrics extends MetricCalculation {
       predictionCol: String,
       labelCol: String,
       weightCol: String,
-      offsetCol: String,
-      distributionFamily: String): Unit = {
-    calculate(dataFrame, domain, predictionCol, labelCol, Option(weightCol), Option(offsetCol), distributionFamily)
+      offsetCol: String): Unit = {
+    calculate(dataFrame, domain, predictionCol, labelCol, Option(weightCol), Option(offsetCol))
   }
 
   override protected def getPredictionValues(dataType: DataType, domain: Array[String], row: Row): Array[Double] = {

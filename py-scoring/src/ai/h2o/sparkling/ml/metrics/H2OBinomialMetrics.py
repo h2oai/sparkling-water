@@ -29,8 +29,7 @@ class H2OBinomialMetrics(H2OBinomialMetricsBase):
                   predictionCol = "detailed_prediction",
                   labelCol = "label",
                   weightCol = None,
-                  offsetCol = None,
-                  distributionFamily = "binomial"):
+                  offsetCol = None):
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar()
         javaMetrics = _jvm().ai.h2o.sparkling.ml.metrics.H2OBinomialMetrics.calclate(dataFrame,
@@ -38,6 +37,5 @@ class H2OBinomialMetrics(H2OBinomialMetricsBase):
                                                                                      predictionCol,
                                                                                      labelCol,
                                                                                      weightCol,
-                                                                                     offsetCol,
-                                                                                     distributionFamily)
+                                                                                     offsetCol)
         return H2OBinomialMetrics(javaMetrics)
