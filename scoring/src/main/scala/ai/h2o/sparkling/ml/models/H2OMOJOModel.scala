@@ -576,6 +576,18 @@ trait H2OMOJOModelUtils extends Logging {
     }
   }
 
+  protected def nestedJsonFieldToDataFrame(
+      outputJson: JsonObject,
+      parentFieldName: String,
+      fieldName: String): DataFrame = {
+    if (outputJson == null || !outputJson.has(parentFieldName) || outputJson.get(parentFieldName).isJsonNull) {
+      null
+    } else {
+      val subJson = outputJson.get(parentFieldName).getAsJsonObject()
+      jsonFieldToDataFrame(subJson, fieldName)
+    }
+  }
+
   protected def extractScoringHistory(outputJson: JsonObject): DataFrame = {
     val df = jsonFieldToDataFrame(outputJson, "scoring_history")
     if (df != null && df.columns.contains("-")) df.drop("-") else df
