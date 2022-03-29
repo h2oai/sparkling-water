@@ -58,6 +58,7 @@ object H2OBinomialMetrics extends MetricCalculation {
       labelCol: String = "label",
       weightColOption: Option[String] = None,
       offsetColOption: Option[String] = None): H2OBinomialMetrics = {
+    validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, offsetColOption, weightColOption)
     val getMetricBuilder = () => new IndependentMetricBuilderBinomial(domain, DistributionFamily.bernoulli)
     val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast StringType)
 
@@ -99,5 +100,33 @@ object H2OBinomialMetrics extends MetricCalculation {
   override protected def getActualValue(dataType: DataType, domain: Array[String], row: Row): Double = {
     val label = row.getString(1)
     domain.indexOf(label).toDouble
+  }
+
+  override protected def validateDataFrameForMetricCalculation(
+      dataFrame: DataFrame,
+      predictionCol: String,
+      labelCol: String,
+      offsetColOption: Option[String],
+      weightColOption: Option[String]): Unit = {
+    super.validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, offsetColOption, weightColOption)
+    val predictionType = dataFrame.schema.fields.find(_.name == predictionCol).get.dataType
+    val isPredictionTypeValid = predictionType match {
+      case StructType(fields)
+          if fields(0).dataType == StringType && fields(1).dataType.isInstanceOf[StructType] &&
+            fields(1).dataType.asInstanceOf[StructType].fields.forall(_.dataType == DoubleType) =>
+        true
+      case ArrayType(DoubleType, _) => true
+      case ArrayType(FloatType, _) => true
+      case v if ExposeUtils.isMLVectorUDT(v) => true
+      case _: mllib.linalg.VectorUDT => true
+      case _ => false
+    }
+    if (!isPredictionTypeValid) {
+      throw new IllegalArgumentException(s"The type of the prediction column '$predictionCol' is not valid. " +
+        "The prediction column must have the same type as a detailed_prediction column coming from the transform " +
+        "method of H2OMOJOModel descendant or a array type or vector of doubles. First item is must be 0.0 or 1.0" +
+        "representing negative or positive response. The other items must be probabilities to predict given probability" +
+        "classes.")
+    }
   }
 }

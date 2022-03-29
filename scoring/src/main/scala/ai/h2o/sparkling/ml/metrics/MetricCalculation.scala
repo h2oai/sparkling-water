@@ -28,34 +28,48 @@ import org.apache.spark.sql.functions.{col, lit}
 
 trait MetricCalculation {
 
-  private[sparkling] def validateDataFrameForMetricCalculation(
-      flatDataFrame: DataFrame,
+  protected def validateDataFrameForMetricCalculation(
+      dataFrame: DataFrame,
+      predictionCol: String,
       labelCol: String,
       offsetColOption: Option[String],
       weightColOption: Option[String]): Unit = {
 
-    if (labelCol != null && !flatDataFrame.columns.contains(labelCol)) {
+    if (predictionCol != null && !dataFrame.columns.contains(predictionCol)) {
+      throw new IllegalArgumentException(
+        s"DataFrame passed as a parameter does not contain prediction column '$predictionCol'.")
+    }
+
+    if (labelCol != null && !dataFrame.columns.contains(labelCol)) {
       throw new IllegalArgumentException(s"DataFrame passed as a parameter does not contain label column '$labelCol'.")
     }
 
     if (offsetColOption.isDefined) {
       val offsetCol = offsetColOption.get
-      if (!flatDataFrame.columns.contains(offsetCol)) {
+      if (!dataFrame.columns.contains(offsetCol)) {
         throw new IllegalArgumentException(
           s"DataFrame passed as a parameter does not contain offset column '$offsetCol'.")
+      }
+      val offsetType = dataFrame.schema.fields.find(_.name == offsetCol).get.dataType
+      if (!offsetType.isInstanceOf[NumericType]) {
+        throw new IllegalArgumentException(s"The offset column '$offsetCol' must be a numeric type.")
       }
     }
 
     if (weightColOption.isDefined) {
       val weightCol = weightColOption.get
-      if (!flatDataFrame.columns.contains(weightCol)) {
+      if (!dataFrame.columns.contains(weightCol)) {
         throw new IllegalArgumentException(
           s"DataFrame passed as a parameter does not contain weight column '$weightCol'.")
+      }
+      val weightType = dataFrame.schema.fields.find(_.name == weightCol).get.dataType
+      if (!weightType.isInstanceOf[NumericType]) {
+        throw new IllegalArgumentException(s"The weight column '$weightType' must be a numeric type.")
       }
     }
   }
 
-  private[sparkling] def metricsToSchema(metrics: ModelMetrics): Schema[_, _] = {
+  private def metricsToSchema(metrics: ModelMetrics): Schema[_, _] = {
     val schemas =
       MetricsCalculationTypeExtensions.SCHEMA_CLASSES.map(c =>
         Class.forName(c).getConstructor().newInstance().asInstanceOf[Schema[Nothing, Nothing]])

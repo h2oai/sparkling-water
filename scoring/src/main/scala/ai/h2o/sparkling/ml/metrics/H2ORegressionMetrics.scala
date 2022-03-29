@@ -21,6 +21,7 @@ import hex.DistributionFactory
 import hex.ModelMetricsRegression.IndependentMetricBuilderRegression
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.ml.util.Identifiable
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types._
 
@@ -51,11 +52,12 @@ object H2ORegressionMetrics extends MetricCalculation {
       labelCol: String = "label",
       weightColOption: Option[String] = None,
       offsetColOption: Option[String] = None): H2ORegressionMetrics = {
+    validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, offsetColOption, weightColOption)
     val getMetricBuilder =
       () => new IndependentMetricBuilderRegression(DistributionFactory.getDistribution(DistributionFamily.AUTO))
-
+    val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast DoubleType)
     val gson =
-      getMetricGson(getMetricBuilder, dataFrame, predictionCol, labelCol, offsetColOption, weightColOption, null)
+      getMetricGson(getMetricBuilder, castedLabelDF, predictionCol, labelCol, offsetColOption, weightColOption, null)
     val result = new H2ORegressionMetrics()
     result.setMetrics(gson, "H2ORegressionMetrics.calculate")
     result
@@ -80,10 +82,33 @@ object H2ORegressionMetrics extends MetricCalculation {
 
   override protected def getActualValue(dataType: DataType, domain: Array[String], row: Row): Double = dataType match {
     case DoubleType => row.getDouble(1)
-    case FloatType => row.getFloat(1).toDouble
-    case LongType => row.getLong(1).toDouble
-    case IntegerType => row.getInt(1).toDouble
-    case ShortType => row.getShort(1).toDouble
-    case ByteType => row.getByte(1).toDouble
+  }
+
+  override protected def validateDataFrameForMetricCalculation(
+      dataFrame: DataFrame,
+      predictionCol: String,
+      labelCol: String,
+      offsetColOption: Option[String],
+      weightColOption: Option[String]): Unit = {
+    super.validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, offsetColOption, weightColOption)
+
+    val predictionType = dataFrame.schema.fields.find(_.name == predictionCol).get.dataType
+    val isPredictionTypeValid = predictionType match {
+      case StructType(fields) if fields.head.dataType == DoubleType => true
+      case DoubleType => true
+      case FloatType => true
+      case _ => false
+    }
+    if (!isPredictionTypeValid) {
+      throw new IllegalArgumentException(
+        s"The type of the prediction column '$predictionCol' is not valid. " +
+          "The prediction column must have the same type as a detailed_prediction column coming from the transform " +
+          "method of H2OMOJOModel descendant or it must be of DoubleType or FloatType.")
+    }
+
+    val labelType = dataFrame.schema.fields.find(_.name == labelCol).get.dataType
+    if (!labelType.isInstanceOf[NumericType]) {
+      throw new IllegalArgumentException(s"The label column '$labelCol' must be a numeric type.")
+    }
   }
 }
