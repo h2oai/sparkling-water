@@ -59,7 +59,7 @@ object MetricsFactoryTemplate extends ((Seq[ModelMetricsSubstitutionContext]) =>
     metricSubstitutionContexts
       .map { metricSubstitutionContext =>
         val metricsObjectName = if (metricSubstitutionContext.entityName.endsWith("Base")) {
-          metricSubstitutionContext.entityName.substring(metricSubstitutionContext.entityName.length - 4)
+          metricSubstitutionContext.entityName.substring(0, metricSubstitutionContext.entityName.length - 4)
         } else {
           metricSubstitutionContext.entityName
         }
