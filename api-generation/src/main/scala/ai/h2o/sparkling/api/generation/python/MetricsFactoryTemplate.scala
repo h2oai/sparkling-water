@@ -49,7 +49,11 @@ object MetricsFactoryTemplate extends ((Seq[ModelMetricsSubstitutionContext]) =>
   private def generatePatternMatchingCases(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): String = {
     metricSubstitutionContexts
       .map { metricSubstitutionContext =>
-        val metricsObjectName = metricSubstitutionContext.entityName
+        val metricsObjectName = if (metricSubstitutionContext.entityName.endsWith("Base")) {
+          metricSubstitutionContext.entityName.substring(metricSubstitutionContext.entityName.length - 4)
+        } else {
+          metricSubstitutionContext.entityName
+        }
         s"""        elif javaObject.getClass().getSimpleName() == "$metricsObjectName":
            |            return $metricsObjectName(javaObject)""".stripMargin
       }

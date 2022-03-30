@@ -58,7 +58,11 @@ object MetricsFactoryTemplate extends ((Seq[ModelMetricsSubstitutionContext]) =>
   private def generateCases(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): String = {
     metricSubstitutionContexts
       .map { metricSubstitutionContext =>
-        val metricsObjectName = metricSubstitutionContext.entityName
+        val metricsObjectName = if (metricSubstitutionContext.entityName.endsWith("Base")) {
+          metricSubstitutionContext.entityName.substring(metricSubstitutionContext.entityName.length - 4)
+        } else {
+          metricSubstitutionContext.entityName
+        }
         s"""  } else if (invoke(invoke(javaObject, "getClass"), "getSimpleName") == "$metricsObjectName") {
            |    rsparkling.$metricsObjectName(javaObject)""".stripMargin
       }
