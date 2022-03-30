@@ -255,23 +255,9 @@ def testMetricObjects(prostateDataset):
         assert metricsObject.getThresholdsAndMetricScores().count() > 0
         assert len(metricsObject.getThresholdsAndMetricScores().columns) > 0
 
-    def compareCalculatedMetricValues(metricsObject, metricsMap):
-        for metric in metricsMap:
-            if metric != "ScoringTime":
-                metricValue = metricsMap[metric]
-                objectValue = getattr(metricsObject, "get" + metric)()
-                assert(metricValue == objectValue)
-        assert metricsObject.getConfusionMatrix().count() > 0
-        assert len(metricsObject.getConfusionMatrix().columns) > 0
-        assert metricsObject.getMaxCriteriaAndMetricScores().count() > 0
-        assert len(metricsObject.getMaxCriteriaAndMetricScores().columns) > 0
-        assert metricsObject.getThresholdsAndMetricScores().count() > 0
-        assert len(metricsObject.getThresholdsAndMetricScores().columns) > 0
-
     compareMetricValues(model.getTrainingMetricsObject(), model.getTrainingMetrics())
     compareMetricValues(model.getCrossValidationMetricsObject(), model.getCrossValidationMetrics())
     compareMetricValues(model.getCurrentMetricsObject(), model.getCurrentMetrics())
-    compareCalculatedMetricValues(model.getMetricsObject(prostateDataset), model.getMetrics(prostateDataset))
     assert model.getValidationMetricsObject() is None
     assert model.getValidationMetrics() == {}
 
