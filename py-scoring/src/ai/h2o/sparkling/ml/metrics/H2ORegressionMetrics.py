@@ -32,10 +32,10 @@ class H2ORegressionMetrics(H2ORegressionMetricsBase):
                   offsetCol = None):
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar()
-        javaMetrics = _jvm().ai.h2o.sparkling.ml.metrics.H2ORegressionMetrics.calclate(dataFrame,
-                                                                                       domain,
-                                                                                       predictionCol,
-                                                                                       labelCol,
-                                                                                       weightCol,
-                                                                                       offsetCol)
+        javaMetrics = _jvm().ai.h2o.sparkling.ml.metrics.H2ORegressionMetrics.calculate(dataFrame,
+                                                                                        domain,
+                                                                                        predictionCol,
+                                                                                        labelCol,
+                                                                                        weightCol,
+                                                                                        offsetCol)
         return H2ORegressionMetrics(javaMetrics)

@@ -29,15 +29,13 @@ class H2OMultinomialMetrics(H2OMultinomialMetricsBase):
                   predictionCol = "detailed_prediction",
                   labelCol = "label",
                   weightCol = None,
-                  offsetCol = None,
                   aucType = "AUTO"):
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar()
-        javaMetrics = _jvm().ai.h2o.sparkling.ml.metrics.H2OMultinomialMetrics.calclate(dataFrame,
-                                                                                        domain,
-                                                                                        predictionCol,
-                                                                                        labelCol,
-                                                                                        weightCol,
-                                                                                        offsetCol,
-                                                                                        aucType)
+        javaMetrics = _jvm().ai.h2o.sparkling.ml.metrics.H2OMultinomialMetrics.calculate(dataFrame,
+                                                                                         domain,
+                                                                                         predictionCol,
+                                                                                         labelCol,
+                                                                                         weightCol,
+                                                                                         aucType)
         return H2OMultinomialMetrics(javaMetrics)

@@ -224,45 +224,4 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
       }
     }
   }
-  {
-    val algorithmsAndTolerances: Seq[(H2OSupervisedAlgorithm[_], Double, Double)] =
-      Seq((new H2OXGBoost(), 0.00001, 0.00000001), (new H2OGLM(), 0.00001, 0.00000001))
-
-    for ((algorithm, trainingMetricsTolerance, validationMetricsTolerance) <- algorithmsAndTolerances) {
-      val algorithmName = algorithm.getClass.getSimpleName
-
-      test(s"test calculation of multinomial $algorithmName metrics with offsetCol set on arbitrary dataset") {
-        algorithm
-          .setValidationDataFrame(validationDataset)
-          .set(algorithm.getParam("seed"), 1L)
-          .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
-          .setColumnsToCategorical("class")
-          .set(algorithm.getParam("aucType"), "MACRO_OVR")
-          .setLabelCol("class")
-          .setOffsetCol("ID")
-
-        val model = algorithm.fit(trainingDataset)
-        val domain = model.getDomainValues()("class")
-        val trainingMetricObject = H2OMultinomialMetrics.calculate(
-          model.transform(trainingDataset),
-          domain,
-          labelCol = "class",
-          offsetColOption = Some("ID"),
-          aucType = "MACRO_OVR")
-        val validationMetricObject = H2OMultinomialMetrics.calculate(
-          model.transform(validationDataset),
-          domain,
-          labelCol = "class",
-          offsetColOption = Some("ID"),
-          aucType = "MACRO_OVR")
-
-        assertMetrics(
-          model,
-          trainingMetricObject,
-          validationMetricObject,
-          trainingMetricsTolerance,
-          validationMetricsTolerance)
-      }
-    }
-  }
 }

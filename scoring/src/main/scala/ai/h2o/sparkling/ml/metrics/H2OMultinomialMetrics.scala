@@ -47,7 +47,6 @@ object H2OMultinomialMetrics extends MetricCalculation {
     *                        classes.
     * @param labelCol        The name of label column that contains actual values.
     * @param weightColOption The name of a weight column.
-    * @param offsetColOption The name of a offset column.
     * @param aucType         Type of multinomial AUC/AUCPR calculation. Possible values:
     *                        - AUTO,
     *                        - NONE,
@@ -63,9 +62,8 @@ object H2OMultinomialMetrics extends MetricCalculation {
       predictionCol: String = "detailed_prediction",
       labelCol: String = "label",
       weightColOption: Option[String] = None,
-      offsetColOption: Option[String] = None,
       aucType: String = "AUTO"): H2OMultinomialMetrics = {
-    validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, offsetColOption, weightColOption)
+    validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, None, weightColOption)
     val aucTypeEnum = MultinomialAucType.valueOf(aucType)
     val nclasses = domain.length
     val getMetricBuilder =
@@ -73,7 +71,7 @@ object H2OMultinomialMetrics extends MetricCalculation {
     val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast StringType)
 
     val gson =
-      getMetricGson(getMetricBuilder, castedLabelDF, predictionCol, labelCol, offsetColOption, weightColOption, domain)
+      getMetricGson(getMetricBuilder, castedLabelDF, predictionCol, labelCol, None, weightColOption, domain)
     val result = new H2OMultinomialMetrics()
     result.setMetrics(gson, "H2OMultinomialMetrics.calculate")
     result
@@ -85,9 +83,8 @@ object H2OMultinomialMetrics extends MetricCalculation {
       predictionCol: String,
       labelCol: String,
       weightCol: String,
-      offsetCol: String,
       aucType: String): H2OMultinomialMetrics = {
-    calculate(dataFrame, domain, predictionCol, labelCol, Option(weightCol), Option(offsetCol), aucType)
+    calculate(dataFrame, domain, predictionCol, labelCol, Option(weightCol), aucType)
   }
 
   override protected def getPredictionValues(dataType: DataType, domain: Array[String], row: Row): Array[Double] = {
