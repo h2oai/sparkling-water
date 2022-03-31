@@ -201,10 +201,13 @@ class H2OAutoML(override val uid: String)
   }
 
   private def deleteBinaryModels(): Unit = {
-    getLeaderboard().select("model_id").collect().foreach { row =>
-      val modelId = row.getString(0)
-      val model = H2OModel(modelId)
-      model.tryDelete()
+    getLeaderboard().select("model_id").collect()
+      .partition(_.getString(0).contains("StackedEnsemble")).productIterator.foreach {
+        case array: Array[Row] => array.foreach { row =>
+          val modelId = row.getString(0)
+          val model = H2OModel(modelId)
+          model.tryDelete()
+        }
     }
   }
 
