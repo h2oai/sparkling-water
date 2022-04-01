@@ -1,6 +1,32 @@
 Change Log
 ==========
 
+v3.36.0.4-1 (2022-04-01)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.0.4-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.0.4-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.0.4-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.0.4-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.0.4-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.0.4-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.0.4-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.0.4-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.0.4-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.0.4-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.0.4-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.0.4-1-3.2/index.html>`__
+
+-  Bug
+
+   -  `SW-2697 <https://0xdata.atlassian.net/browse/SW-2697>`__ - Fix Binary Model Cleaning in H2OAutoML
+
+-  Engineering Story
+
+   -  `SW-2696 <https://0xdata.atlassian.net/browse/SW-2696>`__ - Upgrade H2O to 3.36.0.4
+   -  `SW-2692 <https://0xdata.atlassian.net/browse/SW-2692>`__ - Initialize Conda in Release Pipeline
+   -  `SW-2691 <https://0xdata.atlassian.net/browse/SW-2691>`__ - Give More Memory to Integration Tests
+   -  `SW-2690 <https://0xdata.atlassian.net/browse/SW-2690>`__ - Remove Sparkling Water P4J Gateway
+
+-  Improvement
+
+   -  `SW-2655 <https://0xdata.atlassian.net/browse/SW-2655>`__ - Introduce a warning during the serialization of MOJO model
+
 v3.36.0.3-1 (2022-02-18)
 ------------------------
 Downloads:
