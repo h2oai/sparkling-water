@@ -17,8 +17,7 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import hex.ModelMetricsBinomial.IndependentMetricBuilderBinomial
-import hex.genmodel.utils.DistributionFamily
+import hex.ModelMetricsBinomial.MetricBuilderBinomial
 import org.apache.spark.{ExposeUtils, ml, mllib}
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.types._
@@ -59,7 +58,7 @@ object H2OBinomialMetrics extends MetricCalculation {
       weightColOption: Option[String] = None,
       offsetColOption: Option[String] = None): H2OBinomialMetrics = {
     validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, offsetColOption, weightColOption)
-    val getMetricBuilder = () => new IndependentMetricBuilderBinomial(domain, DistributionFamily.bernoulli)
+    val getMetricBuilder = () => new MetricBuilderBinomial(domain)
     val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast StringType)
 
     val gson =

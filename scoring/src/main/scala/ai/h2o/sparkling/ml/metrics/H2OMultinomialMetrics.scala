@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import hex.ModelMetricsMultinomial.IndependentMetricBuilderMultinomial
+import hex.ModelMetricsMultinomial.MetricBuilderMultinomial
 import hex.MultinomialAucType
 import org.apache.spark.{ExposeUtils, ml, mllib}
 import org.apache.spark.ml.util.Identifiable
@@ -67,7 +67,7 @@ object H2OMultinomialMetrics extends MetricCalculation {
     val aucTypeEnum = MultinomialAucType.valueOf(aucType)
     val nclasses = domain.length
     val getMetricBuilder =
-      () => new IndependentMetricBuilderMultinomial(nclasses, domain, aucTypeEnum, null)
+      () => new MetricBuilderMultinomial(nclasses, domain, aucTypeEnum)
     val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast StringType)
 
     val gson =

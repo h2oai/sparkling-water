@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.metrics
 
 import com.google.gson.{GsonBuilder, JsonObject}
 import hex._
-import hex.ModelMetrics.IndependentMetricBuilder
+import hex.ModelMetrics.MetricBuilder
 import org.apache.spark.sql.{DataFrame, Row}
 import water.api.{Schema, SchemaServer}
 import water.api.schemas3._
@@ -91,7 +91,7 @@ trait MetricCalculation {
   protected def getActualValue(dataType: DataType, domain: Array[String], row: Row): Double
 
   protected def getMetricGson(
-      createMetricBuilder: () => IndependentMetricBuilder[_],
+      createMetricBuilder: () => MetricBuilder[_],
       dataFrame: DataFrame,
       predictionCol: String,
       labelCol: String,
@@ -108,7 +108,7 @@ trait MetricCalculation {
     val predictionType = flatDF.schema.fields(0).dataType
     val actualType = flatDF.schema.fields(1).dataType
     val filledMetricsBuilder = flatDF.rdd
-      .mapPartitions[IndependentMetricBuilder[_]] { rows =>
+      .mapPartitions[MetricBuilder[_]] { rows =>
         val metricBuilder = createMetricBuilder()
         while (rows.hasNext) {
           val row = rows.next()
@@ -116,14 +116,14 @@ trait MetricCalculation {
           val actualValue: Double = getActualValue(actualType, domain, row)
           val weight = row.getDouble(2)
           val offset = row.getDouble(3)
-          metricBuilder.perRow(prediction, Array(actualValue), weight, offset)
+          metricBuilder.perRow(prediction, Array(actualValue.toFloat), weight, offset, null)
         }
         Iterator.single(metricBuilder)
       }
       .reduce((f, s) => { f.reduce(s); f })
 
     filledMetricsBuilder.postGlobal()
-    val metrics = filledMetricsBuilder.makeModelMetrics()
+    val metrics = filledMetricsBuilder.makeModelMetrics(null, null, null, null)
     val schema = metricsToSchema(metrics)
     val json = schema.toJsonString
     new GsonBuilder().create().fromJson(json, classOf[JsonObject])

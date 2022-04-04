@@ -6,11 +6,11 @@ import water.api.schemas3.*;
 
 public class MetricsCalculationTypeExtensions implements TypeMapExtension {
   public static final String[] MODEL_BUILDER_CLASSES = {
-    ModelMetrics.IndependentMetricBuilder.class.getName(),
-    ModelMetricsSupervised.IndependentMetricBuilderSupervised.class.getName(),
-    ModelMetricsBinomial.IndependentMetricBuilderBinomial.class.getName(),
+    ModelMetrics.MetricBuilder.class.getName(),
+    ModelMetricsSupervised.MetricBuilderSupervised.class.getName(),
+    ModelMetricsBinomial.MetricBuilderBinomial.class.getName(),
     AUC2.AUCBuilder.class.getName(),
-    ModelMetricsRegression.IndependentMetricBuilderRegression.class.getName(),
+    ModelMetricsRegression.MetricBuilderRegression.class.getName(),
     Distribution.class.getName(),
     GaussianDistribution.class.getName(),
     BernoulliDistribution.class.getName(),
@@ -33,7 +33,7 @@ public class MetricsCalculationTypeExtensions implements TypeMapExtension {
     OlogitFunction.class.getName(),
     OloglogFunction.class.getName(),
     OprobitFunction.class.getName(),
-    ModelMetricsMultinomial.IndependentMetricBuilderMultinomial.class.getName()
+    ModelMetricsMultinomial.MetricBuilderMultinomial.class.getName()
   };
 
   public static final String[] SCHEMA_CLASSES = {

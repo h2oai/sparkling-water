@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.ml.metrics
 
 import hex.DistributionFactory
-import hex.ModelMetricsRegression.IndependentMetricBuilderRegression
+import hex.ModelMetricsRegression.MetricBuilderRegression
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.functions.col
@@ -54,7 +54,7 @@ object H2ORegressionMetrics extends MetricCalculation {
       offsetColOption: Option[String] = None): H2ORegressionMetrics = {
     validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, offsetColOption, weightColOption)
     val getMetricBuilder =
-      () => new IndependentMetricBuilderRegression(DistributionFactory.getDistribution(DistributionFamily.AUTO))
+      () => new MetricBuilderRegression(DistributionFactory.getDistribution(DistributionFamily.AUTO))
     val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast DoubleType)
     val gson =
       getMetricGson(getMetricBuilder, castedLabelDF, predictionCol, labelCol, offsetColOption, weightColOption, null)
