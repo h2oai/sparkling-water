@@ -30,12 +30,26 @@ class H2OBinomialMetrics(H2OBinomialMetricsBase):
                   labelCol = "label",
                   weightCol = None,
                   offsetCol = None):
+        '''
+        The method calculates binomial metrics on a provided data frame with predictions and actual values.
+        :param dataFrame: A data frame with predictions and actual values
+        :param domain: A list of classes representing negative and positive response. Negative class must at position 0
+        and positive at 1
+        :param predictionCol: The name of prediction column. The prediction column must have the same type as
+        a detailed_prediction column coming from the transform method of H2OMOJOModel descendant or a array type or
+        vector of doubles. First item is must be 0.0 or 1.0 representing negative or positive response. The other items
+        must be probabilities to predict given probability classes.
+        :param labelCol: The name of label column that contains actual values.
+        :param weightCol: The name of a weight column.
+        :param offsetCol: The name of a offset column.
+        :return: Calculated binomial metrics
+        '''
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar()
-        javaMetrics = _jvm().ai.h2o.sparkling.ml.metrics.H2OBinomialMetrics.calculate(dataFrame,
-                                                                                     domain,
-                                                                                     predictionCol,
-                                                                                     labelCol,
-                                                                                     weightCol,
-                                                                                     offsetCol)
+        javaMetrics = _jvm().ai.h2o.sparkling.ml.metrics.H2OBinomialMetrics.calculateInternal(dataFrame._jdf,
+                                                                                              domain,
+                                                                                              predictionCol,
+                                                                                              labelCol,
+                                                                                              weightCol,
+                                                                                              offsetCol)
         return H2OBinomialMetrics(javaMetrics)

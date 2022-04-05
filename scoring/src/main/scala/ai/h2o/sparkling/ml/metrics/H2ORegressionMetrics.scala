@@ -63,7 +63,8 @@ object H2ORegressionMetrics extends MetricCalculation {
     result
   }
 
-  def calculate(
+  // The method serves for call from Python/R API
+  def calculateInternal(
       dataFrame: DataFrame,
       predictionCol: String,
       labelCol: String,

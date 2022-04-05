@@ -30,12 +30,31 @@ class H2OMultinomialMetrics(H2OMultinomialMetricsBase):
                   labelCol = "label",
                   weightCol = None,
                   aucType = "AUTO"):
+        '''
+        The method calculates multinomial metrics on a provided data frame with predictions and actual values.
+        :param dataFrame: A data frame with predictions and actual values.
+        :param domain: List of response classes.
+        :param predictionCol: The name of prediction column. The prediction column must have the same type as
+        a detailed_prediction column coming from the transform method of H2OMOJOModel descendant or a array type or
+        vector of doubles. First item is must be 0.0, 1.0, 2.0 representing indexes of response classes. The other
+        items must be probabilities to predict given probability classes.
+        :param labelCol: The name of label column that contains actual values.
+        :param weightCol: The name of a weight column.
+        :param aucType: Type of multinomial AUC/AUCPR calculation. Possible values:
+        - AUTO,
+        - NONE,
+        - MACRO_OVR,
+        - WEIGHTED_OVR,
+        - MACRO_OVO,
+        - WEIGHTED_OVO
+        :return: Calculated multinomial metrics
+        '''
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar()
-        javaMetrics = _jvm().ai.h2o.sparkling.ml.metrics.H2OMultinomialMetrics.calculate(dataFrame,
-                                                                                         domain,
-                                                                                         predictionCol,
-                                                                                         labelCol,
-                                                                                         weightCol,
-                                                                                         aucType)
+        javaMetrics = _jvm().ai.h2o.sparkling.ml.metrics.H2OMultinomialMetrics.calculateInternal(dataFrame._jdf,
+                                                                                                 domain,
+                                                                                                 predictionCol,
+                                                                                                 labelCol,
+                                                                                                 weightCol,
+                                                                                                 aucType)
         return H2OMultinomialMetrics(javaMetrics)

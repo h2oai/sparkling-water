@@ -25,17 +25,26 @@ class H2ORegressionMetrics(H2ORegressionMetricsBase):
 
     @staticmethod
     def calculate(dataFrame,
-                  domain,
                   predictionCol = "detailed_prediction",
                   labelCol = "label",
                   weightCol = None,
                   offsetCol = None):
+        '''
+        The method calculates regression metrics on a provided data frame with predictions and actual values.
+        :param dataFrame: A data frame with predictions and actual values
+        :param predictionCol: The name of prediction column. The prediction column must have the same type as
+        a detailed_prediction column coming from the transform method of H2OMOJOModel descendant or
+        it must be of DoubleType or FloatType.
+        :param labelCol: The name of label column that contains actual values.
+        :param weightCol: The name of a weight column.
+        :param offsetCol: The name of a offset column.
+        :return: Calculated regression metrics
+        '''
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar()
-        javaMetrics = _jvm().ai.h2o.sparkling.ml.metrics.H2ORegressionMetrics.calculate(dataFrame,
-                                                                                        domain,
-                                                                                        predictionCol,
-                                                                                        labelCol,
-                                                                                        weightCol,
-                                                                                        offsetCol)
+        javaMetrics = _jvm().ai.h2o.sparkling.ml.metrics.H2ORegressionMetrics.calculateInternal(dataFrame._jdf,
+                                                                                                predictionCol,
+                                                                                                labelCol,
+                                                                                                weightCol,
+                                                                                                offsetCol)
         return H2ORegressionMetrics(javaMetrics)

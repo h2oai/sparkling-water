@@ -17,16 +17,11 @@
 import os
 from pysparkling.ml import *
 
-from ai.h2o.sparkling.ml.models.H2OBinomialMetrics import H2OBinomialMetrics
-from ai.h2o.sparkling.ml.models.H2OMultinomialMetrics import H2OMultinomialMetrics
-from ai.h2o.sparkling.ml.models.H2ORegressionMetrics import H2ORegressionMetrics
-from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModel
-
 
 def testRegressionMetricsCalculation(prostateDataset):
     mojo = H2OMOJOModel.createFromMojo(
         "file://" + os.path.abspath("../ml/src/test/resources/regre_model_prostate.mojo"))
-    metrics = H2ORegressionMetrics.calculate(mojo.transform(prostateDataset), labelCol = "capsule")
+    metrics = H2ORegressionMetrics.calculate(mojo.transform(prostateDataset), labelCol = "CAPSULE")
     assert metrics is not None
 
 
@@ -34,7 +29,7 @@ def testBinomialMetricsCalculation(prostateDataset):
     mojo = H2OMOJOModel.createFromMojo(
         "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
     domain = mojo.getDomainValues()["capsule"]
-    metrics = H2OBinomialMetrics.calculate(mojo.transform(prostateDataset), domain, labelCol = "capsule")
+    metrics = H2OBinomialMetrics.calculate(mojo.transform(prostateDataset), domain, labelCol = "CAPSULE")
     assert metrics is not None
 
 

@@ -22,7 +22,13 @@ import ai.h2o.sparkling.api.generation.common.{EntitySubstitutionContext, ModelM
 object MetricsInitTemplate extends ((Seq[ModelMetricsSubstitutionContext]) => String) with PythonEntityTemplate {
 
   def apply(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): String = {
-    val metricClasses = metricSubstitutionContexts.map(_.entityName)
+    val metricClasses = metricSubstitutionContexts.map { metricSubstitutionContext =>
+      if (metricSubstitutionContext.entityName.endsWith("Base")) {
+        metricSubstitutionContext.entityName.substring(0, metricSubstitutionContext.entityName.length - 4)
+      } else {
+        metricSubstitutionContext.entityName
+      }
+    }
     val imports = metricClasses.map(metricClass => s"ai.h2o.sparkling.ml.metrics.$metricClass.$metricClass")
 
     val entitySubstitutionContext = EntitySubstitutionContext(null, null, null, imports)

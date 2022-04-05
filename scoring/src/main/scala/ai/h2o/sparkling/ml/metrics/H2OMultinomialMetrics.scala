@@ -22,7 +22,7 @@ import hex.MultinomialAucType
 import org.apache.spark.{ExposeUtils, ml, mllib}
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.sql.types.{ArrayType, DataType, DoubleType, FloatType, StringType, StructType}
 
 @MetricsDescription(
@@ -38,7 +38,7 @@ object H2OMultinomialMetrics extends MetricCalculation {
   /**
     * The method calculates multinomial metrics on a provided data frame with predictions and actual values.
     *
-    * @param dataFrame A data frame with predictions and actual values
+    * @param dataFrame A data frame with predictions and actual values.
     * @param domain Array of response classes.
     * @param predictionCol   The name of prediction column. The prediction column must have the same type as
     *                        a detailed_prediction column coming from the transform method of H2OMOJOModel descendant or
@@ -77,14 +77,15 @@ object H2OMultinomialMetrics extends MetricCalculation {
     result
   }
 
-  def calculate(
+  // The method serves for call from Python/R API
+  def calculateInternal(
       dataFrame: DataFrame,
-      domain: Array[String],
+      domain: java.util.ArrayList[String],
       predictionCol: String,
       labelCol: String,
       weightCol: String,
       aucType: String): H2OMultinomialMetrics = {
-    calculate(dataFrame, domain, predictionCol, labelCol, Option(weightCol), aucType)
+    calculate(dataFrame, domain.toArray[String](new Array[String](0)), predictionCol, labelCol, Option(weightCol), aucType)
   }
 
   override protected def getPredictionValues(dataType: DataType, domain: Array[String], row: Row): Array[Double] = {
