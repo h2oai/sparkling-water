@@ -164,7 +164,7 @@ def testBlendingDataFrameHasImpactOnAutoMLStackedEnsambleModels(classificationDa
     automl.fit(trainingDateset)
     leaderboardWithBlendingFrameSet = separateEnsembleModels(prepareLeaderboardForComparison(automl.getLeaderboard()))
 
-    assert defaultLeaderboard[0].count() >= 3
+    assert defaultLeaderboard[0].count() >= 2
     assert defaultLeaderboard[0].count() == leaderboardWithBlendingFrameSet[0].count()
     unit_test_utils.assert_data_frames_have_different_values(defaultLeaderboard[0], leaderboardWithBlendingFrameSet[0])
     unit_test_utils.assert_data_frames_are_identical(defaultLeaderboard[1], leaderboardWithBlendingFrameSet[1])
