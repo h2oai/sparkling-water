@@ -86,9 +86,8 @@ class H2OStackedEnsemble(override val uid: String)
       binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId)))
     } else {
       model.tryDelete()
+      deleteModels(baseModels)
     }
-
-    deleteModels(baseModels)
 
     result
   }
