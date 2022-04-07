@@ -19,3 +19,20 @@ source(file.path("R", "H2ORegressionMetricsBase.R"))
 
 #' @export rsparkling.H2ORegressionMetricsBase
 rsparkling.H2ORegressionMetrics <- setRefClass("rsparkling.H2ORegressionMetrics", contains = ("rsparkling.H2ORegressionMetricsBase"))
+
+H2ORegressionMetrics.calculate <- function(dataFrame,
+                                           predictionCol = "detailed_prediction",
+                                           labelCol = "label",
+                                           weightCol = NULL,
+                                           offsetCol = NULL) {
+    sc <- spark_connection_find()[[1]]
+    javaMetrics <- invoke_static(sc,
+                                 "ai.h2o.sparkling.ml.metrics.H2ORegressionMetrics",
+                                 "calculate",
+                                 dataFrame,
+                                 predictionCol,
+                                 labelCol,
+                                 weightCol,
+                                 offsetCol)
+    rsparkling.H2ORegressionMetrics(javaMetrics)
+}

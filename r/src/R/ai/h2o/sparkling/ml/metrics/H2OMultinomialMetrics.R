@@ -19,3 +19,22 @@ source(file.path("R", "H2OMultinomialMetricsBase.R"))
 
 #' @export rsparkling.H2OMultinomialMetricsBase
 rsparkling.H2OMultinomialMetrics <- setRefClass("rsparkling.H2OMultinomialMetrics", contains = ("rsparkling.H2OMultinomialMetricsBase"))
+
+H2OMultinomialMetrics.calculate <- function(dataFrame,
+                                            domain,
+                                            predictionCol = "detailed_prediction",
+                                            labelCol = "label",
+                                            weightCol = NULL,
+                                            aucType = "AUTO") {
+    sc <- spark_connection_find()[[1]]
+    javaMetrics <- invoke_static(sc,
+                                 "ai.h2o.sparkling.ml.metrics.H2OMultinomialMetrics",
+                                 "calculate",
+                                 dataFrame,
+                                 domain,
+                                 predictionCol,
+                                 labelCol,
+                                 weightCol,
+                                 aucType)
+    rsparkling.H2OMultinomialMetrics(javaMetrics)
+}

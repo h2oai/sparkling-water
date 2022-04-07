@@ -22,7 +22,7 @@ import ai.h2o.sparkling.api.generation.common.{EntitySubstitutionContext, ModelM
 object MetricsFactoryTemplate extends ((Seq[ModelMetricsSubstitutionContext]) => String) with PythonEntityTemplate {
 
   def apply(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): String = {
-    val metricClasses = metricSubstitutionContexts.map(_.entityName)
+    val metricClasses = getEntityNames(metricSubstitutionContexts)
     val imports = Seq("py4j.java_gateway.JavaObject") ++
       metricClasses.map(metricClass => s"ai.h2o.sparkling.ml.metrics.$metricClass.$metricClass")
 
@@ -46,16 +46,22 @@ object MetricsFactoryTemplate extends ((Seq[ModelMetricsSubstitutionContext]) =>
     }
   }
 
-  private def generatePatternMatchingCases(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): String = {
+  private def getEntityNames(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): Seq[String] = {
     metricSubstitutionContexts
       .map { metricSubstitutionContext =>
-        val metricsObjectName = if (metricSubstitutionContext.entityName.endsWith("Base")) {
+        if (metricSubstitutionContext.entityName.endsWith("Base")) {
           metricSubstitutionContext.entityName.substring(0, metricSubstitutionContext.entityName.length - 4)
         } else {
           metricSubstitutionContext.entityName
         }
-        s"""        elif javaObject.getClass().getSimpleName() == "$metricsObjectName":
-           |            return $metricsObjectName(javaObject)""".stripMargin
+      }
+  }
+
+  private def generatePatternMatchingCases(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): String = {
+    getEntityNames(metricSubstitutionContexts)
+      .map { entityName =>
+        s"""        elif javaObject.getClass().getSimpleName() == "$entityName":
+           |            return $entityName(javaObject)""".stripMargin
       }
       .mkString("\n")
   }
