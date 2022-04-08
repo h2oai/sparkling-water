@@ -93,13 +93,7 @@ object H2OBinomialMetrics extends MetricCalculation {
       labelCol: String,
       weightCol: String,
       offsetCol: String): H2OBinomialMetrics = {
-    calculate(
-      dataFrame,
-      domain,
-      predictionCol,
-      labelCol,
-      Option(weightCol),
-      Option(offsetCol))
+    calculate(dataFrame, domain, predictionCol, labelCol, Option(weightCol), Option(offsetCol))
   }
 
   override protected def getPredictionValues(dataType: DataType, domain: Array[String], row: Row): Array[Double] = {
