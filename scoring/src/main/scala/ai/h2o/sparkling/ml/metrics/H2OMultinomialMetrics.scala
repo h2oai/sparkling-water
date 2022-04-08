@@ -30,7 +30,7 @@ import org.apache.spark.sql.types.{ArrayType, DataType, DoubleType, FloatType, S
     "The class makes available all metrics that shared across all algorithms supporting multinomial classification.")
 class H2OMultinomialMetrics(override val uid: String) extends H2OMultinomialMetricsBase(uid) {
 
-  def this() = this(Identifiable.randomUID("H2OBinomialMetrics"))
+  def this() = this(Identifiable.randomUID("H2OMultinomialMetrics"))
 }
 
 object H2OMultinomialMetrics extends MetricCalculation {
@@ -77,7 +77,7 @@ object H2OMultinomialMetrics extends MetricCalculation {
     result
   }
 
-  // The method serves for call from Python/R API
+  // The method serves for call from Python API
   def calculateInternal(
       dataFrame: DataFrame,
       domain: java.util.ArrayList[String],
@@ -88,6 +88,23 @@ object H2OMultinomialMetrics extends MetricCalculation {
     calculate(
       dataFrame,
       domain.toArray[String](new Array[String](0)),
+      predictionCol,
+      labelCol,
+      Option(weightCol),
+      aucType)
+  }
+
+  // The method serves for call from R API
+  def calculateInternal(
+      dataFrame: DataFrame,
+      domain: Array[String],
+      predictionCol: String,
+      labelCol: String,
+      weightCol: String,
+      aucType: String): H2OMultinomialMetrics = {
+    calculate(
+      dataFrame,
+      domain,
       predictionCol,
       labelCol,
       Option(weightCol),

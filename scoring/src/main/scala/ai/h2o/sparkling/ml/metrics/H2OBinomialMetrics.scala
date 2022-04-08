@@ -68,17 +68,34 @@ object H2OBinomialMetrics extends MetricCalculation {
     result
   }
 
-  // The method serves for call from Python/R API
+  // The method serves for call from Python API
   def calculateInternal(
       dataFrame: DataFrame,
       domain: java.util.ArrayList[String],
       predictionCol: String,
       labelCol: String,
       weightCol: String,
-      offsetCol: String): Unit = {
+      offsetCol: String): H2OBinomialMetrics = {
     calculate(
       dataFrame,
       domain.toArray[String](new Array[String](0)),
+      predictionCol,
+      labelCol,
+      Option(weightCol),
+      Option(offsetCol))
+  }
+
+  // The method serves for call from R API
+  def calculateInternal(
+      dataFrame: DataFrame,
+      domain: Array[String],
+      predictionCol: String,
+      labelCol: String,
+      weightCol: String,
+      offsetCol: String): H2OBinomialMetrics = {
+    calculate(
+      dataFrame,
+      domain,
       predictionCol,
       labelCol,
       Option(weightCol),

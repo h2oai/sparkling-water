@@ -115,45 +115,6 @@ test_that("test model category", {
   expect_equal(category, "Binomial")
 })
 
-test_that("test training metrics", {
-  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
-  metrics <- model$getTrainingMetrics()
-  expect_equal(as.character(metrics[["AUC"]]), "0.896878869021911")
-  expect_equal(length(metrics), 10)
-})
-
-test_that("test training metrics object", {
-  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
-  metrics <- model$getTrainingMetricsObject()
-  aucValue <- metrics$getAUC()
-  scoringTime <- metrics$getScoringTime()
-
-  thresholdsAndScores <- metrics$getThresholdsAndMetricScores()
-  thresholdsAndScoresFrame <- dplyr::tally(thresholdsAndScores)
-  thresholdsAndScoresCount <- as.double(dplyr::collect(thresholdsAndScoresFrame)[[1]])
-
-  gainsLiftTable <- metrics$getGainsLiftTable()
-  gainsLiftTableFrame <- dplyr::tally(gainsLiftTable)
-  gainsLiftTableCount <- as.double(dplyr::collect(gainsLiftTableFrame)[[1]])
-
-  expect_equal(as.character(aucValue), "0.896878869021911")
-  expect_true(scoringTime > 0)
-  expect_true(thresholdsAndScoresCount > 0)
-  expect_true(gainsLiftTableCount > 0)
-})
-
-test_that("test null cross validation metrics object", {
-  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
-  cvObject <- model$getCrossValidationMetricsObject()
-  expect_true(is.null(cvObject))
-})
-
-test_that("test current metrics", {
-  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
-  metrics <- model$getCurrentMetrics()
-  expect_equal(metrics, model$getTrainingMetrics())
-})
-
 test_that("test MOJO predictions on unseen categoricals", {
   path <- paste0("file://", normalizePath("../../../../../ml/src/test/resources/deep_learning_airlines_categoricals.zip"))
   settings <- H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = TRUE)
