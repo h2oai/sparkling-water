@@ -23,6 +23,8 @@ def testRegressionMetricsCalculation(prostateDataset):
         "file://" + os.path.abspath("../ml/src/test/resources/regre_model_prostate.mojo"))
     metrics = H2ORegressionMetrics.calculate(mojo.transform(prostateDataset), labelCol = "CAPSULE")
     assert metrics is not None
+    assert metrics.getMAE() > 0.0
+    assert metrics.getRMSLE() > 0.0
 
 
 def testBinomialMetricsCalculation(prostateDataset):
@@ -31,6 +33,8 @@ def testBinomialMetricsCalculation(prostateDataset):
     domain = mojo.getDomainValues()["capsule"]
     metrics = H2OBinomialMetrics.calculate(mojo.transform(prostateDataset), domain, labelCol = "CAPSULE")
     assert metrics is not None
+    assert metrics.getAUC() > 0.5
+    assert metrics.getConfusionMatrix().count() > 0
 
 
 def testMultinomialMetricsCalculation(irisDataset):
@@ -39,3 +43,5 @@ def testMultinomialMetricsCalculation(irisDataset):
     domain = mojo.getDomainValues()["class"]
     metrics = H2OMultinomialMetrics.calculate(mojo.transform(irisDataset), domain, labelCol = "class")
     assert metrics is not None
+    assert metrics.getAUC() > 0.5
+    assert metrics.getConfusionMatrix().count() > 0
