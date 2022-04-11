@@ -26,8 +26,9 @@ import water.nbhm.NonBlockingHashMap
   *                 is ID of Spark Executor where corresponding instance is located
   * @param hostname hostname of the node
   * @param port     port of the node
+  * @param allowedCpus The number of cpus processing tasks on H2O node
   */
-case class NodeDesc(nodeId: String, hostname: String, port: Int) {
+case class NodeDesc(nodeId: String, hostname: String, port: Int, allowedCpus: Int) {
   override def productPrefix = ""
 
   def ipPort(): String = s"$hostname:$port"
@@ -40,7 +41,7 @@ object NodeDesc {
 
   private def fromH2ONode(node: H2ONode): NodeDesc = {
     val ipPort = node.getIpPortString.split(":")
-    NodeDesc(node.index().toString, ipPort(0), Integer.parseInt(ipPort(1)))
+    NodeDesc(node.index().toString, ipPort(0), Integer.parseInt(ipPort(1)), node._heartbeat._cpus_allowed)
   }
 
   private def intern(node: H2ONode): NodeDesc = {

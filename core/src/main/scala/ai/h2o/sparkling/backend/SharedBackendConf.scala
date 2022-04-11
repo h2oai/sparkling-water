@@ -169,6 +169,9 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def restApiTimeout: Int = sparkConf.getInt(PROP_REST_API_TIMEOUT._1, PROP_REST_API_TIMEOUT._2)
 
+  def isNumberOfPartitionsOptimizationEnabled(): Boolean =
+    sparkConf.getBoolean(PROP_OPTIMIZE_NUM_PARTITIONS._1, PROP_OPTIMIZE_NUM_PARTITIONS._2)
+
   /** Setters */
   def setInternalClusterMode(): H2OConf = {
     if (runsInExternalClusterMode) {
@@ -346,6 +349,10 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setIcedDir(dir: String): H2OConf = set(PROP_ICED_DIR._1, dir)
 
   def setRestApiTimeout(timeout: Int): H2OConf = set(PROP_REST_API_TIMEOUT._1, timeout.toString)
+
+  def setNumberOfPartitionsOptimizationEnabled(): H2OConf = set(PROP_OPTIMIZE_NUM_PARTITIONS._1, true)
+
+  def setNumberOfPartitionsOptimizationDisabled(): H2OConf = set(PROP_OPTIMIZE_NUM_PARTITIONS._1, false)
 }
 
 object SharedBackendConf {
@@ -723,6 +730,16 @@ object SharedBackendConf {
     5 * 60 * 1000,
     "setSessionTimeout(Boolean)",
     "Timeout in milliseconds for Rest API requests.")
+
+  val PROP_OPTIMIZE_NUM_PARTITIONS: BooleanOption = (
+    "spark.ext.h2o.conversions.optimize.numPartitions",
+    true,
+    """setNumberOfPartitionsOptimizationEnabled()
+      |setNumberOfPartitionsOptimizationDisabled()
+    """.stripMargin,
+    "If enabled, the conversion method asH2OFrame will repartition the input data frame to " +
+    "the optimal number of partitions for a given H2O cluster."
+  )
 
   /** Language of the connected client. */
   private[sparkling] val PROP_CLIENT_LANGUAGE: (String, String) = ("spark.ext.h2o.client.language", "scala")

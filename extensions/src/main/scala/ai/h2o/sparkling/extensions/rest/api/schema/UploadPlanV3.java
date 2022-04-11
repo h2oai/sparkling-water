@@ -51,6 +51,9 @@ public class UploadPlanV3 extends RequestSchemaV3<Iced, UploadPlanV3> {
         direction = API.Direction.OUTPUT)
     public int port;
 
+    @API(help = "Number of CPUs allowed by process", direction = API.Direction.OUTPUT)
+    public int cpus_allowed;
+
     public ChunkAssigmentV3() {}
 
     public ChunkAssigmentV3(int id, H2ONode node) {
@@ -59,6 +62,7 @@ public class UploadPlanV3 extends RequestSchemaV3<Iced, UploadPlanV3> {
       String[] ipPortArray = node.getIpPortString().split(":");
       this.ip = ipPortArray[0];
       this.port = new Integer(ipPortArray[1]);
+      this.cpus_allowed = node._heartbeat._cpus_allowed;
     }
   }
 }

@@ -154,7 +154,7 @@ object InternalH2OBackend extends InternalBackendUtils {
     initializeH2OKerberizedHiveSupport(conf)
     if (conf.isDirectIpConfigurationEnabled) setSelfAddressToH2ONode(launcherArgs)
     H2OStarter.start(launcherArgs, true)
-    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
+    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT, H2O.SELF._heartbeat._cpus_allowed)
   }
 
   private def registerNewExecutorListener(hc: H2OContext): Unit = {

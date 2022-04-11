@@ -135,7 +135,6 @@ final class ChunkServlet extends ServletBase {
 
   private case class PUTRequestParameters(
       frameName: String,
-      numRows: Int,
       chunkId: Int,
       expectedTypes: Array[ExpectedType],
       maxVecSizes: Array[Int],
@@ -160,8 +159,6 @@ final class ChunkServlet extends ServletBase {
   private object PUTRequestParameters {
     def parse(request: HttpServletRequest): PUTRequestParameters = {
       val frameName = getParameterAsString(request, "frame_name")
-      val numRowsString = getParameterAsString(request, "num_rows")
-      val numRows = numRowsString.toInt
       val chunkIdString = getParameterAsString(request, "chunk_id")
       val chunkId = chunkIdString.toInt
       val expectedTypesString = getParameterAsString(request, "expected_types")
@@ -169,15 +166,14 @@ final class ChunkServlet extends ServletBase {
       val maximumVectorSizesString = getParameterAsString(request, "maximum_vector_sizes")
       val maxVecSizes = Base64Encoding.decodeToIntArray(maximumVectorSizesString)
       val compression = getParameterAsString(request, "compression")
-      PUTRequestParameters(frameName, numRows, chunkId, expectedTypes, maxVecSizes, compression)
+      PUTRequestParameters(frameName, chunkId, expectedTypes, maxVecSizes, compression)
     }
   }
 
   /*
    * The method handles handles PUT requests for the path /3/Chunk
-   * It requires 6 GET parameters
+   * It requires 5 GET parameters
    * - frame_name - a unique string identifier of H2O Frame
-   * - num_rows - a number of rows forming by the body  of the request
    * - chunk_id - a unique identifier of the chunk within the H2O Frame
    * - expected_type - byte array encoded in Base64 encoding. The types corresponds to the `selected_columns` parameter
    * - maximum_vector_sizes - maximum vector sizes for each vector column encoded into Base64 encoding.
@@ -191,12 +187,7 @@ final class ChunkServlet extends ServletBase {
       withResource(request.getInputStream) { inputStream =>
         withResource(Compression.decompress(parameters.compression, inputStream)) { decompressed =>
           withResource(new ChunkAutoBufferReader(decompressed)) { reader =>
-            reader.readChunk(
-              parameters.frameName,
-              parameters.numRows,
-              parameters.chunkId,
-              parameters.expectedTypes,
-              parameters.maxVecSizes)
+            reader.readChunk(parameters.frameName, parameters.chunkId, parameters.expectedTypes, parameters.maxVecSizes)
           }
         }
       }

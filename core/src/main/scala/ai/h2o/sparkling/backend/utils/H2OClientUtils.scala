@@ -66,7 +66,7 @@ object H2OClientUtils extends SharedBackendUtils {
       .buildArgs()
   }
 
-  def startH2OClient(hc: H2OContext, conf: H2OConf, nodes: Array[NodeDesc]): NodeDesc = {
+  def startH2OClient(hc: H2OContext, conf: H2OConf, nodes: Array[NodeDesc]): Unit = {
     if (conf.runsInExternalClusterMode) {
       setClientIp(conf)
     } else {
@@ -91,7 +91,6 @@ object H2OClientUtils extends SharedBackendUtils {
         }
       }
     }
-    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
 
   /**
