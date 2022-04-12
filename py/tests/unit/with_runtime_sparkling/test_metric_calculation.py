@@ -43,5 +43,5 @@ def testMultinomialMetricsCalculation(irisDataset):
     domain = mojo.getDomainValues()["class"]
     metrics = H2OMultinomialMetrics.calculate(mojo.transform(irisDataset), domain, labelCol = "class")
     assert metrics is not None
-    assert metrics.getAUC() > 0.5
+    assert metrics.getLogloss() > 0.0
     assert metrics.getConfusionMatrix().count() > 0
