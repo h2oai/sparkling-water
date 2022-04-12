@@ -120,6 +120,7 @@ trait K8sH2OStatefulSet extends K8sUtils {
                   |          image: '${conf.externalK8sDockerImage}'
                   |          resources:
                   |            requests:
+                  |              cpu: "${if (conf.nthreads > 0) conf.nthreads else 1}
                   |              memory: "${conf.externalMemory}"
                   |          ports:
                   |            - containerPort: 54321
