@@ -48,11 +48,11 @@ object H2ORegressionMetrics extends MetricCalculation {
     */
   def calculate(
       dataFrame: DataFrame,
-      predictionCol: String = "prediction",
+      predictionCol: String = "detailed_prediction",
       labelCol: String = "label",
       weightColOption: Option[String] = None,
       offsetColOption: Option[String] = None): H2ORegressionMetrics = {
-    validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, offsetColOption, weightColOption)
+    validateDataFrameForMetricCalculation(dataFrame, null, predictionCol, labelCol, offsetColOption, weightColOption)
     val getMetricBuilder =
       () => new MetricBuilderRegression(DistributionFactory.getDistribution(DistributionFamily.AUTO))
     val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast DoubleType)
@@ -87,12 +87,18 @@ object H2ORegressionMetrics extends MetricCalculation {
 
   override protected def validateDataFrameForMetricCalculation(
       dataFrame: DataFrame,
+      domain: Array[String],
       predictionCol: String,
       labelCol: String,
       offsetColOption: Option[String],
       weightColOption: Option[String]): Unit = {
-    super.validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, offsetColOption, weightColOption)
-
+    super.validateDataFrameForMetricCalculation(
+      dataFrame,
+      domain,
+      predictionCol,
+      labelCol,
+      offsetColOption,
+      weightColOption)
     val predictionType = dataFrame.schema.fields.find(_.name == predictionCol).get.dataType
     val isPredictionTypeValid = predictionType match {
       case StructType(fields) if fields.head.dataType == DoubleType => true

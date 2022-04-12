@@ -20,11 +20,13 @@ package ai.h2o.sparkling.ml.metrics
 import ai.h2o.sparkling.ml.algos._
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import hex.genmodel.GenModel
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions.{monotonically_increasing_id, rand}
+import org.apache.spark.sql.functions.{monotonically_increasing_id, rand, udf}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
+import org.apache.spark.sql.functions.{array, col}
 
 @RunWith(classOf[JUnitRunner])
 class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
@@ -179,6 +181,47 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
             model.transform(validationDataset),
             domain,
             labelCol = "class",
+            aucType = "MACRO_OVR")
+
+        assertMetrics(
+          model,
+          trainingMetricObject,
+          validationMetricObject,
+          trainingMetricsTolerance,
+          validationMetricsTolerance)
+      }
+
+      test(s"test calculation of multinomial $algorithmName metrics with just probabilities") {
+        val algorithm = algorithmGetter()
+        algorithm
+          .setValidationDataFrame(validationDataset)
+          .set(algorithm.getParam("seed"), 1L)
+          .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+          .setColumnsToCategorical("class")
+          .set(algorithm.getParam("aucType"), "MACRO_OVR")
+          .setLabelCol("class")
+
+        val model = algorithm.fit(trainingDataset)
+        val priorClassDistribution = model.unwrapMojoModel()._priorClassDistrib
+        val domain = model.getDomainValues()("class")
+        def extractProbabilities(df: DataFrame) = {
+          val columns = domain.map(label => col(s"detailed_prediction.probabilities.$label"))
+          df.withColumn("probabilities", array(columns: _*))
+        }
+
+        val trainingMetricObject =
+          H2OMultinomialMetrics.calculate(
+            extractProbabilities(model.transform(trainingDataset)),
+            domain,
+            labelCol = "class",
+            predictionCol = "probabilities",
+            aucType = "MACRO_OVR")
+        val validationMetricObject =
+          H2OMultinomialMetrics.calculate(
+            extractProbabilities(model.transform(validationDataset)),
+            domain,
+            labelCol = "class",
+            predictionCol = "probabilities",
             aucType = "MACRO_OVR")
 
         assertMetrics(

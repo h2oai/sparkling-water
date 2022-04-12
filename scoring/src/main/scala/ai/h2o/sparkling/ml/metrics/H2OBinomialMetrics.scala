@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.ml.metrics
 
 import hex.ModelMetricsBinomial.MetricBuilderBinomial
-import org.apache.spark.{ExposeUtils, ml, mllib}
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
@@ -41,10 +40,9 @@ object H2OBinomialMetrics extends MetricCalculation {
     * @param domain Array of classes representing negative and positive response. Negative class must at position 0 and
     *               positive at 1.
     * @param predictionCol      The name of prediction column. The prediction column must have the same type as
-    *                           a detailed_prediction column coming from the transform method of H2OMOJOModel descendant or
-    *                           a array type or vector of doubles. First item is must be 0.0 or 1.0 representing
-    *                           negative or positive response. The other items must be probabilities to predict given probability
-    *                           classes.
+    *                           a detailed_prediction column coming from the transform method of H2OMOJOModel descendant.
+    *                           Or the type must be FloatType/DoubleType where values represent probabilities of
+    *                           the positive response.
     * @param labelCol           The name of label column that contains actual values.
     * @param weightColOption    The name of a weight column.
     * @param offsetColOption    The name of a offset column.
@@ -57,7 +55,7 @@ object H2OBinomialMetrics extends MetricCalculation {
       labelCol: String = "label",
       weightColOption: Option[String] = None,
       offsetColOption: Option[String] = None): H2OBinomialMetrics = {
-    validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, offsetColOption, weightColOption)
+    validateDataFrameForMetricCalculation(dataFrame, domain, predictionCol, labelCol, offsetColOption, weightColOption)
     val getMetricBuilder = () => new MetricBuilderBinomial(domain)
     val castedLabelDF = dataFrame.withColumn(labelCol, col(labelCol) cast StringType)
 
@@ -100,18 +98,23 @@ object H2OBinomialMetrics extends MetricCalculation {
     dataType match {
       case StructType(fields)
           if fields(0).dataType == StringType && fields(1).dataType.isInstanceOf[StructType] &&
-            fields(1).dataType.asInstanceOf[StructType].fields.forall(_.dataType == DoubleType) =>
+            fields(1).dataType.asInstanceOf[StructType].fields.forall(_.dataType == DoubleType) &&
+            fields(1).dataType.asInstanceOf[StructType].fields.length == 2 =>
         val predictionStructure = row.getStruct(0)
         val prediction = predictionStructure.getString(0)
         val index = domain.indexOf(prediction).toDouble
         val probabilities = predictionStructure.getStruct(1)
-
         Array(index) ++ probabilities.toSeq.map(_.asInstanceOf[Double])
-      case ArrayType(DoubleType, _) => row.getSeq[Double](0).toArray
-      case ArrayType(FloatType, _) => row.getSeq[Float](0).map(_.toDouble).toArray
-      case v if ExposeUtils.isMLVectorUDT(v) => row.getAs[ml.linalg.Vector](0).toDense.values
-      case _: mllib.linalg.VectorUDT => row.getAs[mllib.linalg.Vector](0).toDense.values
+      case StructType(fields) if fields.forall(_.dataType == DoubleType) && fields.length == 2 =>
+        val probabilities = row.getStruct(0)
+        Array(-1.0) ++ probabilities.toSeq.map(_.asInstanceOf[Double])
+      case DoubleType => probabilityToArray(row.getDouble(0))
+      case FloatType => probabilityToArray(row.getFloat(0).toDouble)
     }
+  }
+
+  private def probabilityToArray(probability: Double): Array[Double] = {
+    Array[Double](-1 /* unused */, 1 - probability, probability)
   }
 
   override protected def getActualValue(dataType: DataType, domain: Array[String], row: Row): Double = {
@@ -121,29 +124,36 @@ object H2OBinomialMetrics extends MetricCalculation {
 
   override protected def validateDataFrameForMetricCalculation(
       dataFrame: DataFrame,
+      domain: Array[String],
       predictionCol: String,
       labelCol: String,
       offsetColOption: Option[String],
       weightColOption: Option[String]): Unit = {
-    super.validateDataFrameForMetricCalculation(dataFrame, predictionCol, labelCol, offsetColOption, weightColOption)
+    super.validateDataFrameForMetricCalculation(
+      dataFrame,
+      domain,
+      predictionCol,
+      labelCol,
+      offsetColOption,
+      weightColOption)
     val predictionType = dataFrame.schema.fields.find(_.name == predictionCol).get.dataType
     val isPredictionTypeValid = predictionType match {
       case StructType(fields)
           if fields(0).dataType == StringType && fields(1).dataType.isInstanceOf[StructType] &&
-            fields(1).dataType.asInstanceOf[StructType].fields.forall(_.dataType == DoubleType) =>
+            fields(1).dataType.asInstanceOf[StructType].fields.forall(_.dataType == DoubleType) &&
+            fields(1).dataType.asInstanceOf[StructType].fields.length == 2 =>
         true
-      case ArrayType(DoubleType, _) => true
-      case ArrayType(FloatType, _) => true
-      case v if ExposeUtils.isMLVectorUDT(v) => true
-      case _: mllib.linalg.VectorUDT => true
+      case StructType(fields) if fields.forall(_.dataType == DoubleType) && fields.length == 2 => true
+      case DoubleType => true
+      case FloatType => true
       case _ => false
     }
     if (!isPredictionTypeValid) {
-      throw new IllegalArgumentException(s"The type of the prediction column '$predictionCol' is not valid. " +
-        "The prediction column must have the same type as a detailed_prediction column coming from the transform " +
-        "method of H2OMOJOModel descendant or a array type or vector of doubles. First item is must be 0.0 or 1.0" +
-        "representing negative or positive response. The other items must be probabilities to predict given probability" +
-        "classes.")
+      throw new IllegalArgumentException(
+        s"The type of the prediction column '$predictionCol' is not valid. " +
+          "The prediction column must have the same type as a detailed_prediction column coming from the transform " +
+          "method of H2OMOJOModel descendant or a array type or vector of doubles. Or the type must be " +
+          "FloatType/DoubleType where values represent probabilities of positive response.")
     }
   }
 }

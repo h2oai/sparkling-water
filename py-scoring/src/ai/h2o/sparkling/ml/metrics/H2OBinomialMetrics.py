@@ -36,9 +36,8 @@ class H2OBinomialMetrics(H2OBinomialMetricsBase):
         :param domain: A list of classes representing negative and positive response. Negative class must at position 0
         and positive at 1
         :param predictionCol: The name of prediction column. The prediction column must have the same type as
-        a detailed_prediction column coming from the transform method of H2OMOJOModel descendant or a array type or
-        vector of doubles. First item is must be 0.0 or 1.0 representing negative or positive response. The other items
-        must be probabilities to predict given probability classes.
+        a detailed_prediction column coming from the transform method of H2OMOJOModel descendant. Or the type must
+        be FloatType/DoubleType where values represent probabilities of the positive response.
         :param labelCol: The name of label column that contains actual values.
         :param weightCol: The name of a weight column.
         :param offsetCol: The name of a offset column.

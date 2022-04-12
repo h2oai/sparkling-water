@@ -30,6 +30,7 @@ trait MetricCalculation {
 
   protected def validateDataFrameForMetricCalculation(
       dataFrame: DataFrame,
+      domain: Array[String],
       predictionCol: String,
       labelCol: String,
       offsetColOption: Option[String],

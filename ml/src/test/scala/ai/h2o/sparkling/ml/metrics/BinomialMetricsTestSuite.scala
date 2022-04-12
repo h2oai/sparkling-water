@@ -20,8 +20,8 @@ package ai.h2o.sparkling.ml.metrics
 import ai.h2o.sparkling.ml.algos._
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.sql.functions.rand
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.{rand, col}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -187,6 +187,42 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
           H2OBinomialMetrics.calculate(model.transform(trainingDataset), domain, labelCol = "CAPSULE")
         val validationMetricObject =
           H2OBinomialMetrics.calculate(model.transform(validationDataset), domain, labelCol = "CAPSULE")
+
+        assertMetrics(
+          model,
+          trainingMetricObject,
+          validationMetricObject,
+          trainingMetricsTolerance,
+          validationMetricsTolerance)
+      }
+
+      test(s"test calculation of binomial $algorithmName metrics with probabilities passed to predictionCol") {
+        val algorithm = algorithmGetter()
+        algorithm
+          .setValidationDataFrame(validationDataset)
+          .set(algorithm.getParam("seed"), 1L)
+          .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+          .setLabelCol("CAPSULE")
+
+        val model = algorithm.fit(trainingDataset)
+        val domain = model.getDomainValues()("CAPSULE")
+
+        def extractProbability(df: DataFrame): DataFrame = {
+          df.withColumn("probability", col(s"detailed_prediction.probabilities.${domain(1)}"))
+        }
+
+        val trainingMetricObject =
+          H2OBinomialMetrics.calculate(
+            extractProbability(model.transform(trainingDataset)),
+            domain,
+            labelCol = "CAPSULE",
+            predictionCol = "probability")
+        val validationMetricObject =
+          H2OBinomialMetrics.calculate(
+            extractProbability(model.transform(validationDataset)),
+            domain,
+            labelCol = "CAPSULE",
+            predictionCol = "probability")
 
         assertMetrics(
           model,

@@ -35,9 +35,9 @@ class H2OMultinomialMetrics(H2OMultinomialMetricsBase):
         :param dataFrame: A data frame with predictions and actual values.
         :param domain: List of response classes.
         :param predictionCol: The name of prediction column. The prediction column must have the same type as
-        a detailed_prediction column coming from the transform method of H2OMOJOModel descendant or a array type or
-        vector of doubles. First item is must be 0.0, 1.0, 2.0 representing indexes of response classes. The other
-        items must be probabilities to predict given probability classes.
+        a detailed_prediction column coming from the transform method of H2OMOJOModel descendant or
+        a array type or vector of doubles where particular arrays represent class probabilities.
+        The order of probabilities must correspond to the order of labels in the passed domain.
         :param labelCol: The name of label column that contains actual values.
         :param weightCol: The name of a weight column.
         :param aucType: Type of multinomial AUC/AUCPR calculation. Possible values:
