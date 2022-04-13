@@ -8,6 +8,7 @@ Machine Learning
 
    sw_automl
    sw_gam
+   sw_glm
    sw_drf
    sw_grid
    sw_kmeans

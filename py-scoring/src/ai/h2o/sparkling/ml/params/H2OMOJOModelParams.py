@@ -130,6 +130,9 @@ class H2OMOJOModelParams:
     def getMojoFileName(self):
         return self._java_obj.mojoFileName()
 
+    def getCoefficients(self):
+        return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getCoefficients())
+
 
 class H2OAlgorithmMOJOModelParams(H2OMOJOModelParams, H2OAlgorithmMOJOModelBase):
     pass

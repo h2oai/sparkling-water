@@ -107,6 +107,9 @@ abstract class H2OMOJOModel
   protected final val defaultThreshold: DoubleParam =
     new DoubleParam(this, "defaultThreshold", "Default threshold used for predictions of classification models")
 
+  protected final val coefficients: NullableDataFrameParam =
+    new NullableDataFrameParam(this, "coefficients", "Table of Coefficients.")
+
   setDefault(
     modelDetails -> null,
     trainingMetrics -> Map.empty[String, Double],
@@ -125,7 +128,8 @@ abstract class H2OMOJOModel
     startTime -> 0L,
     endTime -> 0L,
     runTime -> 0L,
-    defaultThreshold -> 0.0)
+    defaultThreshold -> 0.0,
+    coefficients -> null)
 
   /**
     * Returns a map of all metrics of the Double type calculated on the training dataset.
@@ -254,6 +258,8 @@ abstract class H2OMOJOModel
 
   def getDefaultThreshold(): Double = $(defaultThreshold)
 
+  def getCoefficients(): DataFrame = $(coefficients)
+
   private[sparkling] var h2oMojoModel: MojoModel = null
 
   /**
@@ -326,6 +332,7 @@ abstract class H2OMOJOModel
         "default_threshold",
         _.getAsDouble(),
         $(defaultThreshold)))
+    set(this.coefficients -> extractCoefficients(outputJson))
     setOutputParameters(outputJson)
     h2oMojoModel = mojoModel
   }
@@ -476,7 +483,11 @@ trait H2OMOJOModelUtils extends Logging {
   }
 
   protected[models] def extractModelSummary(outputJson: JsonObject): DataFrame = {
-    val df = jsonFieldToDataFrame(outputJson, "model_summary")
+    extractStandardTable(outputJson, "model_summary")
+  }
+
+  private def extractStandardTable(outputJson: JsonObject, tableNameInJson: String): DataFrame = {
+    val df = jsonFieldToDataFrame(outputJson, tableNameInJson)
     if (df != null && df.columns.contains("-")) df.drop("-") else df
   }
 
@@ -589,8 +600,11 @@ trait H2OMOJOModelUtils extends Logging {
   }
 
   protected def extractScoringHistory(outputJson: JsonObject): DataFrame = {
-    val df = jsonFieldToDataFrame(outputJson, "scoring_history")
-    if (df != null && df.columns.contains("-")) df.drop("-") else df
+    extractStandardTable(outputJson, "scoring_history")
+  }
+
+  protected def extractCoefficients(outputJson: JsonObject): DataFrame = {
+    extractStandardTable(outputJson, "coefficients_table")
   }
 
   protected def extractJsonTables(outputJson: JsonObject, fieldName: String): Array[DataFrame] = {
