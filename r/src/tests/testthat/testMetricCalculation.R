@@ -130,14 +130,14 @@ test_that("test calculation of multinomial metrics", {
 
   metrics <- H2OMultinomialMetrics.calculate(predictions, domainValues[["class"]], labelCol = "class")
 
-  aucValue <- metrics$getAUC()
+  logloss <- metrics$getLogloss()
   scoringTime <- metrics$getScoringTime()
 
   confusionMatrix <- metrics$getConfusionMatrix()
   confusionMatrixFrame <- dplyr::tally(confusionMatrix)
   confusionMatrixCount <- as.double(dplyr::collect(confusionMatrixFrame)[[1]])
 
-  expect_true(aucValue > 0.6)
+  expect_true(logloss > 0.0)
   expect_true(scoringTime > 0)
   expect_true(confusionMatrixCount > 0)
 })
