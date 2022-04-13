@@ -16,6 +16,7 @@ Machine Learning
    sw_coxph
    sw_deep_learning
    sw_rule_fit
+   sw_stacked_ensemble
 
 **Feature Estimators**
 

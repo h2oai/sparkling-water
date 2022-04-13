@@ -27,9 +27,11 @@ import hex.schemas.Word2VecModelV3.Word2VecModelOutputV3
 import hex.schemas.{DeepLearningV3, GLRMV3, PCAV3, Word2VecV3}
 import hex.word2vec.Word2VecModel.Word2VecParameters
 
-trait FeatureEstimatorConfigurations extends ConfigurationsBase {
+class FeatureEstimatorConfigurations extends MultipleAlgorithmsConfiguration {
 
-  override def parametersConfiguration: Seq[ParameterSubstitutionContext] = super.parametersConfiguration ++ {
+  override def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
+
+    import AlgorithmConfigurations.ignoredCols
 
     val dlFields = Seq(
       ExplicitField("initial_biases", "HasInitialBiases", null),
@@ -107,11 +109,11 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
         explicitDefaultValues,
         typeExceptions = Map.empty,
         defaultValueSource = DefaultValueSource.Field,
-        defaultValuesOfCommonParameters = defaultValuesOfCommonParameters ++ extraDefaultValues,
+        defaultValuesOfCommonParameters = AlgorithmConfigurations.defaultValuesOfCommonParameters ++ extraDefaultValues,
         generateParamTag = true)
   }
 
-  override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = super.algorithmConfiguration ++ {
+  override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
 
     val algorithms = Seq[(String, Class[_], String, Option[String])](
       ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OAutoEncoderBase", Some("H2OAutoEncoderMetrics")),
@@ -128,7 +130,7 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
         specificMetricsClass = metricsClass)
   }
 
-  override def modelOutputConfiguration: Seq[ModelOutputSubstitutionContext] = super.modelOutputConfiguration ++ {
+  override def modelOutputConfiguration: Seq[ModelOutputSubstitutionContext] = {
     val modelOutputs = Seq[(String, Class[_])](
       ("H2OAutoEncoderModelOutputs", classOf[DeepLearningModelOutputV3]),
       ("H2OPCAModelOutputs", classOf[PCAModelOutputV3]),

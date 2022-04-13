@@ -16,6 +16,7 @@
 #
 
 from py4j.java_gateway import JavaObject
+from py4j.java_collections import JavaArray
 from pyspark.ml.linalg import DenseVector, DenseMatrix
 from pyspark.ml.param import TypeConverters
 from pyspark.ml.util import _jvm
@@ -398,6 +399,18 @@ class H2OTypeConverters(object):
                 module = package.__getattr__("MODULE$")
                 module.checkIfSupported(javaObj)
                 return javaObj
+
+        return convert
+
+    @staticmethod
+    def toNullableListJavaObject():
+        def convert(value):
+            if value is None:
+                return None
+            elif isinstance(value, list) or isinstance(value, JavaArray):
+                return [H2OTypeConverters.toJavaObj()(obj) for obj in value]
+            else:
+                raise TypeError("Invalid type: " + str(type(value)))
 
         return convert
 

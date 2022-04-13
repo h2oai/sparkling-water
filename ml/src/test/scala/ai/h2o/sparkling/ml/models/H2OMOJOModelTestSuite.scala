@@ -18,10 +18,9 @@
 package ai.h2o.sparkling.ml.models
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
-
 import ai.h2o.sparkling.ml.algos.classification.H2OGBMClassifier
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
-import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM, H2OGLM}
+import ai.h2o.sparkling.ml.algos.{H2ODRF, H2ODeepLearning, H2OGBM, H2OGLM, H2OStackedEnsemble}
 import ai.h2o.sparkling.ml.metrics.H2OBinomialMetrics
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.feature.VectorAssembler
@@ -155,6 +154,11 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     testModelReload("deeplearning_model_import_export", inputDf, model)
   }
 
+  test("[MOJO] Export and import - stacked ensemble model") {
+    val (inputDf, model) = stackedEnsembleModelFixture()
+    testModelReload("stacked_ensemble_model_import_export", inputDf, model)
+  }
+
   test("[MOJO] Load from mojo file - binomial model") {
     val (inputDf, mojoModel) = savedBinomialModel()
     val (_, model) = binomialModelFixture()
@@ -176,6 +180,12 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
   test("[MOJO] Load from mojo file - deep learning model") {
     val (inputDf, mojoModel) = savedDeepLearningModel()
     val (_, model) = deepLearningModelFixture()
+    assertEqual(mojoModel, model, inputDf)
+  }
+
+  test("[MOJO] Load from mojo file - stacked ensemble model") {
+    val (inputDf, mojoModel) = savedStackedEnsembleModel()
+    val (_, model) = stackedEnsembleModelFixture()
     assertEqual(mojoModel, model, inputDf)
   }
 
@@ -364,6 +374,33 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     (inputDf, dl.fit(inputDf))
   }
 
+  private def stackedEnsembleModelFixture() = {
+    val inputDf = prostateDataFrame.withColumn("CAPSULE", col("CAPSULE").cast("string"))
+
+    val drf = new H2ODRF()
+      .setLabelCol("CAPSULE")
+      .setNfolds(5)
+      .setFoldAssignment("Modulo")
+      .setSeed(42)
+      .setKeepBinaryModels(true)
+      .setKeepCrossValidationPredictions(true)
+
+    val gbm = new H2OGBM()
+      .setLabelCol("CAPSULE")
+      .setNfolds(5)
+      .setFoldAssignment("Modulo")
+      .setSeed(42)
+      .setKeepBinaryModels(true)
+      .setKeepCrossValidationPredictions(true)
+
+    val ensemble = new H2OStackedEnsemble()
+      .setBaseAlgorithms(Array(drf, gbm))
+      .setLabelCol("CAPSULE")
+      .setSeed(42)
+
+    (inputDf, ensemble.fit(inputDf))
+  }
+
   private def savedBinomialModel() = {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("binom_model_prostate.mojo"),
@@ -389,6 +426,13 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("deep_learning_prostate.mojo"),
       "deep_learning_prostate.mojo")
+    (prostateDataFrame, mojo)
+  }
+
+  private def savedStackedEnsembleModel() = {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("stacked_ensemble_prostate.mojo"),
+      "stacked_ensemble_prostate.mojo")
     (prostateDataFrame, mojo)
   }
 

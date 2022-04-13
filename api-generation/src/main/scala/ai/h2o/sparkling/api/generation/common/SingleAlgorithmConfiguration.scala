@@ -17,21 +17,21 @@
 
 package ai.h2o.sparkling.api.generation.common
 
-trait ConfigurationsBase {
-  val ignoredCols = ExplicitField("ignored_columns", "HasIgnoredCols", null, None, Some("HasIgnoredColsOnMOJO"))
+/**
+  * It's expected that this configuration source describes just one algorithm (e.g. AutoML, GridSearch, ...)
+  * where the whole parametersConfiguration (sequence) is relevant to the algorithm
+  */
+trait SingleAlgorithmConfiguration extends ConfigurationSource {
 
-  val defaultValuesOfCommonParameters = Map(
-    "convertUnknownCategoricalLevelsToNa" -> false,
-    "convertInvalidNumbersToNa" -> false,
-    "validationDataFrame" -> null,
-    "splitRatio" -> 1.0,
-    "columnsToCategorical" -> Array.empty[String],
-    "keepBinaryModels" -> false,
-    "dataFrameSerializer" -> "ai.h2o.sparkling.utils.JSONDataFrameSerializer")
+  override def algorithmParametersPairs: Seq[(AlgorithmSubstitutionContext, Seq[ParameterSubstitutionContext])] = {
+    Seq((algorithmConfiguration.head, parametersConfiguration))
+  }
 
-  def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = Seq.empty
+  override def specificAlgorithmParametersPairs
+      : Seq[(ProblemSpecificAlgorithmSubstitutionContext, Seq[ParameterSubstitutionContext])] = {
 
-  def parametersConfiguration: Seq[ParameterSubstitutionContext] = Seq.empty
+    val algos = problemSpecificAlgorithmConfiguration
 
-  def modelOutputConfiguration: Seq[ModelOutputSubstitutionContext] = Seq.empty
+    if (algos.isEmpty) Seq.empty else Seq((algos.head, parametersConfiguration))
+  }
 }

@@ -127,6 +127,10 @@ class H2OMOJOModelParams:
         """:return: Default threshold used for predictions"""
         return self._java_obj.getDefaultThreshold()
 
+    def getMojoFileName(self):
+        return self._java_obj.mojoFileName()
+
+
 class H2OAlgorithmMOJOModelParams(H2OMOJOModelParams, H2OAlgorithmMOJOModelBase):
     pass
 
