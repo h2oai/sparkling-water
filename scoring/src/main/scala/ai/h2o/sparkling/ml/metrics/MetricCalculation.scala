@@ -124,7 +124,14 @@ trait MetricCalculation {
       .reduce((f, s) => { f.reduce(s); f })
 
     filledMetricsBuilder.postGlobal()
-    val metrics = filledMetricsBuilder.makeModelMetrics(null, null, null, null)
+
+    // Setting parameters of makeModelMetrics to null since they are required only by H2O runtime
+    val model = null
+    val frame = null
+    val adaptedFrame = null
+    val predictions  = null
+    val metrics = filledMetricsBuilder.makeModelMetrics(model, frame, adaptedFrame, predictions)
+
     val schema = metricsToSchema(metrics)
     val json = schema.toJsonString
     new GsonBuilder().create().fromJson(json, classOf[JsonObject])

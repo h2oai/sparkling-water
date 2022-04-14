@@ -57,14 +57,14 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     metricsObject.isInstanceOf[T] should be(true)
     MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
     val binomialObject = metricsObject.asInstanceOf[H2OBinomialMetrics]
-    binomialObject.getConfusionMatrix().count() > 0
-    binomialObject.getConfusionMatrix().columns.length > 0
-    binomialObject.getGainsLiftTable().count() > 0
-    binomialObject.getGainsLiftTable().columns.length > 0
-    binomialObject.getMaxCriteriaAndMetricScores().count() > 0
-    binomialObject.getMaxCriteriaAndMetricScores().columns.length > 0
-    binomialObject.getThresholdsAndMetricScores().count() > 0
-    binomialObject.getThresholdsAndMetricScores().columns.length > 0
+    binomialObject.getConfusionMatrix().isEmpty should be (false)
+    binomialObject.getConfusionMatrix().columns should not be empty
+    binomialObject.getGainsLiftTable().isEmpty should be (false)
+    binomialObject.getGainsLiftTable().columns should not be empty
+    binomialObject.getMaxCriteriaAndMetricScores().isEmpty should be (false)
+    binomialObject.getMaxCriteriaAndMetricScores().columns should not be empty
+    binomialObject.getThresholdsAndMetricScores().isEmpty should be (false)
+    binomialObject.getThresholdsAndMetricScores().columns should not be empty
   }
 
   private def assertMetrics(

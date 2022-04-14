@@ -54,10 +54,10 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
     metricsObject.isInstanceOf[T] should be(true)
     MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
     val multinomialObject = metricsObject.asInstanceOf[H2OMultinomialMetrics]
-    multinomialObject.getConfusionMatrix().count() > 0
-    multinomialObject.getConfusionMatrix().columns.length > 0
-    multinomialObject.getHitRatioTable().count() > 0
-    multinomialObject.getHitRatioTable().columns.length > 0
+    multinomialObject.getConfusionMatrix().isEmpty should be (false)
+    multinomialObject.getConfusionMatrix().columns should not be empty
+    multinomialObject.getHitRatioTable().isEmpty should be (false)
+    multinomialObject.getHitRatioTable().columns should not be empty
   }
 
   private def assertMetrics(

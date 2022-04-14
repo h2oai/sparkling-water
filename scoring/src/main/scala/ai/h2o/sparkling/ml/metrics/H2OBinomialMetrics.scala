@@ -94,6 +94,8 @@ object H2OBinomialMetrics extends MetricCalculation {
     calculate(dataFrame, domain, predictionCol, labelCol, Option(weightCol), Option(offsetCol))
   }
 
+  private val unusedLabelIndex: Double = -1.0
+
   override protected def getPredictionValues(dataType: DataType, domain: Array[String], row: Row): Array[Double] = {
     dataType match {
       case StructType(fields)
@@ -107,14 +109,14 @@ object H2OBinomialMetrics extends MetricCalculation {
         Array(index) ++ probabilities.toSeq.map(_.asInstanceOf[Double])
       case StructType(fields) if fields.forall(_.dataType == DoubleType) && fields.length == 2 =>
         val probabilities = row.getStruct(0)
-        Array(-1.0) ++ probabilities.toSeq.map(_.asInstanceOf[Double])
+        Array(unusedLabelIndex) ++ probabilities.toSeq.map(_.asInstanceOf[Double])
       case DoubleType => probabilityToArray(row.getDouble(0))
       case FloatType => probabilityToArray(row.getFloat(0).toDouble)
     }
   }
 
   private def probabilityToArray(probability: Double): Array[Double] = {
-    Array[Double](-1 /* unused */, 1 - probability, probability)
+    Array[Double](unusedLabelIndex, 1 - probability, probability)
   }
 
   override protected def getActualValue(dataType: DataType, domain: Array[String], row: Row): Double = {
