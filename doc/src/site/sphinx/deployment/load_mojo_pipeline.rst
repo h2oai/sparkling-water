@@ -173,7 +173,7 @@ By default, this option is enabled.
 Overriding MOJO library
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Both full distribution and the scoring package include shaded MOJO2 Runtime Implementation (ai.h2o:mojo2-runtime-impl) so you don't have to worry about it.
+Both full distribution and the scoring package include MOJO2 Runtime Implementation (``ai.h2o:mojo2-runtime-impl``) so you don't have to worry about it.
 We try to update it to the newest possible version when releasing Sparkling Water, however in some cases you might want to override the dependency yourself.
 
 To do that add the MOJO2 jar to the jars list **before** the Sparkling Water scoring jar:
@@ -187,12 +187,20 @@ To do that add the MOJO2 jar to the jars list **before** the Sparkling Water sco
 
             ./bin/spark-shell --jars license.sig,mojo2-runtime-impl-2.7.5.jar,jars/sparkling-water-assembly-scoring_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
 
+        .. code:: bash
+
+            ./bin/sparkling-shell --jars license.sig,mojo2-runtime-impl-2.7.5.jar,jars/sparkling-water-assembly-scoring_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
+
     .. tab-container:: Python
         :title: Python
 
         .. code:: bash
 
             SUBST_PYTHON_PATH_WORKAROUND./bin/pyspark --jars license.sig,mojo2-runtime-impl-2.7.5.jar --py-files py/h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
+
+        .. code:: bash
+
+            ./bin/pysparkling --jars license.sig,mojo2-runtime-impl-2.7.5.jar
 
 As mentioned above, in local Spark mode, please use ``--driver-class-path``.
 
