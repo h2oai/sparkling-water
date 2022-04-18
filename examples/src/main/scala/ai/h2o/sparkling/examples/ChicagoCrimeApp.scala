@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.examples
 
 import java.io.File
-
 import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM}
 import ai.h2o.sparkling.ml.models.H2OMOJOModel
@@ -95,7 +94,7 @@ object ChicagoCrimeApp {
     val dlModel = trainDeepLearning(joinedDataForTraining)
 
     val crimesToScore = Seq(
-      Crime(
+      CrimeWithCensusData(
         date = "02/08/2015 11:43:58 PM",
         IUCR = 1811,
         Primary_Type = "NARCOTICS",
@@ -105,8 +104,15 @@ object ChicagoCrimeApp {
         District = 4,
         Ward = 7,
         Community_Area = 46,
-        FBI_Code = 18),
-      Crime(
+        FBI_Code = 18,
+        PERCENT_AGED_UNDER_18_OR_OVER_64 = 41.1,
+        PER_CAPITA_INCOME = 16579,
+        HARDSHIP_INDEX = 75,
+        PERCENT_OF_HOUSING_CROWDED = 4.7,
+        PERCENT_HOUSEHOLDS_BELOW_POVERTY = 29.8,
+        PERCENT_AGED_16_UNEMPLOYED = 19.7,
+        PERCENT_AGED_25_WITHOUT_HIGH_SCHOOL_DIPLOMA = 26.6),
+      CrimeWithCensusData(
         date = "02/08/2015 11:00:39 PM",
         IUCR = 1150,
         Primary_Type = "DECEPTIVE PRACTICE",
@@ -116,8 +122,16 @@ object ChicagoCrimeApp {
         District = 9,
         Ward = 14,
         Community_Area = 63,
-        FBI_Code = 11))
-    score(crimesToScore, gbmModel, dlModel, censusTable)
+        FBI_Code = 11,
+        PERCENT_AGED_UNDER_18_OR_OVER_64 = 38.8,
+        PER_CAPITA_INCOME = 12171,
+        HARDSHIP_INDEX = 93,
+        PERCENT_OF_HOUSING_CROWDED = 15.8,
+        PERCENT_HOUSEHOLDS_BELOW_POVERTY = 23.4,
+        PERCENT_AGED_16_UNEMPLOYED = 18.2,
+        PERCENT_AGED_25_WITHOUT_HIGH_SCHOOL_DIPLOMA = 51.5)).toDF
+
+    score(addAdditionalDateColumns(crimesToScore), gbmModel, dlModel)
   }
 
   private def trainGBM(train: DataFrame): H2OMOJOModel = {
@@ -144,28 +158,17 @@ object ChicagoCrimeApp {
     dl.fit(train)
   }
 
-  private def score(crimes: Seq[Crime], gbmModel: H2OMOJOModel, dlModel: H2OMOJOModel, censusTable: DataFrame)(
+  private def score(crimes: DataFrame, gbmModel: H2OMOJOModel, dlModel: H2OMOJOModel)(
       implicit spark: SparkSession): Unit = {
-    crimes.foreach { crime =>
-      val arrestGBM = scoreEvent(crime, gbmModel, censusTable)
-      val arrestDL = scoreEvent(crime, dlModel, censusTable)
-      println(s"""
-           |Crime: $crime
-           |  Will be arrested based on DeepLearning: $arrestDL
-           |  Will be arrested based on GBM: $arrestGBM
+    import spark.implicits._
+    val arrestGBM = gbmModel.transform(crimes)
+    val arrestDL = dlModel.transform(crimes)
+    val willBeArrestedPrediction = $"prediction" === "1"
+    println(s"""
+           |  Will be arrested based on DeepLearning: ${arrestDL.where(willBeArrestedPrediction).count()}
+           |  Will be arrested based on GBM: ${arrestGBM.where(willBeArrestedPrediction).count()}
            |
         """.stripMargin)
-    }
-  }
-
-  private def scoreEvent(crime: Crime, model: H2OMOJOModel, censusTable: DataFrame)(
-      implicit spark: SparkSession): Boolean = {
-    import spark.implicits._
-    val df = addAdditionalDateColumns(Seq(crime).toDF)
-    // Join table with census data
-    val row = censusTable.join(df).where('Community_Area === 'Community_Area_Number)
-    val predictTable = model.transform(row)
-    predictTable.collect().head.getAs[String]("prediction") == "1"
   }
 
   private def loadCsv(dataPath: String)(implicit spark: SparkSession): DataFrame = {
@@ -220,7 +223,7 @@ object ChicagoCrimeApp {
     }
   }
 
-  private case class Crime(
+  case class CrimeWithCensusData(
       date: String,
       IUCR: Short,
       Primary_Type: String,
@@ -230,6 +233,13 @@ object ChicagoCrimeApp {
       District: Byte,
       Ward: Byte,
       Community_Area: Byte,
-      FBI_Code: Byte)
+      FBI_Code: Byte,
+      PERCENT_AGED_UNDER_18_OR_OVER_64: Double,
+      PER_CAPITA_INCOME: Int,
+      HARDSHIP_INDEX: Short,
+      PERCENT_OF_HOUSING_CROWDED: Double,
+      PERCENT_HOUSEHOLDS_BELOW_POVERTY: Double,
+      PERCENT_AGED_16_UNEMPLOYED: Double,
+      PERCENT_AGED_25_WITHOUT_HIGH_SCHOOL_DIPLOMA: Double)
 
 }
