@@ -653,7 +653,6 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       .setComputePValues(true)
       .fit(prostateDataFrame)
 
-    model.getCoefficients().show()
     val coefficients = model.getCoefficients()
     coefficients.columns should contain theSameElementsAs Array(
       "names",
