@@ -159,12 +159,21 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   }
 
   /** Transform DataFrame to H2OFrame */
-  def asH2OFrame(df: DataFrame): H2OFrame = asH2OFrame(df, None)
+  def asH2OFrame(df: DataFrame): H2OFrame = asH2OFrame(df, frameName = None)
+
+  def asH2OFrame(df: DataFrame, featureColumns: Seq[String]): H2OFrame =
+    asH2OFrame(df, frameName = None, Some(featureColumns))
 
   def asH2OFrame(df: DataFrame, frameName: String): H2OFrame = asH2OFrame(df, Option(frameName))
 
-  def asH2OFrame(df: DataFrame, frameName: Option[String]): H2OFrame = {
-    withConversionDebugPrints(sparkContext, "Dataframe", SparkDataFrameConverter.toH2OFrame(this, df, frameName))
+  def asH2OFrame(
+      df: DataFrame,
+      frameName: Option[String] = None,
+      featureColumns: Option[Seq[String]] = None): H2OFrame = {
+    withConversionDebugPrints(
+      sparkContext,
+      "Dataframe",
+      SparkDataFrameConverter.toH2OFrame(this, df, frameName, featureColumns))
   }
 
   /** Transforms Dataset[Supported type] to H2OFrame */

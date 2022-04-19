@@ -95,6 +95,8 @@ trait K8sH2OStatefulSet extends K8sUtils {
     }
   }
 
+  private def getNthreades(conf: H2OConf): Int = if (conf.nthreads > 0) conf.nthreads else 1
+
   private def spec(conf: H2OConf, headlessServiceURL: String): InputStream = {
     val spec = s"""
                   |apiVersion: apps/v1
@@ -120,6 +122,10 @@ trait K8sH2OStatefulSet extends K8sUtils {
                   |          image: '${conf.externalK8sDockerImage}'
                   |          resources:
                   |            requests:
+                  |              cpu: ${getNthreades(conf)}
+                  |              memory: "${conf.externalMemory}"
+                  |            limits:
+                  |              cpu: ${getNthreades(conf)}
                   |              memory: "${conf.externalMemory}"
                   |          ports:
                   |            - containerPort: 54321
