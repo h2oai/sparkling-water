@@ -80,7 +80,10 @@ class H2OFrame private (
   def convertColumnsToCategorical(columns: Array[String]): H2OFrame = {
     val indices = columnNames.zipWithIndex.toMap
     val selectedIndices = columns.map { name =>
-      indices.getOrElse(name, throw new IllegalArgumentException(s"Column $name does not exist in the frame $frameId"))
+      indices.getOrElse(
+        name,
+        throw new IllegalArgumentException(
+          s"Column $name does not exist in the frame $frameId. Available columns: ${columnNames.mkString(", ")}"))
     }
     convertColumnsToCategorical(selectedIndices)
   }
