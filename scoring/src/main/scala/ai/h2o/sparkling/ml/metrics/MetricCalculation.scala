@@ -129,7 +129,7 @@ trait MetricCalculation {
     val model = null
     val frame = null
     val adaptedFrame = null
-    val predictions  = null
+    val predictions = null
     val metrics = filledMetricsBuilder.makeModelMetrics(model, frame, adaptedFrame, predictions)
 
     val schema = metricsToSchema(metrics)
