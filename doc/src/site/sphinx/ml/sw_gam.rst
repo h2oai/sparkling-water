@@ -98,6 +98,13 @@ and :ref:`model_details_H2OGAMMOJOModel`.
 
         You can also get model details via calling methods listed in :ref:`model_details_H2OGAMMOJOModel`.
 
+        Clean up
+
+        .. code:: scala
+
+            frameKnots1.delete()
+            frameKnots2.delete()
+            frameKnots3.delete()
 
     .. tab-container:: Python
         :title: Python
@@ -175,3 +182,12 @@ and :ref:`model_details_H2OGAMMOJOModel`.
             model.transform(testingDF).show(truncate = False)
 
         You can also get model details via calling methods listed in :ref:`model_details_H2OGAMMOJOModel`.
+
+        Clean up
+
+        .. code:: python
+
+            h2o.remove(frameKnots1)
+            h2o.remove(frameKnots2)
+            h2o.remove(frameKnots3)
+            h2o.remove(frame)
