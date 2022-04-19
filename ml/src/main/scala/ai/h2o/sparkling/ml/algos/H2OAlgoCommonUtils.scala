@@ -20,7 +20,7 @@ import ai.h2o.sparkling.backend.utils.H2OFrameLifecycle
 import ai.h2o.sparkling.ml.models.H2OBinaryModel
 import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
-import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.sql.{Column, DataFrame, Dataset}
 import org.apache.spark.sql.functions.col
 
 trait H2OAlgoCommonUtils extends EstimatorCommonUtils with H2OFrameLifecycle {
@@ -76,16 +76,12 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils with H2OFrameLifecycle {
 
     val featureColumns = getInputCols().map(sanitize).map(col)
 
-    if (dataset.select(featureColumns: _*).distinct().count() == 1) {
-      throw new IllegalArgumentException(s"H2O could not use any of the specified input" +
-        s" columns: '${getInputCols().mkString(", ")}' because they are all constants. H2O requires at least one non-constant column.")
-    }
     val excludedColumns = excludedCols.map(sanitize).map(col)
     val additionalColumns = getAdditionalCols().map(sanitize).map(col)
     val columns = (featureColumns ++ excludedColumns ++ additionalColumns).distinct
     val h2oContext = H2OContext.ensure(
       "H2OContext needs to be created in order to train the model. Please create one as H2OContext.getOrCreate().")
-    val trainFrame = h2oContext.asH2OFrame(dataset.select(columns: _*).toDF())
+    val trainFrame = h2oContext.asH2OFrame(dataset.select(columns: _*).toDF(), getInputCols())
 
     trainFrame.convertColumnsToStrings(getColumnsToString())
 

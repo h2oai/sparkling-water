@@ -373,10 +373,12 @@ object SharedBackendConf {
     "spark.ext.h2o.nthreads",
     -1,
     "setNthreads(Integer)",
-    """Limit for number of threads used by H2O, default ``-1`` means: Use value of ``spark.executor.cores`` in
-      |case this property is set. Otherwise use H2O's default
-      |value Runtime.getRuntime()
-      |.availableProcessors()""".stripMargin)
+    """Limit for number of threads used by H2O.
+      |Default ``-1`` using internal backend means: Use the value of ``spark.executor.cores`` if the property is set,
+      |otherwise use H2O's default value Runtime.getRuntime().availableProcessors().
+      |Default ``-1`` using automatically started external backend on Hadoop means:
+      |Use H2O's default value Runtime.getRuntime().availableProcessors()
+      |Default ``-1`` using automatically started external backend on Kubernetes means: Use just one cpu.""".stripMargin)
 
   val PROP_PROGRESS_BAR_ENABLED: BooleanOption = (
     "spark.ext.h2o.progressbar.enabled",

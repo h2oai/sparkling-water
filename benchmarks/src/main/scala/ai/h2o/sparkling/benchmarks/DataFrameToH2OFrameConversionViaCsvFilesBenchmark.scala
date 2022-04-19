@@ -17,7 +17,6 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import java.net.URI
 import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.sql.{DataFrame, SaveMode}
 
