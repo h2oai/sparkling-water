@@ -330,3 +330,26 @@ def testGetModelSummary():
                                              'Rate RMS': 0.0009573120623826981, 'Momentum': 0.0,
                                              'Mean Weight': 0.0009763148391539289, 'Weight RMS': 0.06601589918136597,
                                              'Mean Bias': 0.002604305485232783, 'Bias RMS': 1.0971281125650402e-154}
+
+
+def testGetCoefficients(prostateDataset):
+    predictors = ["AGE", "RACE", "VOL", "GLEASON"]
+    response = "CAPSULE"
+    dataset = prostateDataset.withColumn("CAPSULE", prostateDataset.CAPSULE.cast("string"))
+    glm = H2OGLM(family="binomial",
+                 featuresCols=predictors,
+                 labelCol=response,
+                 seed=1,
+                 computePValues=True,
+                 lambdaValue=[0])
+    model = glm.fit(dataset)
+    coefficients = model.getCoefficients()
+
+    assert coefficients.columns == ['names',
+                                    'Coefficients',
+                                    'Std. Error',
+                                    'z value',
+                                    'p value',
+                                    'Standardized Coefficients']
+    row_names = [row.names for row in coefficients.select("names").collect()]
+    assert row_names == ['Intercept', 'AGE', 'RACE', 'VOL', 'GLEASON']
