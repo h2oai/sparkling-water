@@ -1,6 +1,40 @@
 Change Log
 ==========
 
+v3.36.1.1-1 (2022-04-20)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.1-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.1-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.1-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.1-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.1-1-3.2/index.html>`__
+
+-  Improvement
+
+   -  `SW-2705 <https://0xdata.atlassian.net/browse/SW-2705>`__ - Upgrade H2O to 3.36.1.1
+   -  `SW-2682 <https://0xdata.atlassian.net/browse/SW-2682>`__ - Peformance improvement: do constant check & row count in one iteration
+
+-  Docs
+
+   -  `SW-2704 <https://0xdata.atlassian.net/browse/SW-2704>`__ - Change GAM tutorial to be on par with h2o-3
+   -  `SW-2703 <https://0xdata.atlassian.net/browse/SW-2703>`__ - Add GLM tutorial and expose coefficients
+   -  `SW-2651 <https://0xdata.atlassian.net/browse/SW-2651>`__ - Dockument Ability to Override Mojo Runtime lib in SW
+
+-  Engineering Story
+
+   -  `SW-2702 <https://0xdata.atlassian.net/browse/SW-2702>`__ - Upgrade Scala on Builds for Spark 3.0 and 3.1 to 2.12.15
+   -  `SW-2700 <https://0xdata.atlassian.net/browse/SW-2700>`__ - Add spline_orders to Tests Covering Parameter Propagation to H2OGAMMOJOModel
+   -  `SW-2699 <https://0xdata.atlassian.net/browse/SW-2699>`__ - Fix Failing AutoML Test
+   -  `SW-2698 <https://0xdata.atlassian.net/browse/SW-2698>`__ - Update Spark in Docker Images to 3.1.3
+
+-  New Feature
+
+   -  `SW-2701 <https://0xdata.atlassian.net/browse/SW-2701>`__ - Add Ability to Specify Number of Cores with Automatic External Backend on K8s 
+   -  `SW-1184 <https://0xdata.atlassian.net/browse/SW-1184>`__ - Add H2O Stacked Ensembles to Algo API
+
 v3.36.0.4-1 (2022-04-01)
 ------------------------
 Downloads:
