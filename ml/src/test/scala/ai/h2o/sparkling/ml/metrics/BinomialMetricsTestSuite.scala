@@ -57,13 +57,13 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     metricsObject.isInstanceOf[T] should be(true)
     MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
     val binomialObject = metricsObject.asInstanceOf[H2OBinomialMetrics]
-    binomialObject.getConfusionMatrix().isEmpty should be(false)
+    binomialObject.getConfusionMatrix().count() should be > (0L)
     binomialObject.getConfusionMatrix().columns should not be empty
-    binomialObject.getGainsLiftTable().isEmpty should be(false)
+    binomialObject.getGainsLiftTable().count() should be > (0L)
     binomialObject.getGainsLiftTable().columns should not be empty
-    binomialObject.getMaxCriteriaAndMetricScores().isEmpty should be(false)
+    binomialObject.getMaxCriteriaAndMetricScores().count() should be > (0L)
     binomialObject.getMaxCriteriaAndMetricScores().columns should not be empty
-    binomialObject.getThresholdsAndMetricScores().isEmpty should be(false)
+    binomialObject.getThresholdsAndMetricScores().count() should be > (0L)
     binomialObject.getThresholdsAndMetricScores().columns should not be empty
   }
 
