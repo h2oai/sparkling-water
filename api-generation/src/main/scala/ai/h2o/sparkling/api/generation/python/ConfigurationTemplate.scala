@@ -80,8 +80,8 @@ object ConfigurationTemplate extends ((Array[Method], Array[Method], Class[_]) =
          |        return self
          |""".stripMargin
     } else {
-      s"""    def ${m.getName}(self, value):
-         |        self._jconf.${m.getName}(value)
+      s"""    def ${m.getName}(self, *args):
+         |        self._jconf.${m.getName}(*args)
          |        return self
          |""".stripMargin
     }
