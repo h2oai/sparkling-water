@@ -77,10 +77,6 @@ object ConfigurationTemplate extends ((Array[Method], Array[Method], Class[_]) =
   }
 
   private def generateSetter(m: Method): String = {
-    if (m.getParameterCount == 0) {
-      s"""    ${m.getName} = function() { invoke(jconf, "${m.getName}"); .self }"""
-    } else {
-      s"""    ${m.getName} = function(value) { invoke(jconf, "${m.getName}", value); .self }"""
-    }
+    s"""    ${m.getName} = function(...) { invoke(jconf, "${m.getName}", ...); .self }"""
   }
 }
