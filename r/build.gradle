@@ -77,8 +77,15 @@ task test(type: Exec, dependsOn: distR) {
   environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
 
   workingDir "${project.buildDir}/src"
-  def testCmd = "library(sparklyr);library(devtools);devtools::test(stop_on_failure = TRUE)"
-  commandLine getOsSpecificCommandLine(["R", "-e", testCmd])
+  def testCmd = {
+    if (project.hasProperty("file")) {
+      def testFile = project.property("file").toString()
+      "library(sparklyr);library(devtools);devtools::test_active_file(file=\"${testFile}\")"
+    } else {
+      "library(sparklyr);library(devtools);devtools::test(stop_on_failure = TRUE)"
+    }
+  }
+  commandLine getOsSpecificCommandLine(["R", "-e", testCmd()])
 }
 
 task installH2ORPackage(type: Exec) {
