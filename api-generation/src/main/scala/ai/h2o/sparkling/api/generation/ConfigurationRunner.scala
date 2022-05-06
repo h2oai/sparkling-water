@@ -39,14 +39,27 @@ object ConfigurationRunner {
   }
 
   private def setters(className: String): Array[Method] = {
+    methodsWithMaxArity(getSetterMethods(className))
+  }
+
+  private def getSetterMethods(className: String) = {
     getBaseMethods(className)
       .filter(m => m.getName.startsWith("set") || specialSetters.contains(m.getName))
+  }
+
+  private def methodsWithMaxArity(methods: Array[Method]): Array[Method] = {
+    methods
       .foldLeft(Array[Method]()) {
         case (acc, method) =>
-          if (!acc.exists(_.getName == method.getName)) {
-            acc ++ Array(method)
+          val index = acc.indexWhere(_.getName == method.getName)
+          if (index == -1) {
+            acc :+ method
           } else {
-            acc
+            if (acc(index).getParameterCount < method.getParameterCount) {
+              acc.updated(index, method)
+            } else {
+              acc
+            }
           }
       }
   }
