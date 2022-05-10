@@ -17,7 +17,7 @@ object ConfigurationRunner {
       "ai.h2o.sparkling.backend.internal.InternalBackendConf")
     classes.foreach { clazz =>
       writeResultToFile(
-        template(getters(clazz), setters(clazz), Class.forName(clazz)),
+        template(getters(clazz), setters(clazz), setterArities(clazz), Class.forName(clazz)),
         clazz.split("\\.").last,
         destinationDir,
         language)
@@ -39,29 +39,33 @@ object ConfigurationRunner {
   }
 
   private def setters(className: String): Array[Method] = {
-    methodsWithMaxArity(getSetterMethods(className))
-  }
-
-  private def getSetterMethods(className: String) = {
-    getBaseMethods(className)
-      .filter(m => m.getName.startsWith("set") || specialSetters.contains(m.getName))
-  }
-
-  private def methodsWithMaxArity(methods: Array[Method]): Array[Method] = {
-    methods
+    getSetterMethods(className)
       .foldLeft(Array[Method]()) {
         case (acc, method) =>
-          val index = acc.indexWhere(_.getName == method.getName)
-          if (index == -1) {
+          if (!acc.exists(_.getName == method.getName)) {
             acc :+ method
           } else {
-            if (acc(index).getParameterCount < method.getParameterCount) {
-              acc.updated(index, method)
-            } else {
-              acc
-            }
+            acc
           }
       }
+  }
+
+  private def setterArities(className: String): Map[String, List[Int]] = {
+    getSetterMethods(className)
+      .foldLeft(Map[String, List[Int]]()) {
+        case (arityMap, method) =>
+          if (!arityMap.contains(method.getName)) {
+            arityMap + (method.getName -> List(method.getParameterCount))
+          } else {
+            val updatedArities = method.getParameterCount :: arityMap(method.getName)
+            arityMap.updated(method.getName, updatedArities)
+          }
+      }
+  }
+
+  private def getSetterMethods(className: String): Array[Method] = {
+    getBaseMethods(className)
+      .filter(m => m.getName.startsWith("set") || specialSetters.contains(m.getName))
   }
 
   private def writeResultToFile(content: String, fileName: String, destinationDir: String, language: String) = {
