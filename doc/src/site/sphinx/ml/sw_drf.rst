@@ -65,7 +65,7 @@ and :ref:`model_details_H2ODRFMOJOModel`.
                   .setBinomialDoubleTrees(true)
                   .setFeaturesCols(predictors)
                   .setLabelCol(response)
-                  .setColumnsToCategorical(response) //set the response as a factor
+                  .setColumnsToCategorical(response) //set the response as a factor, please see the comment below
             val model = estimator.fit(trainingDF)
 
         By default, the ``H2ODRF`` algorithm distinguishes between a classification and regression problem based on the type of
