@@ -41,7 +41,7 @@ and :ref:`model_details_H2ODRFMOJOModel`.
             import org.apache.spark.SparkFiles
             val datasetUrl = "https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/cars_20mpg.csv"
             spark.sparkContext.addFile(datasetUrl) //for example purposes, on a real cluster it's better to load directly from distributed storage
-            val sparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
+            val sparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("cars_20mpg.csv"))
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
         Set the predictors and response columns
