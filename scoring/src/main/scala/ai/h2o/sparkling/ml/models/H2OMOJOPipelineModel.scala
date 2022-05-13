@@ -104,6 +104,7 @@ class H2OMOJOPipelineModel(override val uid: String)
     val schemaTransport = getTransportSchema()
     val schemaPredict = getPredictionColSchemaInternal()
     val schemaContrib = getContributionsColSchemaInternal()
+    val namedOutputColumns = getNamedMojoOutputColumns()
 
     def transformData(inputMojoFrame: MojoFrame) = {
 
@@ -122,7 +123,7 @@ class H2OMOJOPipelineModel(override val uid: String)
 
       val outputPredictions = mojoPipeline.transform(inputMojoFrame)
       val predictions = mojoFrameToArray(outputPredictions)
-      val content = if (getNamedMojoOutputColumns()) predictions else Array[Any](predictions)
+      val content = if (namedOutputColumns) predictions else Array[Any](predictions)
       contentBuilder += new GenericRowWithSchema(content, schemaPredict)
 
       if (getWithContributions()) {
