@@ -33,9 +33,9 @@ test_that("Test transformation from h2o frame to data frame", {
   hf <- hc$asH2OFrame(sdf)
   sdf2 <- hc$asSparkFrame(hf)
 
-  expect_equivalent(sdf_nrow(sdf2), nrow(hf))
-  expect_equivalent(sdf_ncol(sdf2), ncol(hf))
-  expect_equivalent(colnames(sdf2), colnames(hf))
+  expect_equal(sdf_nrow(sdf2), nrow(hf))
+  expect_equal(sdf_ncol(sdf2), ncol(hf))
+  expect_equal(colnames(sdf2), colnames(hf))
 })
 
 test_that("Test transformation of a spark data_frame of bools to an h2o frame of bools", {
@@ -44,10 +44,10 @@ test_that("Test transformation of a spark data_frame of bools to an h2o frame of
   hc <- H2OContext.getOrCreate()
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equivalent(as.character(hf[1, 1]), "True")
-  expect_equivalent(as.character(hf[1, 2]), "False")
-  expect_equivalent(as.character(hf[1, 3]), "True")
-  expect_equivalent(as.character(hf[1, 4]), "False")
+  expect_equal(as.character(hf[1, 1]), "True")
+  expect_equal(as.character(hf[1, 2]), "False")
+  expect_equal(as.character(hf[1, 3]), "True")
+  expect_equal(as.character(hf[1, 4]), "False")
 })
 
 test_that("Test transformation of a spark data_frame of complex types to an h2o frame of complex types", {
@@ -59,10 +59,10 @@ test_that("Test transformation of a spark data_frame of complex types to an h2o 
   hc <- H2OContext.getOrCreate()
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equivalent(hf[1, 1], 2)
-  expect_equivalent(is.factor(hf[1, 2]), TRUE)
-  expect_equivalent(as.character(hf[1, 2]), "aa")
-  expect_equivalent(as.character(hf[1, 3]), "True")
+  expect_equal(hf[1, 1], 2, ignore_attr = TRUE)
+  expect_equal(is.factor(hf[1, 2]), TRUE)
+  expect_equal(as.character(hf[1, 2]), "aa")
+  expect_equal(as.character(hf[1, 3]), "True")
 })
 
 test_that("Test transformation of a spark data_frame of float types to an h2o frame of floats", {
@@ -71,9 +71,9 @@ test_that("Test transformation of a spark data_frame of float types to an h2o fr
   hc <- H2OContext.getOrCreate()
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equivalent(hf[1, 1], 1.5)
-  expect_equivalent(hf[1, 2], 1.3333333333)
-  expect_equivalent(hf[1, 3], 178.5555)
+  expect_equal(hf[1, 1], 1.5, ignore_attr = TRUE)
+  expect_equal(hf[1, 2], 1.3333333333, ignore_attr = TRUE)
+  expect_equal(hf[1, 3], 178.5555, ignore_attr = TRUE)
 })
 
 test_that("Test transformation of a spark data_frame of int types to an h2o frame of ints", {
@@ -82,9 +82,9 @@ test_that("Test transformation of a spark data_frame of int types to an h2o fram
   hc <- H2OContext.getOrCreate()
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equivalent(hf[1, 1], 1)
-  expect_equivalent(hf[1, 2], 125)
-  expect_equivalent(hf[1, 3], 1778)
+  expect_equal(hf[1, 1], 1, ignore_attr = TRUE)
+  expect_equal(hf[1, 2], 125, ignore_attr = TRUE)
+  expect_equal(hf[1, 3], 1778, ignore_attr = TRUE)
 })
 
 test_that("Test transformation of a spark data_frame of str types to an h2o frame of str", {
@@ -93,12 +93,12 @@ test_that("Test transformation of a spark data_frame of str types to an h2o fram
   hc <- H2OContext.getOrCreate()
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equivalent(is.factor(hf[1, 1]), TRUE)
-  expect_equivalent(is.factor(hf[1, 2]), TRUE)
-  expect_equivalent(is.factor(hf[1, 3]), TRUE)
-  expect_equivalent(as.character(hf[1, 1]), "A")
-  expect_equivalent(as.character(hf[1, 2]), "B")
-  expect_equivalent(as.character(hf[1, 3]), "C")
+  expect_equal(is.factor(hf[1, 1]), TRUE)
+  expect_equal(is.factor(hf[1, 2]), TRUE)
+  expect_equal(is.factor(hf[1, 3]), TRUE)
+  expect_equal(as.character(hf[1, 1]), "A")
+  expect_equal(as.character(hf[1, 2]), "B")
+  expect_equal(as.character(hf[1, 3]), "C")
 })
 
 test_that("Test transformation from dataframe to h2o frame", {
@@ -106,9 +106,9 @@ test_that("Test transformation from dataframe to h2o frame", {
   hc <- H2OContext.getOrCreate()
   mtcars_hf <- hc$asH2OFrame(mtcars_tbl)
 
-  expect_equivalent(sdf_nrow(mtcars_tbl), nrow(mtcars_hf))
-  expect_equivalent(sdf_ncol(mtcars_tbl), ncol(mtcars_hf))
-  expect_equivalent(colnames(mtcars_tbl), colnames(mtcars_hf))
+  expect_equal(sdf_nrow(mtcars_tbl), nrow(mtcars_hf))
+  expect_equal(sdf_ncol(mtcars_tbl), ncol(mtcars_hf))
+  expect_equal(colnames(mtcars_tbl), colnames(mtcars_hf))
 })
 
 test_that("Test transformation from dataframe to h2o frame", {
@@ -116,7 +116,7 @@ test_that("Test transformation from dataframe to h2o frame", {
   hc <- H2OContext.getOrCreate()
   mtcars_hf_name <- hc$asH2OFrame(mtcars_tbl, h2oFrameName = "frame1")
 
-  expect_equivalent(h2o.getId(mtcars_hf_name), "frame1")
+  expect_equal(h2o.getId(mtcars_hf_name), "frame1")
 })
 
 spark_disconnect(sc)
