@@ -59,7 +59,7 @@ test_that("Test transformation of a spark data_frame of complex types to an h2o 
   hc <- H2OContext.getOrCreate()
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equal(hf[1, 1], 2, ignore_attr = TRUE)
+  expect_equal(hf[1, 1], 2, check.attributes = FALSE)
   expect_equal(is.factor(hf[1, 2]), TRUE)
   expect_equal(as.character(hf[1, 2]), "aa")
   expect_equal(as.character(hf[1, 3]), "True")
@@ -71,9 +71,9 @@ test_that("Test transformation of a spark data_frame of float types to an h2o fr
   hc <- H2OContext.getOrCreate()
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equal(hf[1, 1], 1.5, ignore_attr = TRUE)
-  expect_equal(hf[1, 2], 1.3333333333, ignore_attr = TRUE)
-  expect_equal(hf[1, 3], 178.5555, ignore_attr = TRUE)
+  expect_equal(hf[1, 1], 1.5, check.attributes = FALSE)
+  expect_equal(hf[1, 2], 1.3333333333, check.attributes = FALSE)
+  expect_equal(hf[1, 3], 178.5555, check.attributes = FALSE)
 })
 
 test_that("Test transformation of a spark data_frame of int types to an h2o frame of ints", {
@@ -82,9 +82,9 @@ test_that("Test transformation of a spark data_frame of int types to an h2o fram
   hc <- H2OContext.getOrCreate()
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equal(hf[1, 1], 1, ignore_attr = TRUE)
-  expect_equal(hf[1, 2], 125, ignore_attr = TRUE)
-  expect_equal(hf[1, 3], 1778, ignore_attr = TRUE)
+  expect_equal(hf[1, 1], 1, check.attributes = FALSE)
+  expect_equal(hf[1, 2], 125, check.attributes = FALSE)
+  expect_equal(hf[1, 3], 1778, check.attributes = FALSE)
 })
 
 test_that("Test transformation of a spark data_frame of str types to an h2o frame of str", {
