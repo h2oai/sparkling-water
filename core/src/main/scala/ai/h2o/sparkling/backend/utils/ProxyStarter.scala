@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.backend.utils
 
 import java.net._
-
 import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkEnv
@@ -28,6 +27,8 @@ import water.H2O
 import water.init.NetworkInit
 import water.webserver.H2OHttpViewImpl
 import water.webserver.jetty9.SparklingWaterJettyHelper
+
+import scala.util.{Failure, Success, Try}
 
 private[sparkling] object ProxyStarter extends Logging {
   private var server: Server = _
@@ -102,18 +103,18 @@ private[sparkling] object ProxyStarter extends Logging {
   }
 
   private def isTcpPortAvailable(port: Int): Boolean = {
-    scala.util
-      .Try {
-        val serverSocket = new ServerSocket()
-        serverSocket.setReuseAddress(false)
-        val host = SparkEnv.get.blockManager.blockManagerId.host
-        logInfo(s"Trying to bind on $host:$port using 0.0.0.0 ip address")
-        val socketAddress = new InetSocketAddress("0.0.0.0", port)
-        serverSocket.bind(socketAddress, 1)
-        serverSocket.close()
-        true
-      }
-      .getOrElse(false)
+    val tryBinding = Try {
+      val serverSocket = new ServerSocket()
+      serverSocket.setReuseAddress(false)
+      logInfo(s"Trying to bind on port $port using wildcard ip address")
+      val socketAddress = new InetSocketAddress(port)
+      serverSocket.bind(socketAddress, 1)
+      serverSocket.close()
+    }
+    tryBinding match {
+      case Failure(e) => log.trace(s"could not bind the port $port", e); false
+      case Success(_) => true
+    }
   }
 
   private def findNextFreeFlowPort(clientWebPort: Int, clientBasePort: Int): Int = {
