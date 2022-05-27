@@ -723,5 +723,5 @@ abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojo: Cl
 }
 
 object H2OMOJOCache extends H2OMOJOBaseCache[MojoModel] {
-  override def loadMojoBackend(mojo: File): MojoModel = Utils.getMojoModel(mojo)
+  override def loadMojoBackend(mojo: File, configMap: Map[String, Any]): MojoModel = Utils.getMojoModel(mojo)
 }

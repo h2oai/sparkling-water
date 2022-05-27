@@ -302,27 +302,29 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
     val predictionsAndContributions = pipeline.transform(df)
     val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.*")
-
-    val featureColumns = 1
-    val predictionColumns = 4
+    predictionsAndContributions.select("prediction.*").show(false)
+    val featureColumns = 4
+    val classes = 3
     val bias = 1
-    val contributionColumnsNo = predictionColumns * (featureColumns + bias)
+    val contributionColumnsNo = classes * (featureColumns + bias)
 
     onlyContributions.columns should have length contributionColumnsNo
     forAll(onlyContributions.columns) { _ should startWith("contrib_") }
 
-    assertContributionValues(onlyContributions.take(1))
+    assertContributionValues(onlyContributions.take(2))
   }
 
   private def assertContributionValues(contributions: Array[Row]): Unit = {
-    contributions(0).getDouble(0) shouldBe 0.0
-    contributions(0).getDouble(1) shouldBe -2.3025851249694824
-    contributions(0).getDouble(2) shouldBe 0.0
-    contributions(0).getDouble(3) shouldBe -1.3470736742019653
-    contributions(0).getDouble(4) shouldBe 0.0
-    contributions(0).getDouble(5) shouldBe -2.263364315032959
-    contributions(0).getDouble(6) shouldBe 0.0
-    contributions(0).getDouble(7) shouldBe -0.6236211061477661
+    contributions(0).getDouble(0) shouldBe 2.556562795555615
+    contributions(0).getDouble(1) shouldBe -1.8716305396517994
+    contributions(0).getDouble(2) shouldBe 5.894809161198736
+    contributions(0).getDouble(3) shouldBe -0.5265544725232273
+    contributions(0).getDouble(4) shouldBe 0.482689546
+    contributions(1).getDouble(0) shouldBe 1.9396974779396057
+    contributions(1).getDouble(1) shouldBe -3.986468029321516
+    contributions(1).getDouble(2) shouldBe 6.374321717618108
+    contributions(1).getDouble(3) shouldBe -0.006928643424840761
+    contributions(1).getDouble(4) shouldBe 0.482689546
   }
 
   test("Mojo pipeline outputs named contribution values even if namedMojoOutputColumns was set to false") {
@@ -338,10 +340,10 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
 
     val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.*")
 
-    val featureColumns = 1
-    val predictionColumns = 4
+    val featureColumns = 4
+    val classes = 3
     val bias = 1
-    val contributionColumnsNo = predictionColumns * (featureColumns + bias)
+    val contributionColumnsNo = classes * (featureColumns + bias)
 
     onlyContributions.columns should have length contributionColumnsNo
     forAll(onlyContributions.columns) { _ should startWith("contrib_") }
