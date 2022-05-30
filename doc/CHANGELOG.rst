@@ -1,6 +1,33 @@
 Change Log
 ==========
 
+v3.36.1.2-1 (2022-05-30)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.2-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.2-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.2-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.2-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.2-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.2-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.2-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.2-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.2-1-3.2/index.html>`__
+
+-  Bug
+
+   -  `SW-2718 <https://0xdata.atlassian.net/browse/SW-2718>`__ - Pysparkling with DAI mojo producing same contributions for all rows
+   -  `SW-2707 <https://0xdata.atlassian.net/browse/SW-2707>`__ - H2OPipelineMOJOModel Reports Deprecation Warning for Every Line of Code
+   -  `SW-2706 <https://0xdata.atlassian.net/browse/SW-2706>`__ - Code Generation of R and Python Configuration Classes Should Consider Overloaded Methods
+
+-  Improvement
+
+   -  `SW-2717 <https://0xdata.atlassian.net/browse/SW-2717>`__ - Upgrade H2O to 3.36.1.2
+   -  `SW-2716 <https://0xdata.atlassian.net/browse/SW-2716>`__ - Upgrade MOJO runtime to 2.7.8
+
+-  Engineering Story
+
+   -  `SW-2715 <https://0xdata.atlassian.net/browse/SW-2715>`__ - Remove PySpark Integration Test
+   -  `SW-2713 <https://0xdata.atlassian.net/browse/SW-2713>`__ - Fix Failing R Tests
+
 v3.36.1.1-1 (2022-04-20)
 ------------------------
 Downloads:
