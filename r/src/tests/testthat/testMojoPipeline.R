@@ -57,16 +57,26 @@ test_that("test MOJO contribution (SHAP) values", {
 
   flattenedContributions <- sdf_unnest_wider(mojoOutput, "contributions")
   expect_equal(colnames(flattenedContributions), c(
-    "ChangeTemp1",                  # input feature
-    "prediction",                   # output prediction
-    "contrib_ChangeTemp===1_c",     # output contributions
-    "contrib_bias_c",               # output contributions
-    "contrib_ChangeTemp===1_l",     # output contributions
-    "contrib_bias_l",               # output contributions
-    "contrib_ChangeTemp===1_n",     # output contributions
-    "contrib_bias_n",               # output contributions
-    "contrib_ChangeTemp===1_s",     # output contributions
-    "contrib_bias_s"))              # output contributions
+    "sepal_len",                         # input feature
+    "sepal_wid",                         # input feature
+    "petal_len",                         # input feature
+    "petal_wid",                         # input feature
+    "prediction",                        # output prediction
+    "contrib_sepal_len_Iris-setosa",     # output contributions
+    "contrib_sepal_wid_Iris-setosa",     # output contributions
+    "contrib_petal_len_Iris-setosa",     # output contributions
+    "contrib_petal_wid_Iris-setosa",     # output contributions
+    "contrib_bias_Iris-setosa",          # output contributions
+    "contrib_sepal_len_Iris-versicolor", # output contributions
+    "contrib_sepal_wid_Iris-versicolor", # output contributions
+    "contrib_petal_len_Iris-versicolor", # output contributions
+    "contrib_petal_wid_Iris-versicolor", # output contributions
+    "contrib_bias_Iris-versicolor",      # output contributions
+    "contrib_sepal_len_Iris-virginica",  # output contributions
+    "contrib_sepal_wid_Iris-virginica",  # output contributions
+    "contrib_petal_len_Iris-virginica",  # output contributions
+    "contrib_petal_wid_Iris-virginica",  # output contributions
+    "contrib_bias_Iris-virginica"))      # output contributions
 })
 
 spark_disconnect(sc)

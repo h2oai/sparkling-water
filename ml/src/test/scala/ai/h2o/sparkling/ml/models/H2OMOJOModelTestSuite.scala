@@ -696,7 +696,6 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
       result.schema shouldEqual cvResult.schema
       result.count() shouldEqual cvResult.count()
-      cvResult.show(truncate = false)
     }
 
     test("Cross validation models can provide training and validation metrics") {
