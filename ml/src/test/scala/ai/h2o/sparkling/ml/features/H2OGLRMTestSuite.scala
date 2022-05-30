@@ -64,7 +64,6 @@ class H2OGLRMTestSuite extends FunSuite with Matchers with SharedH2OTestContext 
 
     test("The standalone GLRM model produces different results for various input rows.") {
       val scored = standaloneModel.transform(testingDataset)
-      scored.show(false)
       val rows = scored.take(2)
 
       val firstOutput = rows(0).getAs[DenseVector]("Output").values.toSeq

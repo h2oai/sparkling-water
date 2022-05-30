@@ -62,21 +62,21 @@ test_that("test MOJO contribution (SHAP) values", {
     "petal_len",                         # input feature
     "petal_wid",                         # input feature
     "prediction",                        # output prediction
-    "contrib_sepal_len.Iris-setosa",     # output contributions
-    "contrib_sepal_wid.Iris-setosa",     # output contributions
-    "contrib_petal_len.Iris-setosa",     # output contributions
-    "contrib_petal_wid.Iris-setosa",     # output contributions
-    "contrib_bias.Iris-setosa",          # output contributions
-    "contrib_sepal_len.Iris-versicolor", # output contributions
-    "contrib_sepal_wid.Iris-versicolor", # output contributions
-    "contrib_petal_len.Iris-versicolor", # output contributions
-    "contrib_petal_wid.Iris-versicolor", # output contributions
-    "contrib_bias.Iris-versicolor",      # output contributions
-    "contrib_sepal_len.Iris-virginica",  # output contributions
-    "contrib_sepal_wid.Iris-virginica",  # output contributions
-    "contrib_petal_len.Iris-virginica",  # output contributions
-    "contrib_petal_wid.Iris-virginica",  # output contributions
-    "contrib_bias.Iris-virginica"))      # output contributions
+    "contrib_sepal_len_Iris-setosa",     # output contributions
+    "contrib_sepal_wid_Iris-setosa",     # output contributions
+    "contrib_petal_len_Iris-setosa",     # output contributions
+    "contrib_petal_wid_Iris-setosa",     # output contributions
+    "contrib_bias_Iris-setosa",          # output contributions
+    "contrib_sepal_len_Iris-versicolor", # output contributions
+    "contrib_sepal_wid_Iris-versicolor", # output contributions
+    "contrib_petal_len_Iris-versicolor", # output contributions
+    "contrib_petal_wid_Iris-versicolor", # output contributions
+    "contrib_bias_Iris-versicolor",      # output contributions
+    "contrib_sepal_len_Iris-virginica",  # output contributions
+    "contrib_sepal_wid_Iris-virginica",  # output contributions
+    "contrib_petal_len_Iris-virginica",  # output contributions
+    "contrib_petal_wid_Iris-virginica",  # output contributions
+    "contrib_bias_Iris-virginica"))      # output contributions
 })
 
 spark_disconnect(sc)

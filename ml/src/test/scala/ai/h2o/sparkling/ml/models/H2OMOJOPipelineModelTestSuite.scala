@@ -302,7 +302,6 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
     val predictionsAndContributions = pipeline.transform(df)
     val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.*")
-    predictionsAndContributions.select("prediction.*").show(false)
     val featureColumns = 4
     val classes = 3
     val bias = 1
