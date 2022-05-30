@@ -127,6 +127,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
 
   // install kubectl
   runCommand """\\
+                cd /home/jenkins && \\
                 curl -LOv "https://dl.k8s.io/release/`curl -L -s https://dl.k8s.io/release/stable.txt`/bin/linux/amd64/kubectl" && \\
                 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \\
                 rm kubectl
@@ -134,6 +135,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
 
   // install minikube
   runCommand """\\
+                cd /home/jenkins && \\
                 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && \\
                 sudo install minikube-linux-amd64 /usr/local/bin/minikube && \\
                 rm minikube-linux-amd64
@@ -141,6 +143,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
 
   // install aws cli
   runCommand """\\
+                cd /home/jenkins && \\
                 curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \\
                 unzip awscliv2.zip -d awscliv2 && \\
                 sudo ./awscliv2/aws/install -i /usr/local/aws-cli -b /usr/local/bin && \\
