@@ -608,27 +608,27 @@ node("docker") {
     def props = readPropertiesFile("gradle.properties")
     def sparklingVersion = props['version'].replace("-SNAPSHOT", "")
 
-    stage("Build H2O") {
-        commons.withSparklingWaterDockerImage {
-            retryWithDelay(3, 60, {
-                sh "git clone https://github.com/h2oai/h2o-3.git"
-            })
-            retryWithDelay(5, 1, {
-                sh """
-                    cd h2o-3
-                    git checkout ${props["testH2OBranch"]}
-                    . /envs/h2o_env_python3.6/bin/activate
-                    ./gradlew build --parallel -x check -Duser.name=ec2-user
-                    ./gradlew publishToMavenLocal --parallel -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
-                    ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
-                    cd ..
-                    """
-            })
-        }
-        stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
-    }
+//    stage("Build H2O") {
+//        commons.withSparklingWaterDockerImage {
+//            retryWithDelay(3, 60, {
+//                sh "git clone https://github.com/h2oai/h2o-3.git"
+//            })
+//            retryWithDelay(5, 1, {
+//                sh """
+//                    cd h2o-3
+//                    git checkout ${props["testH2OBranch"]}
+//                    . /envs/h2o_env_python3.6/bin/activate
+//                    ./gradlew build --parallel -x check -Duser.name=ec2-user
+//                    ./gradlew publishToMavenLocal --parallel -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
+//                    ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
+//                    cd ..
+//                    """
+//            })
+//        }
+//        stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
+//    }
 
-    parallel(getBuildAndPublishStages(props))
+//    parallel(getBuildAndPublishStages(props))
 
     withSparklingWaterMinikubeImage {
 
@@ -648,27 +648,38 @@ node("docker") {
             stash name: "properties", includes: "properties"
         }
 
-        getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-            stage("Test Scala, Spark ${sparkMajorVersion}") {
-                try {
-                    unstash "properties"
-                    def registryId = readPropertiesFile("properties")["docker_registry_id"]
-                    def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-                    def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-                    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
-                    withTestEnv(commons, image) {
-                        testScalaInternalBackendClusterMode(registryId, master, version)
-                        testScalaInternalBackendClientMode(registryId, master, version)
-                        testScalaExternalBackendManualClusterMode(registryId, master, version)
-                        testScalaExternalBackendManualClientMode(registryId, master, version)
-                        testScalaExternalBackendAutoClusterMode(registryId, master, version)
-                        testScalaExternalBackendAutoClientMode(registryId, master, version)
-                    }
-                } catch (Exception e) {
-                    stopKubernetesCluster(commons)
-                    throw e
-                }
-            }
+        stage("Test Deployment") {
+
+            sh """
+                eval \$(minikube -p minikube docker-env)
+                docker pull k8s.gcr.io/echoserver:1.4
+                docker tag k8s.gcr.io/echoserver:1.4 my-echo:1
+                kubectl create deployment hello-minikube --image my-echo:1
+                kubectl expose deployment hello-minikube --type=NodePort --port=8080
+                curl `minikube service hello-minikube --url=true`
+            """
+
+//        getKubernetesSparkVersions(props).each { sparkMajorVersion ->
+//            stage("Test Scala, Spark ${sparkMajorVersion}") {
+//                try {
+//                    unstash "properties"
+//                    def registryId = readPropertiesFile("properties")["docker_registry_id"]
+//                    def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+//                    def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+//                    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
+//                    withTestEnv(commons, image) {
+//                        testScalaInternalBackendClusterMode(registryId, master, version)
+//                        testScalaInternalBackendClientMode(registryId, master, version)
+//                        testScalaExternalBackendManualClusterMode(registryId, master, version)
+//                        testScalaExternalBackendManualClientMode(registryId, master, version)
+//                        testScalaExternalBackendAutoClusterMode(registryId, master, version)
+//                        testScalaExternalBackendAutoClientMode(registryId, master, version)
+//                    }
+//                } catch (Exception e) {
+//                    stopKubernetesCluster(commons)
+//                    throw e
+//                }
+//            }
 
 //            stage("Test Python, Spark ${sparkMajorVersion}") {
 //                try {
