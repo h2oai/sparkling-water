@@ -96,8 +96,8 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                         commons.withSparklingWaterDockerImage {
                             // sh "sudo apt-get update"
                             // sh "sudo apt -y install docker.io"
-                            // sh "sudo service docker start"
-                            // sh "sudo chmod 666 /var/run/docker.sock"
+                            sh "sudo service docker start"
+                            sh "sudo chmod 666 /var/run/docker.sock"
                             def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
                             def sparkVersion = getSparkVersion(sparkMajorVersion)
                             unstash "shared"
