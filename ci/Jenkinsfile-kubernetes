@@ -9,7 +9,7 @@ properties(
 )
 
 static def awsRegion() {
-    return "us-east-2"
+    return "us-west-2"
 }
 
 def readPropertiesFile(file) {
