@@ -110,8 +110,8 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                             def customEnv = [
                                     "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
                             ]
-                            unstash "properties"
-                            def repoId = readPropertiesFile("properties")["docker_registry_id"]
+                            // unstash "properties"
+                            def repoId = commons.readFromInfraState("docker_registry_id")
                             def repoUrl = "${repoId}.dkr.ecr.${awsRegion()}.amazonaws.com"
                             docker.withRegistry("https://${repoUrl}", "ecr:${awsRegion()}:SW_FULL_AWS_CREDS") {
                                 withEnv(customEnv) {
@@ -578,7 +578,7 @@ def stopEKSCluster(commons) {
 
 def stopKubernetesCluster(commons) {
     retryWithDelay(3, 600, {
-        sh "minikube delete --all"
+        sh "minikube stop"
     })
 }
 
@@ -592,6 +592,13 @@ def withSparklingWaterMinikubeImage(code) {
         }
         withDocker(image, code, dockerOptions, initCode)
     }
+}
+
+def getMinikubeMaster() {
+    return sh(
+            script: "kubectl config view --minify -o jsonpath='{.clusters[].cluster.server}'",
+            returnStdout: true
+    ).trim()
 }
 
 node("docker") {
@@ -628,8 +635,17 @@ node("docker") {
         stage("Start Kubernetes cluster") {
             sh """
                 sudo chmod o+rw /var/run/docker.sock
+                minikube delete --all
                 minikube start
             """
+            def values = [
+                    "docker_registry_id": commons.readFromInfraState("docker_registry_id"),
+                    "cluster_endpoint": getMinikubeMaster(),
+                    "version": "${sparklingVersion}"
+            ]
+            def valuesAsString = values.collect {"${it.key}=${it.value}"}.join("\\n") + "\\n"
+            writeFile file: "properties", text: valuesAsString
+            stash name: "properties", includes: "properties"
         }
 
         getKubernetesSparkVersions(props).each { sparkMajorVersion ->
