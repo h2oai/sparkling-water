@@ -187,7 +187,7 @@ there is no need to start ``H2OContext``.
 
             from pysparkling.ml import *
 
-            val path = '/path/to/mojo.zip'
+            path = '/path/to/mojo.zip'
             settings = H2OMOJOSettings(withContributions=True)
             model = H2OMOJOModel.createFromMojo(path, settings)
 
@@ -195,7 +195,7 @@ there is no need to start ``H2OContext``.
 
         .. code:: python
 
-            val predictions = model.transform(testingDF)
+            predictions = model.transform(testingDF)
 
         Show contributions
 
