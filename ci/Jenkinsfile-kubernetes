@@ -659,7 +659,10 @@ node("docker") {
                 docker tag k8s.gcr.io/echoserver:1.4 my-echo:1
                 kubectl create deployment hello-minikube --image my-echo:1
                 kubectl expose deployment hello-minikube --type=NodePort --port=8080
+                sleep 10
+                kubectl get pods
                 curl `minikube service hello-minikube --url=true`
+                kubectl delete deployment hello-minikube
             """
 
 //        getKubernetesSparkVersions(props).each { sparkMajorVersion ->
