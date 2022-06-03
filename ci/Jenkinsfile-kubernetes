@@ -582,7 +582,7 @@ def stopKubernetesCluster(commons) {
     })
 }
 
-def withSparklingWaterMinikubeImage(code) {
+def withSparklingWaterMinikubeImage(commons, code) {
     def repoUrl = commons.getAWSDockerRepo()
     commons.withAWSDocker {
         def image = "${repoUrl}/opsh2oai/sparkling_water_tests:" + getDockerImageVersion()
@@ -630,7 +630,7 @@ node("docker") {
 
 //    parallel(getBuildAndPublishStages(props))
 
-    withSparklingWaterMinikubeImage {
+    withSparklingWaterMinikubeImage(commons) {
 
         stage("Start Kubernetes cluster") {
             sh """
