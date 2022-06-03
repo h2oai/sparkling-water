@@ -585,7 +585,7 @@ def stopKubernetesCluster(commons) {
 def withSparklingWaterMinikubeImage(commons, code) {
     def repoUrl = commons.getAWSDockerRepo()
     commons.withAWSDocker {
-        def image = "${repoUrl}/opsh2oai/sparkling_water_tests:" + getDockerImageVersion()
+        def image = "${repoUrl}/opsh2oai/sparkling_water_tests:" + commons.getDockerImageVersion()
         def dockerOptions = "--init --privileged --network=host -v /var/run/docker.sock:/var/run/docker.sock"
         groovy.lang.Closure initCode = {
             sh "activate_java_8"
