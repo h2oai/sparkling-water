@@ -56,7 +56,7 @@ task createRDockerfile(type: Dockerfile) {
     user "0"
   }
   if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.5")) {
-    runCommand "apt-get install -y libc-dev libssl-dev libcurl4-openssl-dev g++ libxml2-dev"
+    runCommand "apt update && apt-get install -y libc-dev libssl-dev libcurl4-openssl-dev g++ libxml2-dev"
   } else {
     runCommand "apk add libc-dev linux-headers g++ libxml2-dev"
   }
