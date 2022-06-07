@@ -87,7 +87,7 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
     return {
         stage("Build Images For Spark $sparkMajorVersion") {
             try {
-                sh "sudo mkdir -p ${env.WORKSPACE}/sw-$sparkMajorVersion"
+                sh "mkdir -p ${env.WORKSPACE}/sw-$sparkMajorVersion"
                 dir("${env.WORKSPACE}/sw-$sparkMajorVersion") {
                     sh """
                         pwd
