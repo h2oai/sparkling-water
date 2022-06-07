@@ -113,7 +113,7 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                         sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
                         """
                     sh "cat gradle.properties"
-                    sh "H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
+                    sh "H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()} -x sparkling-water-doc"
 
                     def customEnv = [
                             "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
@@ -125,6 +125,7 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                             buildAndPublishSparklingWaterImage("python", sparklingVersion)
                             buildAndPublishSparklingWaterImage("r", sparklingVersion)
                             sh """
+                                eval \$(minikube -p minikube docker-env)
                                 docker rmi spark-r:${sparkVersion}
                                 docker rmi spark-py:${sparkVersion}
                                 docker rmi spark:${sparkVersion}
