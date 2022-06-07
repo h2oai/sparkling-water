@@ -87,14 +87,15 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
     return {
         stage("Build Images For Spark $sparkMajorVersion") {
             try {
-                ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
-                    cleanWs()
+                sh "sudo mkdir -p ${env.WORKSPACE}/sw-$sparkMajorVersion"
+                dir("${env.WORKSPACE}/sw-$sparkMajorVersion") {
+                    // cleanWs()
                     checkout scm
                     def commons = load 'ci/commons.groovy'
 
                     def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
                     def sparkVersion = getSparkVersion(sparkMajorVersion)
-                    unstash "shared"
+                    // unstash "shared"
                     sh """
                         pwd
                         whoami
@@ -125,8 +126,7 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                             buildAndPublishSparklingWaterImage("external-backend", sparklingVersion)
                         }
                     }
-
-                    cleanWs()
+                    //cleanWs()
                 }
             } catch (Exception e) {
                 throw e
@@ -620,7 +620,7 @@ node("docker") {
                     cd ..
                     """
             })
-            stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
+            // stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
         }
 
         stage("Start Kubernetes cluster") {
