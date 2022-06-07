@@ -91,9 +91,8 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                 dir("${env.WORKSPACE}/sw-$sparkMajorVersion") {
                     sh """
                         pwd
-                        whoami
-                        ls -l ${env.WORKSPACE}
                         ls -l
+                        env
                     """
                     // cleanWs()
                     checkout scm
@@ -107,10 +106,12 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                         cat gradle.properties 
                     """
                     sh """
+                        pwd
                         sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
                         sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
                         sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
                         """
+                    sh "cat gradle.properties"
                     sh "H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
 
                     def customEnv = [
