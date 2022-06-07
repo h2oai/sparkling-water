@@ -102,12 +102,12 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                     def sparkVersion = getSparkVersion(sparkMajorVersion)
                     // unstash "shared"
                     sh """
+                        pwd
+                        ln -s ${env.WORKSPACE}/h2o-3 h2o-3 
                         ls -l
                         cat gradle.properties 
                     """
                     sh """
-                        pwd
-                        ln -s ${env.WORKSPACE}/h2o-3 h2o-3 
                         sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
                         sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
                         sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
