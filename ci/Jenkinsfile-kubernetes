@@ -89,6 +89,12 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
             try {
                 sh "sudo mkdir -p ${env.WORKSPACE}/sw-$sparkMajorVersion"
                 dir("${env.WORKSPACE}/sw-$sparkMajorVersion") {
+                    sh """
+                        pwd
+                        whoami
+                        ls -l ${env.WORKSPACE}
+                        ls -l
+                    """
                     // cleanWs()
                     checkout scm
                     def commons = load 'ci/commons.groovy'
@@ -97,8 +103,6 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                     def sparkVersion = getSparkVersion(sparkMajorVersion)
                     // unstash "shared"
                     sh """
-                        pwd
-                        whoami
                         ls -l
                         cat gradle.properties 
                     """
