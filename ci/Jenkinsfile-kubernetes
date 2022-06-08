@@ -115,6 +115,7 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                     sh "cat gradle.properties"
                     sh """
                         export MASTER=localhost[*]
+                        export SPARK_LOCAL_HOSTNAME=127.0.0.1
                         H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}
                        """
 
@@ -591,7 +592,7 @@ def withSparklingWaterMinikubeImage(commons, code) {
     def repoUrl = commons.getAWSDockerRepo()
     commons.withAWSDocker {
         def image = "${repoUrl}/opsh2oai/sparkling_water_tests:" + commons.getDockerImageVersion()
-        def dockerOptions = "--init --privileged -v /var/run/docker.sock:/var/run/docker.sock"
+        def dockerOptions = "--init --privileged --network=host -v /var/run/docker.sock:/var/run/docker.sock"
         groovy.lang.Closure initCode = {
             sh "activate_java_8"
         }
