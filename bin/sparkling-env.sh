@@ -142,6 +142,9 @@ fi
 
 
 function checkSparkVersion() {
+  echo "Debug Spark submit call"
+  echo $(spark-submit --version 2>&1)
+  echo $(spark-submit --version 2>&1 | grep version | grep -v Scala | sed -e "s/.*version //")
   export INSTALLED_SPARK_FULL_VERSION=$(spark-submit --version 2>&1 | grep version | grep -v Scala | sed -e "s/.*version //")
   export INSTALLED_SPARK_MAJOR_MINOR_VERSION=$(echo "$INSTALLED_SPARK_FULL_VERSION" | sed -e "s/\([0-9][0-9]*.[0-9][0-9]*\).*/\1/")
   if ! [[ "$SPARK_VERSION" =~ "$INSTALLED_SPARK_MAJOR_MINOR_VERSION".* ]]; then
