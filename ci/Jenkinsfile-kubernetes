@@ -65,6 +65,7 @@ def buildAndPublishSparklingWaterImage(String type, String sparklingVersion) {
     sh """
         eval \$(minikube -p minikube docker-env)
         export H2O_HOME=${env.WORKSPACE}/h2o-3 
+        export SPARK_LOCAL_HOSTNAME=127.0.0.1
         bash -x ./bin/build-kubernetes-images.sh $type
         docker tag sparkling-water-$type:${sparklingVersion} sparkling-water:$type-${sparklingVersion}
         docker rmi sparkling-water-$type:${sparklingVersion}
