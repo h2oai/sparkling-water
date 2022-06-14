@@ -675,6 +675,7 @@ node("docker") {
             def sparkVersion = getSparkVersion(sparkMajorVersion)
             def customEnv = [
                     "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
+                    "SPARK_LOCAL_HOSTNAME=127.0.0.1"
             ]
 
             withEnv(customEnv) {
