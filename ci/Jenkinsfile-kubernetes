@@ -667,6 +667,8 @@ node("docker") {
             sh """
                 eval \$(minikube -p minikube docker-env)
                 docker image ls
+                kubectl delete clusterrolebinding default --ignore-not-found
+                kubectl create clusterrolebinding default --clusterrole=edit --serviceaccount=default:default --namespace=default                
             """
         }
 
