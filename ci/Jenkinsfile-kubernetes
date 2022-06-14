@@ -33,6 +33,7 @@ def runCommandWithK8sDebugInfo(GString script) {
             kubectl logs sparkling-water-app
             kubectl get events
             minikube status
+            docker image ls
         """
     }
     return result
@@ -177,6 +178,7 @@ def withTestEnv(commons, image, code) {
 def testScalaInternalBackendClusterMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runCommandWithK8sDebugInfo """
+        eval \$(minikube -p minikube docker-env)
         \$SPARK_HOME/bin/spark-submit \
          --conf spark.kubernetes.container.image=sparkling-water:scala-${version} \
          --conf spark.driver.host=sparkling-water-app \
@@ -248,6 +250,7 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
     installSparkHeadlessService()
     def image = "sparkling-water:scala-${version}"
     runCommandWithK8sDebugInfo """
+        eval \$(minikube -p minikube docker-env)
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- \
         \$SPARK_HOME/bin/spark-submit \
@@ -449,7 +452,9 @@ static String scalaExternalBackendSubmitCmd(registryId, master, version, mode, s
     } else {
         prefix = externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, "scala")
     }
-    return """${prefix} \
+    return """
+        eval \$(minikube -p minikube docker-env)
+        ${prefix} \
               --class ai.h2o.sparkling.KubernetesTest \
               local:///opt/sparkling-water/tests/kubernetesTest.jar
            """
@@ -667,65 +672,73 @@ node("docker") {
 
         getKubernetesSparkVersions(props).each { sparkMajorVersion ->
 
-            stage("Test Scala, Spark ${sparkMajorVersion}") {
-                try {
-                    //unstash "properties"
-                    def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
-                    def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-                    def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-                    //def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
-                    //withTestEnv(commons, image) {
-                    testScalaInternalBackendClusterMode(registryId, master, version)
-                    testScalaInternalBackendClientMode(registryId, master, version)
-                    testScalaExternalBackendManualClusterMode(registryId, master, version)
-                    testScalaExternalBackendManualClientMode(registryId, master, version)
-                    testScalaExternalBackendAutoClusterMode(registryId, master, version)
-                    testScalaExternalBackendAutoClientMode(registryId, master, version)
-                    //}
-                } catch (Exception e) {
-                    stopKubernetesCluster(commons)
-                    throw e
-                }
-            }
+            def sparkVersion = getSparkVersion(sparkMajorVersion)
+            def customEnv = [
+                    "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
+            ]
 
-            stage("Test Python, Spark ${sparkMajorVersion}") {
-                try {
-//                    unstash "properties"
-                    def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
-                    def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-                    def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-//                    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
-//                    withTestEnv(commons, image) {
-                    testPythonInternalBackendClusterMode(registryId, master, version)
-                    testPythonInternalBackendClientMode(registryId, master, version)
-                    testPythonExternalBackendManualClusterMode(registryId, master, version)
-                    testPythonExternalBackendManualClientMode(registryId, master, version)
-                    testPythonExternalBackendAutoClusterMode(registryId, master, version)
-                    testPythonExternalBackendAutoClientMode(registryId, master, version)
-//                    }
-                } catch (Exception e) {
-                    stopKubernetesCluster(commons)
-                    throw e
-                }
-            }
+            withEnv(customEnv) {
 
-            stage("Test R, Spark ${sparkMajorVersion}") {
-                try {
-//                    unstash "properties"
-                    def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
-                    def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-                    def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-                    def image = "sparkling-water:r-${version}"
-                    def sparkVersion = getSparkVersion(sparkMajorVersion)
-//                    withTestEnv(commons, image) {
-//                        // R sets deployment mode automatically
-                    testRInternalBackend(registryId, master, version, sparkVersion)
-                    testRExternalBackendManual(registryId, master, version, sparkVersion)
-                    testRExternalBackendAuto(registryId, master, version, sparkVersion)
-//                    }
-                } catch (Exception e) {
-                    stopKubernetesCluster(commons)
-                    throw e
+                stage("Test Scala, Spark ${sparkMajorVersion}") {
+                    try {
+                        //unstash "properties"
+                        def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
+                        def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+                        def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+                        //def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
+                        //withTestEnv(commons, image) {
+                        testScalaInternalBackendClusterMode(registryId, master, version)
+                        testScalaInternalBackendClientMode(registryId, master, version)
+                        testScalaExternalBackendManualClusterMode(registryId, master, version)
+                        testScalaExternalBackendManualClientMode(registryId, master, version)
+                        testScalaExternalBackendAutoClusterMode(registryId, master, version)
+                        testScalaExternalBackendAutoClientMode(registryId, master, version)
+                        //}
+                    } catch (Exception e) {
+                        stopKubernetesCluster(commons)
+                        throw e
+                    }
+                }
+
+                stage("Test Python, Spark ${sparkMajorVersion}") {
+                    try {
+                        //                    unstash "properties"
+                        def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
+                        def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+                        def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+                        //                    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
+                        //                    withTestEnv(commons, image) {
+                        testPythonInternalBackendClusterMode(registryId, master, version)
+                        testPythonInternalBackendClientMode(registryId, master, version)
+                        testPythonExternalBackendManualClusterMode(registryId, master, version)
+                        testPythonExternalBackendManualClientMode(registryId, master, version)
+                        testPythonExternalBackendAutoClusterMode(registryId, master, version)
+                        testPythonExternalBackendAutoClientMode(registryId, master, version)
+                        //                    }
+                    } catch (Exception e) {
+                        stopKubernetesCluster(commons)
+                        throw e
+                    }
+                }
+
+                stage("Test R, Spark ${sparkMajorVersion}") {
+                    try {
+                        //                    unstash "properties"
+                        def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
+                        def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+                        def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+                        def image = "sparkling-water:r-${version}"
+                        //def sparkVersion = getSparkVersion(sparkMajorVersion)
+                        //                    withTestEnv(commons, image) {
+                        //                        // R sets deployment mode automatically
+                        testRInternalBackend(registryId, master, version, sparkVersion)
+                        testRExternalBackendManual(registryId, master, version, sparkVersion)
+                        testRExternalBackendAuto(registryId, master, version, sparkVersion)
+                        //                    }
+                    } catch (Exception e) {
+                        stopKubernetesCluster(commons)
+                        throw e
+                    }
                 }
             }
         }
