@@ -679,7 +679,7 @@ node("docker") {
     def props = readPropertiesFile("gradle.properties")
     def sparklingVersion = props['version'].replace("-SNAPSHOT", "")
 
-    //withSparklingWaterMinikubeImage(commons) {
+    withSparklingWaterMinikubeImage(commons) {
 
         stage("Build H2O") {
             retryWithDelay(3, 60, {
@@ -711,12 +711,13 @@ node("docker") {
             def values = [
                     "version": "${sparklingVersion}"
             ]
-            def valuesAsString = values.collect {"${it.key}=${it.value}"}.join("\n") + "\n"
+            def valuesAsString = values.collect { "${it.key}=${it.value}" }.join("\n") + "\n"
             writeFile file: "properties", text: valuesAsString
             stash name: "properties", includes: "properties"
         }
+    }
 
-        parallel(getBuildPublishAndTestStages(commons, props))
+    parallel(getBuildPublishAndTestStages(commons, props))
 
 //        getKubernetesSparkVersions(props).each { sparkMajorVersion ->
 //
