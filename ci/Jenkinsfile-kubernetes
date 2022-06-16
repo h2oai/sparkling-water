@@ -98,6 +98,7 @@ def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersio
         node('docker') {
             ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
                 cleanWs()
+                checkout scm
 
                 withSparklingWaterMinikubeImage(commons) {
 
@@ -139,7 +140,7 @@ private getBuildAndPublishStage(sparkMajorVersion, props) {
                         env
                     """
                 // cleanWs()
-                checkout scm
+                // checkout scm
                 def commons = load 'ci/commons.groovy'
 
                 def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
