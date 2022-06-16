@@ -69,9 +69,9 @@ String getScalaBaseVersion(sparkMajorVersion) {
     return scalaVersion.count(".") == 1 ? scalaVersion : scalaVersion.substring(0, scalaVersion.lastIndexOf('.'))
 }
 
-def buildAndPublishSparklingWaterImage(String type, String sparklingVersion) {
+def buildAndPublishSparklingWaterImage(String type, String sparkMajorVersion, String sparklingVersion) {
     sh """
-        eval \$(minikube -p minikube docker-env)
+        eval \$(minikube -p minikube-${sparkMajorVersion} docker-env)
         export H2O_HOME=${env.WORKSPACE}/h2o-3 
         export SPARK_LOCAL_HOSTNAME=localhost
         bash -x ./bin/build-kubernetes-images.sh $type
@@ -93,73 +93,124 @@ String getH2OBranchBuildVersion() {
     return "1-SNAPSHOT"
 }
 
-def getBuildAndPublishStage(props, sparkMajorVersion) {
+def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersion) {
     return {
-        stage("Build Images For Spark $sparkMajorVersion") {
-            try {
-                sh "mkdir -p ${env.WORKSPACE}/sw-$sparkMajorVersion"
-                dir("${env.WORKSPACE}/sw-$sparkMajorVersion") {
-                    sh """
-                        pwd
-                        ls -l
-                        env
-                    """
-                    // cleanWs()
-                    checkout scm
-                    def commons = load 'ci/commons.groovy'
+        node('docker') {
+            ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
+                cleanWs()
 
-                    def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
+                withSparklingWaterMinikubeImage(commons) {
+
+                    unstash "properties"
+
+                    startMinikubeCluster(sparkMajorVersion)
+                    getBuildAndPublishStage(sparkMajorVersion, props)
+                    getCheckImagesStage(sparkMajorVersion)
+
                     def sparkVersion = getSparkVersion(sparkMajorVersion)
-                    // unstash "shared"
-                    sh """
-                        pwd
-                        ln -s ${env.WORKSPACE}/h2o-3 h2o-3 
-                        ls -l
-                        cat gradle.properties 
-                    """
-                    sh """
-                        sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
-                        sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
-                        sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
-                        """
-                    sh "cat gradle.properties"
-                    sh """
-                        export MASTER=localhost[*]
-                        export SPARK_LOCAL_HOSTNAME=localhost
-                        H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}
-                       """
-
                     def customEnv = [
                             "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
+                            "SPARK_LOCAL_HOSTNAME=localhost"
                     ]
 
                     withEnv(customEnv) {
-                        dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
-                            buildAndPublishSparklingWaterImage("scala", sparklingVersion)
-                            buildAndPublishSparklingWaterImage("python", sparklingVersion)
-                            buildAndPublishSparklingWaterImage("r", sparklingVersion)
-                            sh """
-                                eval \$(minikube -p minikube docker-env)
-                                docker rmi spark-r:${sparkVersion}
-                                docker rmi spark-py:${sparkVersion}
-                                docker rmi spark:${sparkVersion}
-                               """
-                            buildAndPublishSparklingWaterImage("external-backend", sparklingVersion)
-                        }
+
+                        runSparkDemo(sparkMajorVersion)
+                        //runScalaTests(sparkMajorVersion, commons)
+                        //runPythonTests(sparkMajorVersion, commons)
+                        //runRTests(sparkMajorVersion, sparkVersion, commons)
                     }
-                    //cleanWs()
+
+                    stopMinikubeCluster(sparkMajorVersion)
                 }
-            } catch (Exception e) {
-                throw e
             }
         }
     }
 }
 
-def getBuildAndPublishStages(props) {
+private getBuildAndPublishStage(sparkMajorVersion, props) {
+    return stage("Build Images For Spark $sparkMajorVersion") {
+        try {
+            //sh "mkdir -p ${env.WORKSPACE}/sw-$sparkMajorVersion"
+            //dir("${env.WORKSPACE}/sw-$sparkMajorVersion") {
+                sh """
+                        pwd
+                        ls -l
+                        env
+                    """
+                // cleanWs()
+                checkout scm
+                def commons = load 'ci/commons.groovy'
+
+                def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
+                def sparkVersion = getSparkVersion(sparkMajorVersion)
+                unstash "shared"
+                sh """
+                        #pwd
+                        #ln -s ${env.WORKSPACE}/h2o-3 h2o-3 
+                        ls -l
+                        cat gradle.properties 
+                    """
+                sh """
+                        sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
+                        sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
+                        sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
+                        """
+                sh "cat gradle.properties"
+                sh """
+                        export MASTER=localhost[*]
+                        export SPARK_LOCAL_HOSTNAME=localhost
+                        H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}
+                       """
+
+                def customEnv = [
+                        "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
+                ]
+
+                withEnv(customEnv) {
+                    dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
+                        buildAndPublishSparklingWaterImage("scala", sparkMajorVersion, sparklingVersion)
+                        buildAndPublishSparklingWaterImage("python", sparkMajorVersion, sparklingVersion)
+                        buildAndPublishSparklingWaterImage("r", sparkMajorVersion, sparklingVersion)
+                        sh """
+                                eval \$(minikube -p minikube-${sparkMajorVersion} docker-env)
+                                docker rmi spark-r:${sparkVersion}
+                                docker rmi spark-py:${sparkVersion}
+                                docker rmi spark:${sparkVersion}
+                               """
+                        buildAndPublishSparklingWaterImage("external-backend", sparkMajorVersion, sparklingVersion)
+                    }
+                }
+                //cleanWs()
+            //}
+        } catch (Exception e) {
+            throw e
+        }
+    }
+}
+
+private startMinikubeCluster(sparkMajorVersion) {
+    return stage("Starting Minikube for $sparkMajorVersion") {
+        sh """
+            ls -l /var/run/docker.sock
+            sudo chmod o+rw /var/run/docker.sock
+            minikube start -p minikube-${sparkMajorVersion}        
+        """
+    }
+}
+
+private stopMinikubeCluster(sparkMajorVersion) {
+    return stage("Stopping Minikube for $sparkMajorVersion") {
+        sh """
+            minikube stop -p minikube-${sparkMajorVersion}        
+        """
+    }
+}
+
+def getBuildPublishAndTestStages(commons, props) {
     def parallelStages = [:]
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-        parallelStages["Build & Publish Spark ${sparkMajorVersion}"] = getBuildAndPublishStage(props, sparkMajorVersion)
+        parallelStages["Build & Publish Spark ${sparkMajorVersion}"] = getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersion)
     }
     return parallelStages
 }
@@ -628,7 +679,7 @@ node("docker") {
     def props = readPropertiesFile("gradle.properties")
     def sparklingVersion = props['version'].replace("-SNAPSHOT", "")
 
-    withSparklingWaterMinikubeImage(commons) {
+    //withSparklingWaterMinikubeImage(commons) {
 
         stage("Build H2O") {
             retryWithDelay(3, 60, {
@@ -645,20 +696,19 @@ node("docker") {
                     cd ..
                     """
             })
-            // stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
+            stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
         }
 
-        stage("Start Kubernetes cluster") {
+        stage("Clean Minikube Clusters") {
             sh """
                 pwd
                 whoami
                 ls -l /var/run/docker.sock
                 sudo chmod o+rw /var/run/docker.sock
                 minikube delete --all
-                minikube start
+                # minikube start
             """
             def values = [
-                    "cluster_endpoint": getMinikubeMaster(),
                     "version": "${sparklingVersion}"
             ]
             def valuesAsString = values.collect {"${it.key}=${it.value}"}.join("\n") + "\n"
@@ -666,38 +716,42 @@ node("docker") {
             stash name: "properties", includes: "properties"
         }
 
-        parallel(getBuildAndPublishStages(props))
+        parallel(getBuildPublishAndTestStages(commons, props))
 
-        stage("Check Images") {
+//        getKubernetesSparkVersions(props).each { sparkMajorVersion ->
+//
+//            getCheckImagesStage(sparkMajorVersion)
+//
+//            def sparkVersion = getSparkVersion(sparkMajorVersion)
+//            def customEnv = [
+//                    "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
+//                    "SPARK_LOCAL_HOSTNAME=localhost"
+//            ]
+//
+//            withEnv(customEnv) {
+//
+//                runSparkDemo(sparkMajorVersion)
+//                //runScalaTests(sparkMajorVersion, commons)
+//                //runPythonTests(sparkMajorVersion, commons)
+//                //runRTests(sparkMajorVersion, sparkVersion, commons)
+//            }
+//        }
+//
+//        stage("Stop Kubernetes Cluster") {
+//            stopKubernetesCluster(commons)
+//        }
+    //}
+}
 
-            sh """
-                eval \$(minikube -p minikube docker-env)
+private getCheckImagesStage(sparkMajorVersion) {
+    stage("Check Images") {
+
+        sh """
+                eval \$(minikube -p minikube-${sparkMajorVersion} docker-env)
                 docker image ls
                 kubectl delete clusterrolebinding default --ignore-not-found
                 kubectl create clusterrolebinding default --clusterrole=edit --serviceaccount=default:default --namespace=default                
             """
-        }
-
-        getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-
-            def sparkVersion = getSparkVersion(sparkMajorVersion)
-            def customEnv = [
-                    "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
-                    "SPARK_LOCAL_HOSTNAME=localhost"
-            ]
-
-            withEnv(customEnv) {
-
-                runSparkDemo(sparkMajorVersion)
-                //runScalaTests(sparkMajorVersion, commons)
-                //runPythonTests(sparkMajorVersion, commons)
-                //runRTests(sparkMajorVersion, sparkVersion, commons)
-            }
-        }
-
-        stage("Stop Kubernetes Cluster") {
-            stopKubernetesCluster(commons)
-        }
     }
 }
 
@@ -707,7 +761,7 @@ private runRTests(sparkMajorVersion, sparkVersion, commons) {
             //                    unstash "properties"
             def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-            def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+            def master = "k8s://" + getMinikubeMaster()
             def image = "sparkling-water:r-${version}"
             //def sparkVersion = getSparkVersion(sparkMajorVersion)
             //                    withTestEnv(commons, image) {
@@ -729,7 +783,7 @@ private runPythonTests(sparkMajorVersion, commons) {
             //                    unstash "properties"
             def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-            def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+            def master = "k8s://" + getMinikubeMaster()
             //                    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
             //                    withTestEnv(commons, image) {
             testPythonInternalBackendClusterMode(registryId, master, version)
@@ -752,7 +806,7 @@ private runScalaTests(sparkMajorVersion, commons) {
             //unstash "properties"
             def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-            def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+            def master = "k8s://" + getMinikubeMaster()
             //def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
             //withTestEnv(commons, image) {
             testScalaInternalBackendClusterMode(registryId, master, version)
@@ -770,7 +824,7 @@ private runScalaTests(sparkMajorVersion, commons) {
 }
 
 def runSparkDemo(sparkMajorVersion) {
-    def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+    def master = "k8s://" + getMinikubeMaster()
     def sparklingVersion = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
     def sparkVersion = getSparkVersion(sparkMajorVersion)
     def scalaBaseVersion = getScalaBaseVersion(sparkMajorVersion)
