@@ -116,8 +116,8 @@ def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersio
 
                     withEnv(customEnv) {
 
-                        runSparkDemo(sparkMajorVersion)
-                        //runScalaTests(sparkMajorVersion, commons)
+                        //runSparkDemo(sparkMajorVersion)
+                        runScalaTests(sparkMajorVersion, commons)
                         //runPythonTests(sparkMajorVersion, commons)
                         //runRTests(sparkMajorVersion, sparkVersion, commons)
                     }
@@ -191,9 +191,8 @@ private getBuildAndPublishStage(sparkMajorVersion, props) {
 }
 
 private startMinikubeCluster(sparkMajorVersion) {
-    return stage("Starting Minikube for $sparkMajorVersion") {
+    return stage("Start Minikube for $sparkMajorVersion") {
         sh """
-            ls -l /var/run/docker.sock
             sudo chmod o+rw /var/run/docker.sock
             minikube start -p minikube-${sparkMajorVersion}        
         """
@@ -201,7 +200,7 @@ private startMinikubeCluster(sparkMajorVersion) {
 }
 
 private stopMinikubeCluster(sparkMajorVersion) {
-    return stage("Stopping Minikube for $sparkMajorVersion") {
+    return stage("Stop Minikube for $sparkMajorVersion") {
         sh """
             minikube stop -p minikube-${sparkMajorVersion}        
         """
@@ -236,7 +235,6 @@ def withTestEnv(commons, image, code) {
 def testScalaInternalBackendClusterMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runCommandWithK8sDebugInfo """
-        eval \$(minikube -p minikube docker-env)
         \$SPARK_HOME/bin/spark-submit \
          --conf spark.kubernetes.container.image=sparkling-water:scala-${version} \
          --conf spark.driver.host=sparkling-water-app \
@@ -703,8 +701,6 @@ node("docker") {
         stage("Clean Minikube Clusters") {
             sh """
                 pwd
-                whoami
-                ls -l /var/run/docker.sock
                 sudo chmod o+rw /var/run/docker.sock
                 minikube delete --all
                 # minikube start
@@ -812,11 +808,11 @@ private runScalaTests(sparkMajorVersion, commons) {
             //def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
             //withTestEnv(commons, image) {
             testScalaInternalBackendClusterMode(registryId, master, version)
-            testScalaInternalBackendClientMode(registryId, master, version)
-            testScalaExternalBackendManualClusterMode(registryId, master, version)
-            testScalaExternalBackendManualClientMode(registryId, master, version)
-            testScalaExternalBackendAutoClusterMode(registryId, master, version)
-            testScalaExternalBackendAutoClientMode(registryId, master, version)
+            //testScalaInternalBackendClientMode(registryId, master, version)
+            //testScalaExternalBackendManualClusterMode(registryId, master, version)
+            //testScalaExternalBackendManualClientMode(registryId, master, version)
+            //testScalaExternalBackendAutoClusterMode(registryId, master, version)
+            //testScalaExternalBackendAutoClientMode(registryId, master, version)
             //}
         } catch (Exception e) {
             stopKubernetesCluster(commons)
