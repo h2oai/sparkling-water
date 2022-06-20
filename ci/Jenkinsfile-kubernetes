@@ -32,8 +32,6 @@ def runCommandWithK8sDebugInfo(GString script) {
             kubectl describe pods
             kubectl logs sparkling-water-app
             kubectl get events
-            minikube status
-            docker image ls
         """
     }
     return result
@@ -234,7 +232,8 @@ def withTestEnv(commons, image, code) {
 
 def testScalaInternalBackendClusterMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfo """
+    timeout(time: 15, unit: 'MINUTES') {
+        runCommandWithK8sDebugInfo """
         \$SPARK_HOME/bin/spark-submit \
          --conf spark.kubernetes.container.image=sparkling-water:scala-${version} \
          --conf spark.driver.host=sparkling-water-app \
@@ -247,6 +246,7 @@ def testScalaInternalBackendClusterMode(registryId, master, version) {
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/kubernetesTest.jar
         """
+    }
     sh "sleep 60"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
@@ -646,9 +646,11 @@ def stopEKSCluster(commons) {
     }
 }
 
-def stopKubernetesCluster(commons) {
+def stopKubernetesCluster(sparkVersion) {
     retryWithDelay(3, 600, {
-        sh "minikube stop"
+        sh """minikube stop -p minikube-${sparkMajorVersion}
+              kubectl logs sparkling-water-app
+        """
     })
 }
 
@@ -769,7 +771,7 @@ private runRTests(sparkMajorVersion, sparkVersion, commons) {
             testRExternalBackendAuto(registryId, master, version, sparkVersion)
             //                    }
         } catch (Exception e) {
-            stopKubernetesCluster(commons)
+            stopKubernetesCluster(sparkVersion)
             throw e
         }
     }
@@ -792,7 +794,7 @@ private runPythonTests(sparkMajorVersion, commons) {
             testPythonExternalBackendAutoClientMode(registryId, master, version)
             //                    }
         } catch (Exception e) {
-            stopKubernetesCluster(commons)
+            stopKubernetesCluster(sparkVersion)
             throw e
         }
     }
@@ -815,7 +817,7 @@ private runScalaTests(sparkMajorVersion, commons) {
             //testScalaExternalBackendAutoClientMode(registryId, master, version)
             //}
         } catch (Exception e) {
-            stopKubernetesCluster(commons)
+            stopKubernetesCluster(sparkVersion)
             throw e
         }
     }
