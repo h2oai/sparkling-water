@@ -646,10 +646,11 @@ def stopEKSCluster(commons) {
     }
 }
 
-def stopKubernetesCluster(sparkVersion) {
+def stopKubernetesCluster(sparkMajorVersion) {
     retryWithDelay(3, 600, {
-        sh """minikube stop -p minikube-${sparkMajorVersion}
-              kubectl logs sparkling-water-app
+        sh """
+            kubectl logs sparkling-water-app
+            minikube stop -p minikube-${sparkMajorVersion}
         """
     })
 }
@@ -771,7 +772,7 @@ private runRTests(sparkMajorVersion, sparkVersion, commons) {
             testRExternalBackendAuto(registryId, master, version, sparkVersion)
             //                    }
         } catch (Exception e) {
-            stopKubernetesCluster(sparkVersion)
+            stopKubernetesCluster(sparkMajorVersion)
             throw e
         }
     }
@@ -794,7 +795,7 @@ private runPythonTests(sparkMajorVersion, commons) {
             testPythonExternalBackendAutoClientMode(registryId, master, version)
             //                    }
         } catch (Exception e) {
-            stopKubernetesCluster(sparkVersion)
+            stopKubernetesCluster(sparkMajorVersion)
             throw e
         }
     }
@@ -817,7 +818,7 @@ private runScalaTests(sparkMajorVersion, commons) {
             //testScalaExternalBackendAutoClientMode(registryId, master, version)
             //}
         } catch (Exception e) {
-            stopKubernetesCluster(sparkVersion)
+            stopKubernetesCluster(sparkMajorVersion)
             throw e
         }
     }
