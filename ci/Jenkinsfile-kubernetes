@@ -307,7 +307,6 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
     installSparkHeadlessService()
     def image = "sparkling-water:scala-${version}"
     runCommandWithK8sDebugInfo """
-        eval \$(minikube -p minikube docker-env)
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- \
         \$SPARK_HOME/bin/spark-submit \
@@ -510,7 +509,6 @@ static String scalaExternalBackendSubmitCmd(registryId, master, version, mode, s
         prefix = externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, "scala")
     }
     return """
-        eval \$(minikube -p minikube docker-env)
         ${prefix} \
               --class ai.h2o.sparkling.KubernetesTest \
               local:///opt/sparkling-water/tests/kubernetesTest.jar
