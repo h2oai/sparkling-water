@@ -518,8 +518,7 @@ static String scalaExternalBackendSubmitCmd(sparkHome, master, version, mode, st
     } else {
         prefix = externalBackendAutoSharedSubmitCmd(sparkHome, master, version, mode, "scala")
     }
-    return """
-        ${prefix} \
+    return """${prefix} \
               --class ai.h2o.sparkling.KubernetesTest \
               local:///opt/sparkling-water/tests/kubernetesTest.jar
            """
@@ -529,7 +528,7 @@ def testScalaExternalBackendManualClusterMode(registryId, master, version) {
     echo "Step testScalaExternalBackendManualClusterMode"
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfo "${scalaExternalBackendSubmitCmd("${env.SPARK_LOCAL_HOME}", master, version, "cluster", "manual")}"
+    runCommandWithK8sDebugInfo "${scalaExternalBackendSubmitCmd("\$SPARK_LOCAL_HOME", master, version, "cluster", "manual")}"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
