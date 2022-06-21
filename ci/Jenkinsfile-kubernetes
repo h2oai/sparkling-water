@@ -123,7 +123,7 @@ def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersio
                             //runSparkDemo(sparkMajorVersion)
                             runScalaTests(sparkMajorVersion, commons)
                             runPythonTests(sparkMajorVersion, commons)
-                            //runRTests(sparkMajorVersion, sparkVersion, commons)
+                            runRTests(sparkMajorVersion, sparkVersion, commons)
                         } catch (Exception e) {
                             stopKubernetesCluster(sparkMajorVersion)
                             throw e
@@ -282,6 +282,7 @@ def testPythonInternalBackendClusterMode(registryId, master, version) {
 }
 
 def testRInternalBackend(registryId, master, version, sparkVersion) {
+    echo "Step testRInternalBackend"
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runRCommandWithK8sDebugInfo """
         export KUBERNETES_MASTER=$master
@@ -337,6 +338,7 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
 }
 
 def testPythonInternalBackendClientMode(registryId, master, version) {
+    echo "Step testPythonInternalBackendClientMode"
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "sparkling-water:python-${version}"
@@ -437,6 +439,7 @@ def stopExternalH2OBackend() {
 }
 
 def testRExternalBackendManual(registryId, master, version, sparkVersion) {
+    echo "Step testRExternalBackendManual"
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runRCommandWithK8sDebugInfo """
@@ -454,6 +457,7 @@ def testRExternalBackendManual(registryId, master, version, sparkVersion) {
 }
 
 def testRExternalBackendAuto(registryId, master, version, sparkVersion) {
+    echo "Step testRExternalBackendAuto"
     sh """
         kubectl delete namespace h2o --ignore-not-found
         kubectl create namespace h2o
@@ -593,6 +597,7 @@ static String pythonExternalBackendSubmitCmd(sparkHome, master, version, mode, s
 
 
 def testPythonExternalBackendManualClusterMode(registryId, master, version) {
+    echo "Step testPythonExternalBackendManualClusterMode"
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runCommandWithK8sDebugInfo "${pythonExternalBackendSubmitCmd("\$SPARK_LOCAL_HOME", master, version, "cluster", "manual")}"
@@ -602,6 +607,7 @@ def testPythonExternalBackendManualClusterMode(registryId, master, version) {
 }
 
 def testPythonExternalBackendManualClientMode(registryId, master, version) {
+    echo "Step testPythonExternalBackendManualClientMode"
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
@@ -616,6 +622,7 @@ def testPythonExternalBackendManualClientMode(registryId, master, version) {
 }
 
 def testPythonExternalBackendAutoClusterMode(registryId, master, version) {
+    echo "Step testPythonExternalBackendAutoClusterMode"
     sh """
         kubectl delete namespace h2o --ignore-not-found
         kubectl create namespace h2o
@@ -627,6 +634,7 @@ def testPythonExternalBackendAutoClusterMode(registryId, master, version) {
 }
 
 def testPythonExternalBackendAutoClientMode(registryId, master, version) {
+    echo "Step testPythonExternalBackendAutoClientMode"
     sh """
         kubectl delete namespace h2o --ignore-not-found
         kubectl create namespace h2o
