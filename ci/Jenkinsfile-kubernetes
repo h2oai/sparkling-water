@@ -652,7 +652,6 @@ def stopEKSCluster(commons) {
 def stopKubernetesCluster(sparkMajorVersion) {
     retryWithDelay(3, 600, {
         sh """
-            kubectl logs sparkling-water-app
             minikube stop -p minikube-${sparkMajorVersion}
         """
     })
