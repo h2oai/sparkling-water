@@ -93,6 +93,7 @@ String getH2OBranchBuildVersion() {
 
 def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersion) {
     return {
+        // ask for node in order to run parallel on different nodes
         node('docker') {
             ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
                 cleanWs()
@@ -107,6 +108,9 @@ def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersio
                     getCheckImagesStage(sparkMajorVersion)
 
                     def sparkVersion = getSparkVersion(sparkMajorVersion)
+                    def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+                    def master = "k8s://" + getMinikubeMaster()
+
                     def customEnv = [
                             "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
                             "SPARK_LOCAL_HOSTNAME=localhost"
@@ -114,10 +118,15 @@ def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersio
 
                     withEnv(customEnv) {
 
-                        //runSparkDemo(sparkMajorVersion)
-                        runScalaTests(sparkMajorVersion, commons)
-                        runPythonTests(sparkMajorVersion, commons)
-                        //runRTests(sparkMajorVersion, sparkVersion, commons)
+                        try {
+                            //runSparkDemo(sparkMajorVersion)
+                            runScalaTests(sparkMajorVersion, commons)
+                            runPythonTests(sparkMajorVersion, commons)
+                            //runRTests(sparkMajorVersion, sparkVersion, commons)
+                        } catch (Exception e) {
+                            stopKubernetesCluster(sparkMajorVersion)
+                            throw e
+                        }
                     }
 
                     stopMinikubeCluster(sparkMajorVersion)
@@ -309,7 +318,7 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- \
-        \$SPARK_HOME/bin/spark-submit \
+        /opt/spark/bin/spark-submit \
          --conf spark.scheduler.minRegisteredResourcesRatio=1 \
          --conf spark.kubernetes.container.image=${image}  \
          --master $master \
@@ -805,24 +814,25 @@ private runPythonTests(sparkMajorVersion, commons) {
 
 private runScalaTests(sparkMajorVersion, commons) {
     return stage("Test Scala, Spark ${sparkMajorVersion}") {
-        try {
+        //try {
             //unstash "properties"
             def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
             def master = "k8s://" + getMinikubeMaster()
             //def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
             //withTestEnv(commons, image) {
-            testScalaInternalBackendClusterMode(registryId, master, version)
-            testScalaInternalBackendClientMode(registryId, master, version)
-            testScalaExternalBackendManualClusterMode(registryId, master, version)
-            testScalaExternalBackendManualClientMode(registryId, master, version)
-            testScalaExternalBackendAutoClusterMode(registryId, master, version)
-            testScalaExternalBackendAutoClientMode(registryId, master, version)
+            def maxDuration = 20
+            timeout(time: maxDuration, unit: 'MINUTES') { testScalaInternalBackendClusterMode(registryId, master, version) }
+            timeout(time: maxDuration, unit: 'MINUTES') { testScalaInternalBackendClientMode(registryId, master, version) }
+            timeout(time: maxDuration, unit: 'MINUTES') { testScalaExternalBackendManualClusterMode(registryId, master, version) }
+            timeout(time: maxDuration, unit: 'MINUTES') { testScalaExternalBackendManualClientMode(registryId, master, version) }
+            timeout(time: maxDuration, unit: 'MINUTES') { testScalaExternalBackendAutoClusterMode(registryId, master, version) }
+            timeout(time: maxDuration, unit: 'MINUTES') { testScalaExternalBackendAutoClientMode(registryId, master, version) }
             //}
-        } catch (Exception e) {
-            stopKubernetesCluster(sparkMajorVersion)
-            throw e
-        }
+        //} catch (Exception e) {
+        //    stopKubernetesCluster(sparkMajorVersion)
+        //    throw e
+        //}
     }
 }
 
