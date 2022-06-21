@@ -112,7 +112,7 @@ def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersio
                     def master = "k8s://" + getMinikubeMaster()
 
                     def customEnv = [
-                            "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
+                            "SPARK_LOCAL_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
                             "SPARK_LOCAL_HOSTNAME=localhost"
                     ]
 
@@ -243,7 +243,7 @@ def testScalaInternalBackendClusterMode(registryId, master, version) {
     echo "Step testScalaInternalBackendClusterMode"
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runCommandWithK8sDebugInfo """
-        \$SPARK_HOME/bin/spark-submit \
+        \$SPARK_LOCAL_HOME/bin/spark-submit \
          --conf spark.kubernetes.container.image=sparkling-water:scala-${version} \
          --conf spark.driver.host=sparkling-water-app \
          --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
@@ -264,7 +264,7 @@ def testPythonInternalBackendClusterMode(registryId, master, version) {
     echo "Step testPythonInternalBackendClusterMode"
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runCommandWithK8sDebugInfo """
-        \$SPARK_HOME/bin/spark-submit \
+        \$SPARK_LOCAL_HOME/bin/spark-submit \
          --conf spark.kubernetes.container.image=sparkling-water:python-${version} \
          --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
          --conf spark.driver.host=sparkling-water-app \
@@ -318,7 +318,7 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- \
-        /opt/spark/bin/spark-submit \
+         \$SPARK_HOME/bin/spark-submit \
          --conf spark.scheduler.minRegisteredResourcesRatio=1 \
          --conf spark.kubernetes.container.image=${image}  \
          --master $master \
@@ -472,8 +472,8 @@ def testRExternalBackendAuto(registryId, master, version, sparkVersion) {
     stopExternalH2OBackend()
 }
 
-static String externalBackendManualSharedSubmitCmd(registryId, master, version, mode, language) {
-    return """\$SPARK_HOME/bin/spark-submit \
+static String externalBackendManualSharedSubmitCmd(sparkHome, master, version, mode, language) {
+    return """${sparkHome}/bin/spark-submit \
              --conf spark.kubernetes.container.image=sparkling-water:${language}-${version} \
              --conf spark.driver.host=sparkling-water-app \
              --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
@@ -490,8 +490,8 @@ static String externalBackendManualSharedSubmitCmd(registryId, master, version, 
             """
 }
 
-static String externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, language) {
-    return """\$SPARK_HOME/bin/spark-submit \
+static String externalBackendAutoSharedSubmitCmd(sparkHome, master, version, mode, language) {
+    return """${sparkHome}/bin/spark-submit \
              --conf spark.kubernetes.container.image=sparkling-water:${language}-${version} \
              --conf spark.driver.host=sparkling-water-app \
              --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
@@ -510,12 +510,12 @@ static String externalBackendAutoSharedSubmitCmd(registryId, master, version, mo
             """
 }
 
-static String scalaExternalBackendSubmitCmd(registryId, master, version, mode, startMode) {
+static String scalaExternalBackendSubmitCmd(sparkHome, master, version, mode, startMode) {
     def prefix
     if (startMode == "manual") {
-        prefix = externalBackendManualSharedSubmitCmd(registryId, master, version, mode, "scala")
+        prefix = externalBackendManualSharedSubmitCmd(sparkHome, master, version, mode, "scala")
     } else {
-        prefix = externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, "scala")
+        prefix = externalBackendAutoSharedSubmitCmd(sparkHome, master, version, mode, "scala")
     }
     return """
         ${prefix} \
@@ -528,7 +528,7 @@ def testScalaExternalBackendManualClusterMode(registryId, master, version) {
     echo "Step testScalaExternalBackendManualClusterMode"
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfo "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual")}"
+    runCommandWithK8sDebugInfo "${scalaExternalBackendSubmitCmd("${env.SPARK_LOCAL_HOME}", master, version, "cluster", "manual")}"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
@@ -542,7 +542,7 @@ def testScalaExternalBackendManualClientMode(registryId, master, version) {
     def image = "sparkling-water:scala-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
+        --image=${image} -- ${scalaExternalBackendSubmitCmd("\$SPARK_HOME", master, version, "client", "manual")}
         """
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
@@ -556,7 +556,7 @@ def testScalaExternalBackendAutoClusterMode(registryId, master, version) {
         kubectl create namespace h2o
         """
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfo "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}"
+    runCommandWithK8sDebugInfo "${scalaExternalBackendSubmitCmd("${env.SPARK_LOCAL_HOME}", master, version, "cluster", "auto")}"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
@@ -572,19 +572,19 @@ def testScalaExternalBackendAutoClientMode(registryId, master, version) {
     def image = "sparkling-water:scala-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
+        --image=${image} -- ${scalaExternalBackendSubmitCmd("\$SPARK_HOME", master, version, "client", "auto")}
         """
     sh "sleep 420"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
-static String pythonExternalBackendSubmitCmd(registryId, master, version, mode, startMode) {
+static String pythonExternalBackendSubmitCmd(sparkHome, master, version, mode, startMode) {
     def prefix
     if (startMode == "manual") {
-        prefix = externalBackendManualSharedSubmitCmd(registryId, master, version, mode, "python")
+        prefix = externalBackendManualSharedSubmitCmd(sparkHome, master, version, mode, "python")
     } else {
-        prefix = externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, "python")
+        prefix = externalBackendAutoSharedSubmitCmd(sparkHome, master, version, mode, "python")
     }
     return """$prefix \
               local:///opt/sparkling-water/tests/initTest.py
@@ -595,7 +595,7 @@ static String pythonExternalBackendSubmitCmd(registryId, master, version, mode, 
 def testPythonExternalBackendManualClusterMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfo "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual")}"
+    runCommandWithK8sDebugInfo "${pythonExternalBackendSubmitCmd("${env.SPARK_LOCAL_HOME}", master, version, "cluster", "manual")}"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
@@ -608,7 +608,7 @@ def testPythonExternalBackendManualClientMode(registryId, master, version) {
     def image = "sparkling-water:python-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
+        --image=${image} -- ${pythonExternalBackendSubmitCmd("\$SPARK_HOME", master, version, "client", "manual")}
         """
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
@@ -621,7 +621,7 @@ def testPythonExternalBackendAutoClusterMode(registryId, master, version) {
         kubectl create namespace h2o
         """
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfo "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}"
+    runCommandWithK8sDebugInfo "${pythonExternalBackendSubmitCmd("${env.SPARK_LOCAL_HOME}", master, version, "cluster", "auto")}"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
@@ -636,7 +636,7 @@ def testPythonExternalBackendAutoClientMode(registryId, master, version) {
     def image = "sparkling-water:python-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
+        --image=${image} -- ${pythonExternalBackendSubmitCmd("\$SPARK_HOME", master, version, "client", "auto")}
         """
     sh "sleep 420"
     sh "kubectl logs sparkling-water-app"
@@ -791,24 +791,25 @@ private runRTests(sparkMajorVersion, sparkVersion, commons) {
 
 private runPythonTests(sparkMajorVersion, commons) {
     return stage("Test Python, Spark ${sparkMajorVersion}") {
-        try {
+        //try {
             //                    unstash "properties"
             def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
             def master = "k8s://" + getMinikubeMaster()
+            def maxDuration = 30
             //                    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
             //                    withTestEnv(commons, image) {
-            testPythonInternalBackendClusterMode(registryId, master, version)
-            //testPythonInternalBackendClientMode(registryId, master, version)
-            //testPythonExternalBackendManualClusterMode(registryId, master, version)
-            //testPythonExternalBackendManualClientMode(registryId, master, version)
-            //testPythonExternalBackendAutoClusterMode(registryId, master, version)
-            //testPythonExternalBackendAutoClientMode(registryId, master, version)
+            timeout(time: maxDuration, unit: 'MINUTES') { testPythonInternalBackendClusterMode(registryId, master, version) }
+            timeout(time: maxDuration, unit: 'MINUTES') { testPythonInternalBackendClientMode(registryId, master, version) }
+            timeout(time: maxDuration, unit: 'MINUTES') { testPythonExternalBackendManualClusterMode(registryId, master, version) }
+            timeout(time: maxDuration, unit: 'MINUTES') { testPythonExternalBackendManualClientMode(registryId, master, version) }
+            timeout(time: maxDuration, unit: 'MINUTES') { testPythonExternalBackendAutoClusterMode(registryId, master, version) }
+            timeout(time: maxDuration, unit: 'MINUTES') { testPythonExternalBackendAutoClientMode(registryId, master, version) }
             //                    }
-        } catch (Exception e) {
-            stopKubernetesCluster(sparkMajorVersion)
-            throw e
-        }
+        //} catch (Exception e) {
+        //    stopKubernetesCluster(sparkMajorVersion)
+        //    throw e
+        //}
     }
 }
 
