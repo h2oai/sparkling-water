@@ -202,7 +202,7 @@ private startMinikubeCluster(sparkMajorVersion) {
     return stage("Start Minikube for $sparkMajorVersion") {
         sh """
             sudo chmod o+rw /var/run/docker.sock
-            minikube start -p minikube-${sparkMajorVersion}        
+            minikube start -p minikube-${sparkMajorVersion}  --cpus 6 --memory 12g
         """
     }
 }
