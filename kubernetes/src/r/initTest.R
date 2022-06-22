@@ -50,6 +50,7 @@ config <- spark_config_kubernetes(master = master,
                                  conf = extraOptionsParsed,
                                  ports = c(8880, 8881, 4040, 54321))
 config["spark.home"] <- sparkHome
+config["sparklyr.connect.enablehivesupport"] <- FALSE
 sc <- spark_connect(config = config, spark_home = sparkHome)
 hc <- H2OContext.getOrCreate()
 
