@@ -296,6 +296,14 @@ def testRInternalBackend(registry, master, version, sparkVersion, script) {
     sh "kubectl logs sparkling-water-app | grep -qv \"ASSERTION ERROR\" && echo \"OK\" || exit 1"
 }
 
+def setupREnvironment(version) {
+    echo "Step setupREnvironment"
+    sh """
+      R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OBranchMajorVersion()}.99999.tar.gz", type="source", repos=NULL)'
+      R -e 'install.packages("dist/build/zip/sparkling-water-${version}/rsparkling_${version}.tar.gz", type="source", repos=NULL)'
+    """
+}
+
 def installSparkHeadlessService() {
     sh """
 kubectl delete service sparkling-water-app --ignore-not-found
@@ -787,6 +795,7 @@ private runRTests(sparkMajorVersion, sparkVersion, commons) {
             //                    withTestEnv(commons, image) {
             //                        // R sets deployment mode automatically
             def script = "kubernetes/src/r/initTest.R"
+            setupREnvironment(version)
             testRInternalBackend(registry, master, version, sparkVersion, script)
             testRExternalBackendManual(registry, master, version, sparkVersion, script)
             testRExternalBackendAuto(registry, master, version, sparkVersion, script)
