@@ -121,8 +121,8 @@ def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersio
 
                         try {
                             //runSparkDemo(sparkMajorVersion)
-                            runScalaTests(sparkMajorVersion, commons)
-                            runPythonTests(sparkMajorVersion, commons)
+                            //runScalaTests(sparkMajorVersion, commons)
+                            //runPythonTests(sparkMajorVersion, commons)
                             runRTests(sparkMajorVersion, sparkVersion, commons)
                         } catch (Exception e) {
                             stopKubernetesCluster(sparkMajorVersion)
