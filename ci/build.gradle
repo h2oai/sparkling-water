@@ -40,7 +40,12 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   getAllFullSparkVersions().each { version ->
     runCommand """\\
                     cd /home/jenkins && \\
-                    wget http://archive.apache.org/dist/spark/spark-${version}/spark-${version}-bin-hadoop2.7.tgz  && \\
+                    if [[ ${version} > 3.3 ]]; then \\
+                      wget http://archive.apache.org/dist/spark/spark-${version}/spark-${version}-bin-hadoop2.tgz && \\
+                      mv spark-${version}-bin-hadoop2.tgz spark-${version}-bin-hadoop2.7.tgz
+                    else \\
+                      wget http://archive.apache.org/dist/spark/spark-${version}/spark-${version}-bin-hadoop2.7.tgz \\
+                    fi && \\
                     mkdir -p spark-${version}-bin-hadoop2.7 &&  \\
                     tar zxvf spark-${version}-bin-hadoop2.7.tgz -C spark-${version}-bin-hadoop2.7 --strip-components 1 && \\
                     rm -rf spark-${version}-bin-hadoop2.7.tgz
