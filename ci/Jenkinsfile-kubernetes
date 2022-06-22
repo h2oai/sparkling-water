@@ -796,9 +796,17 @@ private runRTests(sparkMajorVersion, sparkVersion, commons) {
             //                        // R sets deployment mode automatically
             def script = "kubernetes/src/r/initTest.R"
             setupREnvironment(version)
-            testRInternalBackend(registry, master, version, sparkVersion, script)
-            testRExternalBackendManual(registry, master, version, sparkVersion, script)
-            testRExternalBackendAuto(registry, master, version, sparkVersion, script)
+
+            def customEnv = [
+                    "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
+                    "SPARK_LOCAL_HOSTNAME=localhost"
+            ]
+
+            withEnv(customEnv) {
+                testRInternalBackend(registry, master, version, sparkVersion, script)
+                testRExternalBackendManual(registry, master, version, sparkVersion, script)
+                testRExternalBackendAuto(registry, master, version, sparkVersion, script)
+            }
             //                    }
         //} catch (Exception e) {
         //    stopKubernetesCluster(sparkMajorVersion)
