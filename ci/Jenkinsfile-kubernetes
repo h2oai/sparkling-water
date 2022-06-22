@@ -281,15 +281,15 @@ def testPythonInternalBackendClusterMode(registryId, master, version) {
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
-def testRInternalBackend(registryId, master, version, sparkVersion) {
+def testRInternalBackend(registry, master, version, sparkVersion, script) {
     echo "Step testRInternalBackend"
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runRCommandWithK8sDebugInfo """
         export KUBERNETES_MASTER=$master
-        export REGISTRY_ID=$registryId
+        export REGISTRY=$registry
         export SW_VERSION=$version
         export SPARK_VERSION=$sparkVersion
-        Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
+        Rscript --default-packages=methods,utils $script
         """
     sh 'sleep 60'
     sh "kubectl logs sparkling-water-app | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
@@ -438,17 +438,17 @@ def stopExternalH2OBackend() {
     sh "kubectl delete service h2o-service --ignore-not-found"
 }
 
-def testRExternalBackendManual(registryId, master, version, sparkVersion) {
+def testRExternalBackendManual(registry, master, version, sparkVersion, script) {
     echo "Step testRExternalBackendManual"
-    startExternalH2OBackend(registryId, version)
+    startExternalH2OBackend(registry, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runRCommandWithK8sDebugInfo """
         export KUBERNETES_MASTER=$master
-        export REGISTRY_ID=$registryId
+        export REGISTRY=$registry
         export SW_VERSION=$version
         export SPARK_VERSION=$sparkVersion
         export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=manual spark.ext.h2o.external.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
-        Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
+        Rscript --default-packages=methods,utils $script
         """
     sh 'sleep 60'
     sh "kubectl logs sparkling-water-app | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
@@ -456,7 +456,7 @@ def testRExternalBackendManual(registryId, master, version, sparkVersion) {
     stopExternalH2OBackend()
 }
 
-def testRExternalBackendAuto(registryId, master, version, sparkVersion) {
+def testRExternalBackendAuto(registry, master, version, sparkVersion, script) {
     echo "Step testRExternalBackendAuto"
     sh """
         kubectl delete namespace h2o --ignore-not-found
@@ -465,11 +465,11 @@ def testRExternalBackendAuto(registryId, master, version, sparkVersion) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runRCommandWithK8sDebugInfo """
         export KUBERNETES_MASTER=$master
-        export REGISTRY_ID=$registryId
+        export REGISTRY=$registry
         export SW_VERSION=$version
         export SPARK_VERSION=$sparkVersion
         export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.k8s.namespace=h2o spark.ext.h2o.external.start.mode=auto spark.ext.h2o.external.cluster.size=2 spark.ext.h2o.external.k8s.docker.image=sparkling-water:external-backend-${version} spark.ext.h2o.external.auto.start.backend=kubernetes spark.ext.h2o.external.memory=2G"
-        Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
+        Rscript --default-packages=methods,utils $script
         """
     sh 'sleep 60'
     sh "kubectl logs sparkling-water-app | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
@@ -777,23 +777,24 @@ private getCheckImagesStage(sparkMajorVersion) {
 
 private runRTests(sparkMajorVersion, sparkVersion, commons) {
     return stage("Test R, Spark ${sparkMajorVersion}") {
-        try {
+        //try {
             //                    unstash "properties"
-            def registryId = "" // readPropertiesFile("properties")["docker_registry_id"]
+            def registry = "" // readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
             def master = "k8s://" + getMinikubeMaster()
             def image = "sparkling-water:r-${version}"
             //def sparkVersion = getSparkVersion(sparkMajorVersion)
             //                    withTestEnv(commons, image) {
             //                        // R sets deployment mode automatically
-            testRInternalBackend(registryId, master, version, sparkVersion)
-            testRExternalBackendManual(registryId, master, version, sparkVersion)
-            testRExternalBackendAuto(registryId, master, version, sparkVersion)
+            def script = "kubernetes/src/r/initTest.R"
+            testRInternalBackend(registry, master, version, sparkVersion, script)
+            testRExternalBackendManual(registry, master, version, sparkVersion, script)
+            testRExternalBackendAuto(registry, master, version, sparkVersion, script)
             //                    }
-        } catch (Exception e) {
-            stopKubernetesCluster(sparkMajorVersion)
-            throw e
-        }
+        //} catch (Exception e) {
+        //    stopKubernetesCluster(sparkMajorVersion)
+        //    throw e
+        //}
     }
 }
 
