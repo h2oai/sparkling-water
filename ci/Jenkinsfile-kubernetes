@@ -644,12 +644,10 @@ def getMinikubeMaster() {
 }
 
 def checkImages(sparkMajorVersion) {
-    stage("Allow Spark Create PODs") {
+    stage("Check Built Images") {
         sh """
             eval \$(minikube -p minikube-${sparkMajorVersion} docker-env)
             docker image ls
-            kubectl delete clusterrolebinding default --ignore-not-found
-            kubectl create clusterrolebinding default --clusterrole=edit --serviceaccount=default:default --namespace=default                
             """
     }
 }
