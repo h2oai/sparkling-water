@@ -528,8 +528,8 @@ class H2OTypeConverters(object):
         if jdf is None:
             return None
         elif isinstance(jdf, JavaObject):
-            sqlContext = SparkSession.builder.getOrCreate()._wrapped
-            return DataFrame(jdf, sqlContext)
+            session = SparkSession.builder.getOrCreate()
+            return DataFrame(jdf, session)
         else:
             raise TypeError("Invalid type.")
 

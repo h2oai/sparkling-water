@@ -27,10 +27,10 @@ class H2OGridSearchExtras:
 
     def getGridModelsParams(self):
         jdf = self._java_obj.getGridModelsParams()
-        sqlContext = SparkSession.builder.getOrCreate()._wrapped
-        return DataFrame(jdf, sqlContext)
+        session = SparkSession.builder.getOrCreate()
+        return DataFrame(jdf, session)
 
     def getGridModelsMetrics(self):
         jdf = self._java_obj.getGridModelsMetrics()
-        sqlContext = SparkSession.builder.getOrCreate()._wrapped
-        return DataFrame(jdf, sqlContext)
+        session = SparkSession.builder.getOrCreate()
+        return DataFrame(jdf, session)
