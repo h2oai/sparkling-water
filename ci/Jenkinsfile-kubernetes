@@ -19,16 +19,20 @@ def readPropertiesFile(file) {
     return properties
 }
 
-def runCommandWithK8sDebugInfo(GString script) {
-    def result = sh(script: script, returnStatus: true)
-    if (result > 0) {
-        sh """
+def getDebugInfo() {
+    sh """
             kubectl describe service sparkling-water-app
             kubectl get pods --all-namespaces 
             kubectl describe pods
-            kubectl logs sparkling-water-app
             kubectl get events
+            kubectl logs sparkling-water-app
         """
+}
+
+def runCommandWithK8sDebugInfo(GString script) {
+    def result = sh(script: script, returnStatus: true)
+    if (result > 0) {
+        getDebugInfo()
     }
     return result
 }
@@ -134,6 +138,7 @@ def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersio
                             runPythonTests(sparkMajorVersion, master, sparklingVersion)
                             runRTests(sparkMajorVersion, sparkVersion, master, sparklingVersion)
                         } catch (Exception e) {
+                            getDebugInfo()
                             stopMinikubeCluster(sparkMajorVersion)
                             throw e
                         }
@@ -465,6 +470,7 @@ static String externalBackendManualSharedSubmitCmd(sparkHome, master, version, m
              --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=2 \
+             --conf spark.ext.h2o.cloud.timeout=120000 \
             """
 }
 
@@ -485,6 +491,7 @@ static String externalBackendAutoSharedSubmitCmd(sparkHome, master, version, mod
              --conf spark.ext.h2o.external.k8s.docker.image=sparkling-water:external-backend-${version} \
              --conf spark.executor.instances=2 \
              --conf spark.ext.h2o.external.cluster.size=2 \
+             --conf spark.ext.h2o.cloud.timeout=120000 \
             """
 }
 
@@ -750,12 +757,12 @@ node("docker") {
             stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
         }
 
+        // TODO is following step still needed (incl. withSparklingWaterMinikubeImage call)?
         stage("Clean Minikube Clusters") {
             sh """
                 pwd
                 sudo chmod o+rw /var/run/docker.sock
                 minikube delete --all
-                # minikube start
             """
             def values = [
                     "version": "${sparklingVersion}"
