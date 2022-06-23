@@ -38,7 +38,7 @@ object ProblemSpecificAlgorithmTemplate
     val imports = Seq(
       "warnings.warn",
       "pyspark.keyword_only",
-      "ai.h2o.sparkling.Initializer",
+      "ai.h2o.sparkling.Initializer.Initializer",
       "ai.h2o.sparkling.ml.Utils.Utils",
       s"$parentNamespace.$parentEntityName.$parentEntityName")
 
