@@ -26,7 +26,7 @@ class H2OAutoMLExtras:
         if len(extraColumns) == 1 and isinstance(extraColumns[0], list):
             extraColumns = extraColumns[0]
         leaderboard_java = self._java_obj.getLeaderboard(extraColumns)
-        return DataFrame(leaderboard_java, SparkSession.builder.getOrCreate())
+        return DataFrame(leaderboard_java, SparkSession.builder.getOrCreate()._wrapped)
 
     def getAllModels(self):
         javaModels = self._java_obj.getAllModels()
