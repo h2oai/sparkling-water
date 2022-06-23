@@ -89,8 +89,8 @@ class DataFrameConverterFullCategoricalTestSuite extends FunSuite with SharedH2O
     testDataFrameConversionWithOnlyUniqueValues(1)
   }
 
-  test("DataFrame[String] with only unique values with in 100 partitions to H2OFrame[T_STR] and back") {
-    testDataFrameConversionWithOnlyUniqueValues(100)
+  test("DataFrame[String] with only unique values with in 50 partitions to H2OFrame[T_STR] and back") {
+    testDataFrameConversionWithOnlyUniqueValues(50)
   }
 
   def testDataFrameConversionWithOnlyUniqueValues(numPartitions: Int) {
