@@ -20,6 +20,7 @@ import numbers
 import warnings
 from ai.h2o.sparkling.H2OConf import H2OConf
 from ai.h2o.sparkling.Initializer import Initializer
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from h2o.frame import H2OFrame
 from h2o.utils.typechecks import assert_is_type, Enum
 from pyspark.rdd import RDD
@@ -172,8 +173,7 @@ class H2OContext(object):
         if isinstance(h2oFrame, H2OFrame):
             frame_id = h2oFrame.frame_id
             jdf = self._jhc.asSparkFrame(frame_id, copyMetadata)
-            sqlContext = SparkSession.builder.getOrCreate()._wrapped
-            df = DataFrame(jdf, sqlContext)
+            df = H2OTypeConverters.scalaToPythonDataFrame(jdf)
             # Attach h2o_frame to dataframe which forces python not to delete the frame when we leave the scope of this
             # method.
             # Without this, after leaving this method python would garbage collect the frame since it's not used

@@ -528,7 +528,11 @@ class H2OTypeConverters(object):
         if jdf is None:
             return None
         elif isinstance(jdf, JavaObject):
-            sqlContext = SparkSession.builder.getOrCreate()._wrapped
+            session = SparkSession.builder.getOrCreate()
+            if hasattr(session, '_wrapped'):
+                sqlContext = session._wrapped
+            else:
+                sqlContext = session  # Spark 3.3+ utilizes SparkSession instead of SQLContext
             return DataFrame(jdf, sqlContext)
         else:
             raise TypeError("Invalid type.")
