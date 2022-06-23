@@ -413,7 +413,7 @@ def stopExternalH2OBackend() {
 
 def testRExternalBackendManual(master, sparklingVersion, sparkVersion, script) {
     echo "Step testRExternalBackendManual"
-    startExternalH2OBackend(version)
+    startExternalH2OBackend(sparklingVersion)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runRCommandWithK8sDebugInfo """
         export KUBERNETES_MASTER=$master
