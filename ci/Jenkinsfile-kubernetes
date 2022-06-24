@@ -111,15 +111,13 @@ def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersio
 
                 withSparklingWaterMinikubeImage(commons) {
 
-                    unstash "properties"
-
                     startMinikubeCluster(sparkMajorVersion)
                     getBuildAndPublishStage(sparkMajorVersion, props)
                     checkImages(sparkMajorVersion)
                     grantClusterRights()
 
                     def sparkVersion = getSparkVersion(sparkMajorVersion)
-                    def sparklingVersion = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+                    def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
                     def master = "k8s://" + getMinikubeMaster()
 
                     // SPARK_LOCAL_HOME - Spark home within sparkling_water_tests image the code runs currently in
@@ -189,6 +187,7 @@ def startMinikubeCluster(sparkMajorVersion) {
         // increasing available resources helped to stabilize the process
         sh """
             sudo chmod o+rw /var/run/docker.sock
+            minikube delete -p minikube-${sparkMajorVersion} 
             minikube start -p minikube-${sparkMajorVersion}  --cpus 6 --memory 12g
         """
     }
@@ -735,7 +734,6 @@ node("docker") {
     checkout scm
     def commons = load 'ci/commons.groovy'
     def props = readPropertiesFile("gradle.properties")
-    def sparklingVersion = props['version'].replace("-SNAPSHOT", "")
 
     withSparklingWaterMinikubeImage(commons) {
 
@@ -755,21 +753,6 @@ node("docker") {
                     """
             })
             stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
-        }
-
-        // TODO is following step still needed (incl. withSparklingWaterMinikubeImage call)?
-        stage("Clean Minikube Clusters") {
-            sh """
-                pwd
-                sudo chmod o+rw /var/run/docker.sock
-                minikube delete --all
-            """
-            def values = [
-                    "version": "${sparklingVersion}"
-            ]
-            def valuesAsString = values.collect { "${it.key}=${it.value}" }.join("\n") + "\n"
-            writeFile file: "properties", text: valuesAsString
-            stash name: "properties", includes: "properties"
         }
     }
 
