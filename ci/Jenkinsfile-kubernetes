@@ -67,7 +67,7 @@ String getScalaBaseVersion(sparkMajorVersion) {
     return scalaVersion.count(".") == 1 ? scalaVersion : scalaVersion.substring(0, scalaVersion.lastIndexOf('.'))
 }
 
-def buildAndPublishSparklingWaterImage(String type, String sparkMajorVersion, String sparklingVersion) {
+def buildSparklingWaterImage(String type, String sparkMajorVersion, String sparklingVersion) {
     sh """
         eval \$(minikube -p minikube-${sparkMajorVersion} docker-env)
         export H2O_HOME=${env.WORKSPACE}/h2o-3 
@@ -101,7 +101,7 @@ static String getH2OBranchBuildVersion() {
     return "1-SNAPSHOT"
 }
 
-def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersion) {
+def getBuildAndTestStagesForSparkVersion(commons, props, sparkMajorVersion) {
     return {
         // ask for node in order to run this build branch in parallel on a separate node
         node('docker') {
@@ -112,8 +112,7 @@ def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersio
                 withSparklingWaterMinikubeImage(commons) {
 
                     startMinikubeCluster(sparkMajorVersion)
-                    getBuildAndPublishStage(sparkMajorVersion, props)
-                    checkImages(sparkMajorVersion)
+                    getBuildStage(sparkMajorVersion, props)
                     grantClusterRights()
 
                     def sparkVersion = getSparkVersion(sparkMajorVersion)
@@ -149,7 +148,7 @@ def getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersio
     }
 }
 
-def getBuildAndPublishStage(sparkMajorVersion, props) {
+def getBuildStage(sparkMajorVersion, props) {
     return stage("Build Images For Spark $sparkMajorVersion") {
         def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
         def sparkVersion = getSparkVersion(sparkMajorVersion)
@@ -171,13 +170,18 @@ def getBuildAndPublishStage(sparkMajorVersion, props) {
 
         withEnv(customEnv) {
             dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
-                buildAndPublishSparklingWaterImage("scala", sparkMajorVersion, sparklingVersion)
-                buildAndPublishSparklingWaterImage("python", sparkMajorVersion, sparklingVersion)
-                buildAndPublishSparklingWaterImage("r", sparkMajorVersion, sparklingVersion)
+                buildSparklingWaterImage("scala", sparkMajorVersion, sparklingVersion)
+                buildSparklingWaterImage("python", sparkMajorVersion, sparklingVersion)
+                buildSparklingWaterImage("r", sparkMajorVersion, sparklingVersion)
                 removeSparkImages(sparkMajorVersion, sparkVersion)
-                buildAndPublishSparklingWaterImage("external-backend", sparkMajorVersion, sparklingVersion)
+                buildSparklingWaterImage("external-backend", sparkMajorVersion, sparklingVersion)
             }
         }
+
+        sh """
+            eval \$(minikube -p minikube-${sparkMajorVersion} docker-env)
+            docker image ls
+            """
     }
 }
 
@@ -201,10 +205,10 @@ def stopMinikubeCluster(sparkMajorVersion) {
     }
 }
 
-def getBuildPublishAndTestStages(commons, props) {
+def getBuildAndTestStages(commons, props) {
     def parallelStages = [:]
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-        parallelStages["Build & Publish Spark ${sparkMajorVersion}"] = getBuildPublishAndTestStagesForSparkVersion(commons, props, sparkMajorVersion)
+        parallelStages["Build & Publish Spark ${sparkMajorVersion}"] = getBuildAndTestStagesForSparkVersion(commons, props, sparkMajorVersion)
     }
     return parallelStages
 }
@@ -649,15 +653,6 @@ def getMinikubeMaster() {
     ).trim()
 }
 
-def checkImages(sparkMajorVersion) {
-    stage("Check Built Images") {
-        sh """
-            eval \$(minikube -p minikube-${sparkMajorVersion} docker-env)
-            docker image ls
-            """
-    }
-}
-
 def grantClusterRights() {
     stage("Allow Spark Create PODs") {
         sh """
@@ -756,5 +751,5 @@ node("docker") {
         }
     }
 
-    parallel(getBuildPublishAndTestStages(commons, props))
+    parallel(getBuildAndTestStages(commons, props))
 }
