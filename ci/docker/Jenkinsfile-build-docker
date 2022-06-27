@@ -9,7 +9,7 @@ properties(
                                 booleanParam(name: 'updateNextImageVersion', defaultValue: true, description: 'Update Next Image Version'),
                         ]
                 ),
-                buildDiscarder(logRotator(numToKeepStr: '10'))
+                buildDiscarder(logRotator(numToKeepStr: '30'))
         ]
 )
 
