@@ -152,7 +152,7 @@ def getBuildAndTestStagesForSparkVersion(commons, props, sparkMajorVersion) {
 }
 
 def getBuildStage(sparkMajorVersion, props) {
-    return stage("Build Images For Spark $sparkMajorVersion") {
+    return stage("Build Images, Spark $sparkMajorVersion") {
         def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
         def sparkVersion = getSparkVersion(sparkMajorVersion)
         unstash "shared"
@@ -189,7 +189,7 @@ def getBuildStage(sparkMajorVersion, props) {
 }
 
 def startMinikubeCluster(sparkMajorVersion) {
-    return stage("Start Minikube for $sparkMajorVersion") {
+    return stage("Start Minikube, Spark $sparkMajorVersion") {
         // minikube default resources (2 CPU and 8GB) were not enough to run tests steadily
         // increasing available resources helped to stabilize the process
         sh """
@@ -201,7 +201,7 @@ def startMinikubeCluster(sparkMajorVersion) {
 }
 
 def stopMinikubeCluster(sparkMajorVersion) {
-    return stage("Stop Minikube for $sparkMajorVersion") {
+    return stage("Stop Minikube, Spark $sparkMajorVersion") {
         sh """
             minikube stop -p minikube-${sparkMajorVersion}        
         """
@@ -211,7 +211,7 @@ def stopMinikubeCluster(sparkMajorVersion) {
 def getBuildAndTestStages(commons, props) {
     def parallelStages = [:]
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-        parallelStages["Build & Publish Spark ${sparkMajorVersion}"] = getBuildAndTestStagesForSparkVersion(commons, props, sparkMajorVersion)
+        parallelStages["Build & Test Spark ${sparkMajorVersion}"] = getBuildAndTestStagesForSparkVersion(commons, props, sparkMajorVersion)
     }
     return parallelStages
 }
