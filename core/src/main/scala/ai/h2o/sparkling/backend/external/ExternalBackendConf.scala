@@ -113,6 +113,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
 
   def externalK8sDomain: String = sparkConf.get(PROP_EXTERNAL_K8S_DOMAIN._1, PROP_EXTERNAL_K8S_DOMAIN._2)
 
+  @DeprecatedMethod(version = "3.40")
+  def externalK8sServiceTimeout: Int =
+    sparkConf.getInt(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._2)
+
   /** Setters */
   /**
     * Sets node and port representing H2O Cluster to which should H2O connect when started in external mode.
@@ -227,6 +231,11 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
 
   def setExternalK8sDomain(domain: String): H2OConf = {
     set(PROP_EXTERNAL_K8S_DOMAIN._1, domain)
+  }
+
+  @DeprecatedMethod(version = "3.40")
+  def setExternalK8sServiceTimeout(timeout: Int): H2OConf = {
+    set(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, timeout.toString)
   }
 }
 
@@ -410,6 +419,12 @@ object ExternalBackendConf {
     s"cluster.local",
     "setExternalK8sDomain(String)",
     "Domain of the Kubernetes cluster.")
+
+  val PROP_EXTERNAL_K8S_SERVICE_TIMEOUT: IntOption = (
+    "spark.ext.h2o.external.k8s.svc.timeout",
+    60 * 5,
+    "setExternalK8sServiceTimeout(Int)",
+    "[Deprecated] Timeout in seconds used as a limit for K8s service creation.")
 
   private[sparkling] val PROP_EXTERNAL_DISABLE_VERSION_CHECK: (String, Boolean) =
     ("spark.ext.h2o.external.disable.version.check", false)
