@@ -133,7 +133,6 @@ def getBuildAndTestStagesForSparkVersion(commons, props, sparkMajorVersion) {
                     withEnv(customEnv) {
 
                         try {
-                            // runSparkDemo(sparkMajorVersion, sparkVersion, master, sparklingVersion, currentSparkHome)
                             runScalaTests(sparkMajorVersion, master, sparklingVersion, currentSparkHome, swImageSparkHome)
                             runPythonTests(sparkMajorVersion, master, sparklingVersion, currentSparkHome, swImageSparkHome)
                             runRTests(sparkMajorVersion, sparkVersion, master, sparklingVersion, currentSparkHome)
@@ -707,24 +706,6 @@ def runScalaTests(sparkMajorVersion, master, sparklingVersion, currentSparkHome,
         timeout(time: maxDuration, unit: 'MINUTES') { testScalaExternalBackendAutoClusterMode(master, sparklingVersion, currentSparkHome) }
         timeout(time: maxDuration, unit: 'MINUTES') { testScalaExternalBackendAutoClientMode(master, sparklingVersion, swImageSparkHome) }
     }
-}
-
-def runSparkDemo(sparkMajorVersion, sparkVersion, master, sparklingVersion, currentSparkHome) {
-    def scalaBaseVersion = getScalaBaseVersion(sparkMajorVersion)
-    sh """kubectl delete pod spark-demo --ignore-not-found
-         ${currentSparkHome}/bin/spark-submit \
-         --conf spark.kubernetes.container.image=sparkling-water:scala-${sparklingVersion} \
-         --conf spark.kubernetes.driver.pod.name=spark-demo \
-         --master $master \
-         --deploy-mode cluster \
-         --name spark-pi \
-         --class org.apache.spark.examples.SparkPi \
-         --conf spark.executor.instances=3 \
-         local:///opt/spark/examples/jars/spark-examples_${scalaBaseVersion}-${sparkVersion}.jar
-        """
-    sh "sleep 60"
-    sh "kubectl logs spark-demo"
-    sh "kubectl get pod spark-demo | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 node("docker") {
