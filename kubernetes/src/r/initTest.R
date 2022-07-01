@@ -19,7 +19,7 @@ library(rsparkling)
 library(testthat)
 options(sparklyr.console.log = TRUE)
 master <- Sys.getenv("KUBERNETES_MASTER")
-registryId <- Sys.getenv("REGISTRY_ID")
+registry <- Sys.getenv("REGISTRY")
 version <- Sys.getenv("SW_VERSION")
 sparkHome <- Sys.getenv("SPARK_HOME")
 extraOptions <- Sys.getenv("EXTRA_OPTIONS")
@@ -42,7 +42,7 @@ if (optionName %in% names(extraOptionsParsed) && extraOptionsParsed[optionName] 
 }
 
 config <- spark_config_kubernetes(master = master,
-                                 image = paste0(registryId, ".dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-", version),
+                                 image = paste0(registry, "sparkling-water:r-", version),
                                  account = "default",
                                  driver = "sparkling-water-app",
                                  version = sparkVersion,
@@ -50,6 +50,7 @@ config <- spark_config_kubernetes(master = master,
                                  conf = extraOptionsParsed,
                                  ports = c(8880, 8881, 4040, 54321))
 config["spark.home"] <- sparkHome
+config["sparklyr.connect.enablehivesupport"] <- FALSE
 sc <- spark_connect(config = config, spark_home = sparkHome)
 hc <- H2OContext.getOrCreate()
 

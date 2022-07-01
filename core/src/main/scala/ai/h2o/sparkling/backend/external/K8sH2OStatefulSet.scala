@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.backend.external
 
 import java.io.{ByteArrayInputStream, InputStream}
-
 import ai.h2o.sparkling.H2OConf
 import io.fabric8.kubernetes.api.model.Pod
 import io.fabric8.kubernetes.client.KubernetesClient
@@ -43,29 +42,21 @@ trait K8sH2OStatefulSet extends K8sUtils {
   }
 
   private def waitForClusterToBeReady(client: KubernetesClient, conf: H2OConf): String = {
-    client
-      .apps()
-      .statefulSets()
-      .inNamespace(conf.externalK8sNamespace)
-      .withName(conf.externalK8sH2OStatefulsetName)
-
     val start = System.currentTimeMillis()
     val timeout = conf.cloudTimeout
+
     while (System.currentTimeMillis() - start < timeout) {
-      if (getPodsForStatefulSet(client, conf).length < conf.clusterSize.get.toInt
-          || listReadyPods(client, conf).length != 1) {
-        Thread.sleep(100)
-      } else {
-        return listReadyPods(client, conf).head.getMetadata.getName
+      val currentPods = getPodsForStatefulSet(client, conf)
+      if (currentPods.length == conf.clusterSize.get.toInt) {
+        val readyPods = listReadyPods(currentPods, client, conf)
+        if (readyPods.length == 1) {
+          return readyPods.head.getMetadata.getName
+        }
       }
+      Thread.sleep(100)
     }
 
-    if (getPodsForStatefulSet(client, conf).length < conf.clusterSize.get.toInt
-        && listReadyPods(client, conf).length != 1) {
-      throw new RuntimeException("Timeout during clouding of external H2O backend on K8s.")
-    } else {
-      listReadyPods(client, conf).head.getMetadata.getName
-    }
+    throw new RuntimeException("Timeout during clouding of external H2O backend on K8s.")
   }
 
   private def getPodsForStatefulSet(client: KubernetesClient, conf: H2OConf): Array[Pod] = {
@@ -85,8 +76,8 @@ trait K8sH2OStatefulSet extends K8sUtils {
     Map(split(0) -> split(1)).asJava
   }
 
-  private def listReadyPods(client: KubernetesClient, conf: H2OConf) = {
-    getPodsForStatefulSet(client, conf).filter { pod =>
+  private def listReadyPods(pods: Array[Pod], client: KubernetesClient, conf: H2OConf) = {
+    pods.filter { pod =>
       val newPod = client
         .pods()
         .inNamespace(conf.externalK8sNamespace)
