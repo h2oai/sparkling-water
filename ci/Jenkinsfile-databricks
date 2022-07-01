@@ -7,7 +7,7 @@ import java.nio.file.Paths
 properties(
         [
                 pipelineTriggers([cron('H 16 * * *')]),
-                buildDiscarder(logRotator(numToKeepStr: '10'))
+                buildDiscarder(logRotator(numToKeepStr: '30'))
         ]
 )
 
