@@ -220,6 +220,7 @@ def gitCommit(files, msg) {
 
 def installDocker() {
     sh "sudo apt-get update"
+    sh "sudo apt -y install containerd"
     sh "sudo apt -y install docker.io"
     sh "sudo service docker start"
     sh "sudo chmod 666 /var/run/docker.sock"
