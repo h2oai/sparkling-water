@@ -60,7 +60,7 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
       val udfWrapper =
         H2OTargetEncoderMOJOUdfWrapper(getMojo, outputCols, H2OTargetEncoderProblemType.valueOf(getProblemType()))
       val withPredictionsDF = applyPredictionUdf(dataset, _ => udfWrapper.mojoUdf)
-      withPredictionsDF
+      new DatasetWrapper(withPredictionsDF)
         .withColumns(
           outputCols,
           outputCols.zip(getInputCols()).map {
