@@ -363,11 +363,13 @@ def integTests() {
 
 def pyIntegTests() {
     return { config ->
-        stage('QA: Py Integration Tests 3.6 - ' + config.backendMode) {
+        def allPythonVersions = config.commons.getSupportedPythonVersions(config.sparkMajorVersion)
+        def pythonVersion = allPythonVersions.last()
+        stage("QA: Py Integration Tests ${pythonVersion} - ${config.backendMode}") {
             if (config.runPyIntegTests.toBoolean()) {
                 try {
                     sh """
-                    ${getGradleCommand(config)} sparkling-water-py:integTest -PpythonPath=/home/jenkins/miniconda/envs/sw_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
+                    ${getGradleCommand(config)} sparkling-water-py:integTest -PpythonPath=/home/jenkins/miniconda/envs/sw_env_python${pythonVersion}/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                     """
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'

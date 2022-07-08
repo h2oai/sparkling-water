@@ -17,6 +17,7 @@
 import os
 import pytest
 
+import pyspark
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
@@ -174,7 +175,12 @@ def testRandomColsArePropagatedToInternals(semiconductorDataset):
 def testRandomColsMustBeWithinTrainingDataset(semiconductorDataset):
     glm = createInitialGlmDefinitionForRandomCols()
     glm.setRandomCols(["someColumn"])
-    with pytest.raises(AnalysisException, match=r".*cannot resolve '.?someColumn.?' given input columns.*"):
+    if pyspark.__version__ >= "3.3":
+        pattern = r".*Column '.?someColumn.?' does not exist.*"
+    else:
+        pattern = r".*cannot resolve '.?someColumn.?' given input columns.*"
+
+    with pytest.raises(AnalysisException, match=pattern):
         glm.fit(semiconductorDataset)
 
 
