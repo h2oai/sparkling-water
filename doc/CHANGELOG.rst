@@ -1,6 +1,41 @@
 Change Log
 ==========
 
+v3.36.1.3-1 (2022-07-11)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.3-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.3-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.3-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.3-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.3-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.3-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.3-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.3-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.3-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.36.1.3-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.36.1.3-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2725 <https://0xdata.atlassian.net/browse/SW-2725>`__ - Upgrade to H2O 3.36.1.3
+   -  `SW-2712 <https://0xdata.atlassian.net/browse/SW-2712>`__ - Increase the number of builds kept in Jenkin's build history
+   -  `SW-2630 <https://0xdata.atlassian.net/browse/SW-2630>`__ - Rewrite and Improve K8s Tests 
+
+-  Engineering Story
+
+   -  `SW-2724 <https://0xdata.atlassian.net/browse/SW-2724>`__ - Fix Docker Image Publishing to DockerHub
+   -  `SW-2719 <https://0xdata.atlassian.net/browse/SW-2719>`__ - Fix Building of RSparkling Docker Images
+
+-  Bug
+
+   -  `SW-2722 <https://0xdata.atlassian.net/browse/SW-2722>`__ - Fix Failing Test on External Backend
+
+-  New Feature
+
+   -  `SW-2721 <https://0xdata.atlassian.net/browse/SW-2721>`__ - Add Support for Spark 3.3
+
+-  Docs
+
+   -  `SW-2720 <https://0xdata.atlassian.net/browse/SW-2720>`__ - Invalid Python Code Examples
+
 v3.36.1.2-1 (2022-05-30)
 ------------------------
 Downloads:
