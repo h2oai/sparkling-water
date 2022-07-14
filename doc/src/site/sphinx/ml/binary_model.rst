@@ -81,7 +81,7 @@ To obtain the binary model once the model training has finished, run:
 Utilization of Binary Model in H2O-3 API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A binary model trained via SW API could be in H2O-3 API (for scoring for instance):
+The following scoring example demonstrates how a binary model trained with the SW API can be utilized with the H2O-3 API:
 
 .. content-tabs::
 
@@ -96,7 +96,7 @@ A binary model trained via SW API could be in H2O-3 API (for scoring for instanc
 Save Binary Model to File System
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The model could be stored to a file system as:
+The following example demonstrates how a binary model can be stored on a file system:
 
 .. content-tabs::
 
@@ -116,8 +116,8 @@ The model could be stored to a file system as:
             binaryModel = estimator.getBinaryModel()
             binaryModel.write("/tmp/binary.model")
 
-In case of Hadoop enabled system, the command by default uses HDFS. To reference a path on the local file system of
-the Spark driver, the path must be prefixed with ``file://`` when HDFS enabled.
+In case of a Hadoop-enabled system, the command by default uses HDFS. To reference a path on the local file system of
+the Spark driver, the path must be prefixed with ``file://`` when HDFS is enabled.
 
 Load Existing Binary Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
