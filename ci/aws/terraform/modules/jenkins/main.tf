@@ -19,6 +19,14 @@ resource "aws_instance" "jenkins" {
   root_block_device {
     volume_size = "160"
     volume_type = "standard"
+    tags = {
+      Name = "Sparkling Water Jenkins Master Root Block Device"
+      Owner = "marek.novotny@h2o.ai"
+      Department = "Engineering"
+      Environment = "QA"
+      Project = "SparklingWater"
+      Scheduling = "AlwaysOn"
+    }
   }
 
   tags = {
@@ -126,6 +134,14 @@ resource "aws_route53_record" "sparkling_jenkins" {
 resource "aws_s3_bucket" "init_files_bucket" {
   force_destroy = true
   acl = "private"
+  tags = {
+    Name = "Sparkling Water Jenkins Master S3 Bucket"
+    Owner = "marek.novotny@h2o.ai"
+    Department = "Engineering"
+    Environment = "QA"
+    Project = "SparklingWater"
+    Scheduling = "AlwaysOn"
+  }
 }
 
 resource "aws_s3_bucket_object" "init_jenkins" {
