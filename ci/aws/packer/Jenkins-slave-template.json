@@ -13,6 +13,14 @@
     "ssh_username": "ec2-user",
     "ami_name": "Sparkling Water Jenkins Slave",
     "decode_authorization_messages": true,
+    "tags": {
+      "Name" : "SparklingWaterJenkinsMasterAmi",
+      "Owner" : "marek.novotny@h2o.ai",
+      "Department" : "Engineering",
+      "Environment" : "QA",
+      "Project" : "SparklingWater",
+      "Scheduling" : "AlwaysOn"
+    },
     "run_tags": {
       "Name" : "SparklingWaterJenkinsMasterAmiBuilder",
       "Owner" : "marek.novotny@h2o.ai",
