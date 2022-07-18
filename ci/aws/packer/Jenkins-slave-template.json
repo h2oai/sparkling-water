@@ -14,6 +14,7 @@
     "ami_name": "Sparkling Water Jenkins Slave",
     "decode_authorization_messages": true,
     "run_tags": {
+      "Name" : "SparklingWaterJenkinsMasterAmiBuilder",
       "Owner" : "marek.novotny@h2o.ai",
       "Department" : "Engineering",
       "Environment" : "QA",
@@ -21,6 +22,7 @@
       "Scheduling" : "AlwaysOn"
     },
     "run_volume_tags": {
+      "Name" : "SparklingWaterJenkinsMasterAmiBuilderVolume",
       "Owner" : "marek.novotny@h2o.ai",
       "Department" : "Engineering",
       "Environment" : "QA",
