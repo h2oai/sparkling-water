@@ -13,8 +13,7 @@
     "ssh_username": "ec2-user",
     "ami_name": "Sparkling Water Jenkins Slave",
     "decode_authorization_messages": true,
-    "fleet_tags": {
-      "Name" : "AMIBuilder",
+    "run_tags": {
       "Owner" : "marek.novotny@h2o.ai",
       "Department" : "Engineering",
       "Environment" : "QA",
