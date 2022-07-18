@@ -12,6 +12,15 @@
     "instance_type": "m3.medium",
     "ssh_username": "ec2-user",
     "ami_name": "Sparkling Water Jenkins Slave",
+    "decode_authorization_messages": true,
+    "fleet_tags": {
+      "Name" : "AMIBuilder",
+      "Owner" : "marek.novotny@h2o.ai",
+      "Department" : "Engineering",
+      "Environment" : "QA",
+      "Project" : "SparklingWater",
+      "Scheduling" : "AlwaysOn"
+    },
     "run_volume_tags": {
       "Owner" : "marek.novotny@h2o.ai",
       "Department" : "Engineering",
