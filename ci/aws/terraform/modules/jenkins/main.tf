@@ -110,7 +110,7 @@ resource "aws_security_group" "jenkins_security_group" {
 }
 
 data "aws_route53_zone" "h2o" {
-  name         = "h2o.ai."
+  name         = "oss.h2o.ai."
   private_zone = false
 }
 
