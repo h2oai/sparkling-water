@@ -12,7 +12,7 @@
     "instance_type": "m3.medium",
     "ssh_username": "ec2-user",
     "ami_name": "Sparkling Water Jenkins Slave",
-    "tags": {
+    "run_volume_tags": {
       "Owner" : "marek.novotny@h2o.ai",
       "Department" : "Engineering",
       "Environment" : "QA",
