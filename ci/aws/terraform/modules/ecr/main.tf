@@ -12,6 +12,15 @@ resource "aws_ecr_repository" "sparkling_water_registry" {
   name                 = "opsh2oai/sparkling_water_tests"
   image_tag_mutability = "IMMUTABLE"
 
+  tags = {
+    Name = "opsh2oai/sparkling_water_tests"
+    Owner = "marek.novotny@h2o.ai"
+    Department = "Engineering"
+    Environment = "QA"
+    Project = "SparklingWater"
+    Scheduling = "AlwaysOn"
+  }
+
   image_scanning_configuration {
     scan_on_push = true
   }

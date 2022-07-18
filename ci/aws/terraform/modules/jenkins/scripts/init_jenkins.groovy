@@ -251,7 +251,14 @@ def ami = new SlaveTemplate(
         '', // jvmopts
         false, // stopOnTerminate
         subnetId, // subnetId
-        [new EC2Tag('Name', 'SW-Tests-Jenkins-Slave')], //tags
+        [
+                new EC2Tag('Name', 'SW-Tests-Jenkins-Slave'),
+                new EC2Tag('Owner', 'marek.novotny@h2o.ai'),
+                new EC2Tag('Department', 'Engineering'),
+                new EC2Tag('Environment', 'QA'),
+                new EC2Tag('Project', 'SparklingWater'),
+                new EC2Tag('Scheduling', 'AlwaysOn')
+        ], //tags
         '30', // idleTerminationMinutes
         0, // minimumNumberOfInstance
         0, // minimumNumberOfSpareInstances

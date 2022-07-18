@@ -17,12 +17,17 @@ resource "aws_instance" "jenkins" {
   key_name = aws_key_pair.key.key_name
 
   root_block_device {
-    volume_size = "80"
+    volume_size = "160"
     volume_type = "standard"
   }
 
   tags = {
-    Name = "Sparkling Water Jenkins"
+    Name = "Sparkling Water Jenkins Master"
+    Owner = "marek.novotny@h2o.ai"
+    Department = "Engineering"
+    Environment = "QA"
+    Project = "SparklingWater"
+    Scheduling = "AlwaysOn"
   }
 
   user_data = <<EOF
