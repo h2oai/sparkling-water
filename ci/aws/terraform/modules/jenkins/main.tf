@@ -19,18 +19,19 @@ resource "aws_instance" "jenkins" {
   root_block_device {
     volume_size = "160"
     volume_type = "standard"
-    tags = {
-      Name = "Sparkling Water Jenkins Master Root Block Device"
-      Owner = "marek.novotny@h2o.ai"
-      Department = "Engineering"
-      Environment = "QA"
-      Project = "SparklingWater"
-      Scheduling = "AlwaysOn"
-    }
   }
 
   tags = {
     Name = "Sparkling Water Jenkins Master"
+    Owner = "marek.novotny@h2o.ai"
+    Department = "Engineering"
+    Environment = "QA"
+    Project = "SparklingWater"
+    Scheduling = "AlwaysOn"
+  }
+
+  volume_tags = {
+    Name = "Sparkling Water Jenkins Master Root Block Device"
     Owner = "marek.novotny@h2o.ai"
     Department = "Engineering"
     Environment = "QA"
