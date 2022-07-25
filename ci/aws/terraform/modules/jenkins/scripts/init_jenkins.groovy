@@ -247,7 +247,7 @@ def ami = new SlaveTemplate(
         '#!/bin/sh\nsudo cp -R /home/ec2-user/.ssh /home/jenkins\nsudo chown -R jenkins /home/jenkins\nsudo yum -y update --security', // userData
         '1', // numExecutors
         'jenkins', // remoteAdmin
-        new UnixData('', '', '', '22'), // amiType
+        new UnixData('', '', '', '22', null), // amiType
         '', // jvmopts
         false, // stopOnTerminate
         subnetId, // subnetId
