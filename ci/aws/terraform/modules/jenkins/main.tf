@@ -17,12 +17,26 @@ resource "aws_instance" "jenkins" {
   key_name = aws_key_pair.key.key_name
 
   root_block_device {
-    volume_size = "80"
+    volume_size = "160"
     volume_type = "standard"
   }
 
   tags = {
-    Name = "Sparkling Water Jenkins"
+    Name = "Sparkling Water Jenkins Master"
+    Owner = "oss-dev@h2o.ai"
+    Department = "Engineering"
+    Environment = "QA"
+    Project = "SparklingWater"
+    Scheduling = "AlwaysOn"
+  }
+
+  volume_tags = {
+    Name = "Sparkling Water Jenkins Master Root Block Device"
+    Owner = "oss-dev@h2o.ai"
+    Department = "Engineering"
+    Environment = "QA"
+    Project = "SparklingWater"
+    Scheduling = "AlwaysOn"
   }
 
   user_data = <<EOF
@@ -105,7 +119,7 @@ resource "aws_security_group" "jenkins_security_group" {
 }
 
 data "aws_route53_zone" "h2o" {
-  name         = "h2o.ai."
+  name         = "oss.h2o.ai."
   private_zone = false
 }
 
@@ -121,6 +135,14 @@ resource "aws_route53_record" "sparkling_jenkins" {
 resource "aws_s3_bucket" "init_files_bucket" {
   force_destroy = true
   acl = "private"
+  tags = {
+    Name = "Sparkling Water Jenkins Master S3 Bucket"
+    Owner = "oss-dev@h2o.ai"
+    Department = "Engineering"
+    Environment = "QA"
+    Project = "SparklingWater"
+    Scheduling = "AlwaysOn"
+  }
 }
 
 resource "aws_s3_bucket_object" "init_jenkins" {
