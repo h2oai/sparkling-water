@@ -23,7 +23,7 @@ resource "aws_instance" "jenkins" {
 
   tags = {
     Name = "Sparkling Water Jenkins Master"
-    Owner = "marek.novotny@h2o.ai"
+    Owner = "oss-dev@h2o.ai"
     Department = "Engineering"
     Environment = "QA"
     Project = "SparklingWater"
@@ -32,7 +32,7 @@ resource "aws_instance" "jenkins" {
 
   volume_tags = {
     Name = "Sparkling Water Jenkins Master Root Block Device"
-    Owner = "marek.novotny@h2o.ai"
+    Owner = "oss-dev@h2o.ai"
     Department = "Engineering"
     Environment = "QA"
     Project = "SparklingWater"
@@ -137,7 +137,7 @@ resource "aws_s3_bucket" "init_files_bucket" {
   acl = "private"
   tags = {
     Name = "Sparkling Water Jenkins Master S3 Bucket"
-    Owner = "marek.novotny@h2o.ai"
+    Owner = "oss-dev@h2o.ai"
     Department = "Engineering"
     Environment = "QA"
     Project = "SparklingWater"

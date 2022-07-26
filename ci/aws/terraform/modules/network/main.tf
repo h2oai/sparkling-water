@@ -20,7 +20,7 @@ resource "aws_vpc" "main" {
 
   tags = {
     Name = "SparklingWaterTestInfra"
-    Owner = "marek.novotny@h2o.ai"
+    Owner = "oss-dev@h2o.ai"
     Department = "Engineering"
     Environment = "QA"
     Project = "SparklingWater"
@@ -38,7 +38,7 @@ resource "aws_subnet" "main" {
   availability_zone = var.aws_availability_zone
   tags = {
     Name = "SparklingWaterTestInfraSubnet"
-    Owner = "marek.novotny@h2o.ai"
+    Owner = "oss-dev@h2o.ai"
     Department = "Engineering"
     Environment = "QA"
     Project = "SparklingWater"
@@ -54,7 +54,7 @@ resource "aws_internet_gateway" "gw" {
 
   tags = {
     Name = "SparklingWaterTestInfraGateway"
-    Owner = "marek.novotny@h2o.ai"
+    Owner = "oss-dev@h2o.ai"
     Department = "Engineering"
     Environment = "QA"
     Project = "SparklingWater"
@@ -91,7 +91,7 @@ resource "aws_vpc_dhcp_options" "main" {
     "AmazonProvidedDNS"]
   tags = {
     Name = "SparklingWaterTestInfraDHCPOptions"
-    Owner = "marek.novotny@h2o.ai"
+    Owner = "oss-dev@h2o.ai"
     Department = "Engineering"
     Environment = "QA"
     Project = "SparklingWater"

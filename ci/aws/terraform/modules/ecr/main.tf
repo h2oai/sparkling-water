@@ -14,7 +14,7 @@ resource "aws_ecr_repository" "sparkling_water_registry" {
 
   tags = {
     Name = "opsh2oai/sparkling_water_tests"
-    Owner = "marek.novotny@h2o.ai"
+    Owner = "oss-dev@h2o.ai"
     Department = "Engineering"
     Environment = "QA"
     Project = "SparklingWater"

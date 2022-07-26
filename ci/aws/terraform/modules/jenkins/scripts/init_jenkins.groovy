@@ -253,7 +253,7 @@ def ami = new SlaveTemplate(
         subnetId, // subnetId
         [
                 new EC2Tag('Name', 'SW-Tests-Jenkins-Slave'),
-                new EC2Tag('Owner', 'marek.novotny@h2o.ai'),
+                new EC2Tag('Owner', 'oss-dev@h2o.ai'),
                 new EC2Tag('Department', 'Engineering'),
                 new EC2Tag('Environment', 'QA'),
                 new EC2Tag('Project', 'SparklingWater'),

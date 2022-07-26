@@ -15,7 +15,7 @@
     "decode_authorization_messages": true,
     "tags": {
       "Name" : "SparklingWaterJenkinsMasterAmi",
-      "Owner" : "marek.novotny@h2o.ai",
+      "Owner" : "oss-dev@h2o.ai",
       "Department" : "Engineering",
       "Environment" : "QA",
       "Project" : "SparklingWater",
@@ -23,7 +23,7 @@
     },
     "run_tags": {
       "Name" : "SparklingWaterJenkinsMasterAmiBuilder",
-      "Owner" : "marek.novotny@h2o.ai",
+      "Owner" : "oss-dev@h2o.ai",
       "Department" : "Engineering",
       "Environment" : "QA",
       "Project" : "SparklingWater",
@@ -31,7 +31,7 @@
     },
     "run_volume_tags": {
       "Name" : "SparklingWaterJenkinsMasterAmiBuilderVolume",
-      "Owner" : "marek.novotny@h2o.ai",
+      "Owner" : "oss-dev@h2o.ai",
       "Department" : "Engineering",
       "Environment" : "QA",
       "Project" : "SparklingWater",
