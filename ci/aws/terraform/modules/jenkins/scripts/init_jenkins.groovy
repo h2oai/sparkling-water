@@ -75,7 +75,7 @@ store.addCredentials(domain, awsPrivateKey)
 
 def awsCredentials = new AWSCredentialsImpl(
         CredentialsScope.GLOBAL,
-        'SW_FULL_AWS_CREDS',
+        'SW_OSS_AWS_CREDS',
         'SUBST_AWS_ACCESS_KEY_ID',
         'SUBST_AWS_SECRET_ACCESS_KEY',
         'AWS Credentials',
@@ -237,7 +237,7 @@ def ami = new SlaveTemplate(
         null, // spot configuration
         securityGroup, // securityGroups
         '/home/jenkins', // remoteFS
-        InstanceType.fromValue('t2.xlarge'), // InstanceType type
+        InstanceType.fromValue('t2.2xlarge'), // InstanceType type
         false, // ebsOptimized
         'docker', // labelString
         Node.Mode.NORMAL, // Node.Mode mode
@@ -247,22 +247,29 @@ def ami = new SlaveTemplate(
         '#!/bin/sh\nsudo cp -R /home/ec2-user/.ssh /home/jenkins\nsudo chown -R jenkins /home/jenkins\nsudo yum -y update --security', // userData
         '1', // numExecutors
         'jenkins', // remoteAdmin
-        new UnixData('', '', '', '22'), // amiType
+        new UnixData('', '', '', '22', null), // amiType
         '', // jvmopts
         false, // stopOnTerminate
         subnetId, // subnetId
-        [new EC2Tag('Name', 'SW-Tests-Jenkins-Slave')], //tags
+        [
+                new EC2Tag('Name', 'SW-Tests-Jenkins-Slave'),
+                new EC2Tag('Owner', 'oss-dev@h2o.ai'),
+                new EC2Tag('Department', 'Engineering'),
+                new EC2Tag('Environment', 'QA'),
+                new EC2Tag('Project', 'SparklingWater'),
+                new EC2Tag('Scheduling', 'AlwaysOn')
+        ], //tags
         '30', // idleTerminationMinutes
         0, // minimumNumberOfInstance
         0, // minimumNumberOfSpareInstances
-        '20', // instanceCapStr
+        '50', // instanceCapStr
         '', // iamInstanceProfile
         false, // deleteRootOnTermination
         false, // useEphemeralDevices
         false, // useDedicatedTenancy
         '', // launchTimeoutStr
         true, // associatePublicIp
-        '/dev/xvda=:80', // customDeviceMapping
+        '/dev/xvda=:160', // customDeviceMapping
         true, // connectBySSHProcess
         false, // monitoring
         false, // t2Unlimited
@@ -274,7 +281,7 @@ def ami = new SlaveTemplate(
 def cloud = new AmazonEC2Cloud(
         'SparklingWaterInfra',
         false,
-        'SW_FULL_AWS_CREDS',
+        'SW_OSS_AWS_CREDS',
         'us-west-2',
         getPrivateKey(),
         null,
