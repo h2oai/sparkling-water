@@ -31,6 +31,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                """.stripMargin()
 
   runCommand """\\
+                apt-get install libharfbuzz-dev libfribidi-dev && \\
                 R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("dbplyr", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")' && \\
