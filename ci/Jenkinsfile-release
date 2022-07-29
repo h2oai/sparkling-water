@@ -36,7 +36,7 @@ def getS3Path() {
 def getParallelStageDefinition(params) {
     return {
         stage("Spark ${params.spark}") {
-            node("docker") {
+            node("regular") {
                 ws("${env.WORKSPACE}-spark-${params.spark}") {
                     cleanWs()
                     checkout scm
@@ -213,7 +213,7 @@ def updateNexRelVersion(params, commons) {
 // Main entry point to the pipeline and definition of all stages
 //
 def sparkMajorVersions
-node("docker") {
+node("regular") {
     cleanWs()
     checkout scm
     def commons = load 'ci/commons.groovy'

@@ -104,7 +104,7 @@ static String getH2OBranchBuildVersion() {
 def getBuildAndTestStagesForSparkVersion(commons, props, sparkMajorVersion) {
     return {
         // ask for node in order to run this build branch in parallel on a separate node
-        node('docker') {
+        node("large") {
             ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
                 cleanWs()
                 checkout scm
@@ -721,7 +721,7 @@ def runScalaTests(sparkMajorVersion, master, sparklingVersion, currentSparkHome,
     }
 }
 
-node("docker") {
+node("large") {
     cleanWs()
     checkout scm
     def commons = load 'ci/commons.groovy'
