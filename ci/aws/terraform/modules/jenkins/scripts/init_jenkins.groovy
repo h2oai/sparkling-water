@@ -241,7 +241,7 @@ def regularSlaveTemplate = new SlaveTemplate(
         false, // ebsOptimized
         'regular', // labelString
         Node.Mode.NORMAL, // Node.Mode mode
-        'worker_jenkins', // description
+        'regular_worker_jenkins', // description
         '', // initScript
         '', // tmpDir
         '#!/bin/sh\nsudo cp -R /home/ec2-user/.ssh /home/jenkins\nsudo chown -R jenkins /home/jenkins\nsudo yum -y update --security', // userData
@@ -288,7 +288,7 @@ def largeSlaveTemplate = new SlaveTemplate(
         false, // ebsOptimized
         'large', // labelString
         Node.Mode.NORMAL, // Node.Mode mode
-        'worker_jenkins', // description
+        'large_worker_jenkins', // description
         '', // initScript
         '', // tmpDir
         '#!/bin/sh\nsudo cp -R /home/ec2-user/.ssh /home/jenkins\nsudo chown -R jenkins /home/jenkins\nsudo yum -y update --security', // userData
@@ -325,19 +325,32 @@ def largeSlaveTemplate = new SlaveTemplate(
         [] // node properties
 )
 
-def cloud = new AmazonEC2Cloud(
-        'SparklingWaterInfra',
+def regularCloud = new AmazonEC2Cloud(
+        'RegularSWJenkinsWorker',
         false,
         'SW_OSS_AWS_CREDS',
         'us-west-2',
         getPrivateKey(),
         null,
-        [regularSlaveTemplate, largeSlaveTemplate],
+        [regularSlaveTemplate],
         '',
         ''
 )
 
-instance.clouds.add(cloud)
+def largeCloud = new AmazonEC2Cloud(
+        'LargeSWJenkinsWorker',
+        false,
+        'SW_OSS_AWS_CREDS',
+        'us-west-2',
+        getPrivateKey(),
+        null,
+        [largeSlaveTemplate],
+        '',
+        ''
+)
+
+instance.clouds.add(regularCloud)
+instance.clouds.add(largeCloud)
 
 //
 // Add Sparkling Water Jobs
