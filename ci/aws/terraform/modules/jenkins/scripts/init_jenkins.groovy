@@ -252,7 +252,7 @@ def regularSlaveTemplate = new SlaveTemplate(
         false, // stopOnTerminate
         subnetId, // subnetId
         [
-                new EC2Tag('Name', 'SW-Tests-Jenkins-Slave'),
+                new EC2Tag('Name', 'SW-Regular-Jenkins-Slave'),
                 new EC2Tag('Owner', 'oss-dev@h2o.ai'),
                 new EC2Tag('Department', 'Engineering'),
                 new EC2Tag('Environment', 'QA'),
@@ -299,7 +299,7 @@ def largeSlaveTemplate = new SlaveTemplate(
         false, // stopOnTerminate
         subnetId, // subnetId
         [
-                new EC2Tag('Name', 'SW-Tests-Jenkins-Slave'),
+                new EC2Tag('Name', 'SW-Large-Jenkins-Slave'),
                 new EC2Tag('Owner', 'oss-dev@h2o.ai'),
                 new EC2Tag('Department', 'Engineering'),
                 new EC2Tag('Environment', 'QA'),
@@ -325,32 +325,19 @@ def largeSlaveTemplate = new SlaveTemplate(
         [] // node properties
 )
 
-def regularCloud = new AmazonEC2Cloud(
-        'RegularSWJenkinsWorker',
+def cloud = new AmazonEC2Cloud(
+        'SparklingWaterInfra',
         false,
         'SW_OSS_AWS_CREDS',
         'us-west-2',
         getPrivateKey(),
         null,
-        [regularSlaveTemplate],
+        [regularSlaveTemplate, largeSlaveTemplate],
         '',
         ''
 )
 
-def largeCloud = new AmazonEC2Cloud(
-        'LargeSWJenkinsWorker',
-        false,
-        'SW_OSS_AWS_CREDS',
-        'us-west-2',
-        getPrivateKey(),
-        null,
-        [largeSlaveTemplate],
-        '',
-        ''
-)
-
-instance.clouds.add(regularCloud)
-instance.clouds.add(largeCloud)
+instance.clouds.add(cloud)
 
 //
 // Add Sparkling Water Jobs
