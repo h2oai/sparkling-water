@@ -277,7 +277,7 @@ def testConvertTimeValueFromSparkToH2OAndBack(spark, hc, timeZone, sparkType):
 
     hf = hc.asH2OFrame(df)
     hfResultString = hf.__unicode__()
-    hfParsedItems = hfResultString.split('\n')[2:6]
+    hfParsedItems = hfResultString.split('\n')[1:5]
     hfParsedItems.sort()
 
     assert hfParsedItems == expected
