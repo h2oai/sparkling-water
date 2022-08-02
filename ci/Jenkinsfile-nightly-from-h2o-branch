@@ -11,7 +11,7 @@ properties(
 def pipeline
 def sparkVersions
 def testH2OBranch
-node("docker") {
+node("regular") {
     cleanWs()
     checkout scm
     pipeline = load 'ci/sparklingWaterPipeline.groovy'
