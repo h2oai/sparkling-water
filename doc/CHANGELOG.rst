@@ -1,6 +1,34 @@
 Change Log
 ==========
 
+v3.36.1.4-1 (2022-08-04)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.4-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.4-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.4-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.4-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.4-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.4-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.4-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.4-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.4-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.4-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.4-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.4-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.36.1.4-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.36.1.4-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2735 <https://0xdata.atlassian.net/browse/SW-2735>`__ - Upgrade to H2O 3.36.1.4
+
+-  Docs
+
+   -  `SW-2731 <https://0xdata.atlassian.net/browse/SW-2731>`__ - Dedicated Jenkins Worker Profile for K8s tests
+   -  `SW-2730 <https://0xdata.atlassian.net/browse/SW-2730>`__ - Remove False Statement from Sparkling Water Documentation
+   -  `SW-2728 <https://0xdata.atlassian.net/browse/SW-2728>`__ - Improve Tutorial for Working with Binary Models
+   -  `SW-2727 <https://0xdata.atlassian.net/browse/SW-2727>`__ - Document Saving MOJO Models to Local File System
+
+-  Engineering Story
+
+   -  `SW-2729 <https://0xdata.atlassian.net/browse/SW-2729>`__ - Update Spark in Docker Images to 3.2.2
+   -  `SW-2726 <https://0xdata.atlassian.net/browse/SW-2726>`__ - Migrate Jenkins CI under Account Dedicated to OSS
+
 v3.36.1.3-1 (2022-07-11)
 ------------------------
 Downloads:
