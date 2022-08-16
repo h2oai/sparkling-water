@@ -341,9 +341,9 @@ object H2OFrame extends RestCommunication {
     val endpoint = getClusterEndpoint(conf)
     val frames = query[FramesV3](
       endpoint,
-      s"/3/Frames/$frameId/summary",
+      s"/3/Frames/$frameId/light",
       conf,
-      Map("row_count" -> 0),
+      Map("row_count" -> 0, "full_column_count" -> 0),
       Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
     val frame = frames.frames(0)
     val chunks = if (frame.rows == 0) {
