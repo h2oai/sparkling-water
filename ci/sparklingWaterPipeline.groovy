@@ -384,7 +384,7 @@ def publishNightly() {
     return { config ->
         stage('Nightly: Publishing Artifacts to S3 - ' + config.backendMode) {
             if (config.uploadNightly.toBoolean()) {
-                config.commons.withAWSCredentials {
+                config.commons.withRootAWSCredentials {
                     def version = getVersion(config)
                     def path = getS3Path(config)
                     sh """

@@ -84,6 +84,17 @@ def awsCredentials = new AWSCredentialsImpl(
 )
 store.addCredentials(domain, awsCredentials)
 
+def awsRootCredentials = new AWSCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        'SW_ROOT_AWS_CREDS',
+        'SUBST_AWS_ACCESS_KEY_ID',
+        'SUBST_AWS_SECRET_ACCESS_KEY',
+        'AWS Credentials',
+        null,
+        null
+)
+store.addCredentials(domain, awsRootCredentials)
+
 def gitToken = new StringCredentialsImpl(
         CredentialsScope.GLOBAL,
         'SW_GITHUB_TOKEN',
