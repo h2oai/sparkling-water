@@ -17,18 +17,17 @@
 package ai.h2o.sparkling.backend.api.dataframes
 
 import java.io.File
-
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.{H2OFrame, SharedH2OTestContext, TestUtils}
 import com.google.gson.JsonParser
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class DataFramesServletTestSuite extends FunSuite with SharedH2OTestContext with DataFramesRestApi {
+class DataFramesServletTestSuite extends FunSuite with SharedH2OTestContext with DataFramesRestApi with Matchers{
 
   override def createSparkSession(): SparkSession =
     sparkSession("local[*]", defaultSparkConf.set("spark.ext.h2o.context.path", "context"))
@@ -66,7 +65,6 @@ class DataFramesServletTestSuite extends FunSuite with SharedH2OTestContext with
     val df = hc.asSparkFrame(h2oframe)
     val name = "prostate"
     df.createOrReplaceTempView(name)
-    val percentiles = df.schema.fields(0).metadata.getDoubleArray("percentiles")
 
     val result = getDataFrame(name)
     assert(result.dataframe_id == name, "IDs should match")
@@ -81,9 +79,14 @@ class DataFramesServletTestSuite extends FunSuite with SharedH2OTestContext with
     assert(
       schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName),
       "DataType attribute of the first field in StructType should be the same")
-    assert(
-      schema.fields(0).metadata.getDoubleArray("percentiles").sameElements(percentiles),
-      "Metadata should match, comparing percentiles")
+  }
+
+  test("Columns of H2OFrame can provide percentiles on demand") {
+    val h2oFrame = H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
+    for (column <- h2oFrame.columns) {
+      column.percentiles should not be null
+      column.percentiles.length should be > 0
+    }
   }
 
   test("DataFramesHandler.toH2OFrame() method") {
