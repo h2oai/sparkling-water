@@ -27,7 +27,7 @@ import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class DataFramesServletTestSuite extends FunSuite with SharedH2OTestContext with DataFramesRestApi with Matchers{
+class DataFramesServletTestSuite extends FunSuite with SharedH2OTestContext with DataFramesRestApi with Matchers {
 
   override def createSparkSession(): SparkSession =
     sparkSession("local[*]", defaultSparkConf.set("spark.ext.h2o.context.path", "context"))
