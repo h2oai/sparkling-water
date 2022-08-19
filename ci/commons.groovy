@@ -134,6 +134,12 @@ def withAWSCredentials(groovy.lang.Closure code) {
     }
 }
 
+def withRootAWSCredentials(groovy.lang.Closure code) {
+    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'SW_ROOT_AWS_CREDS', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+        code()
+    }
+}
+
 def withGitPushCredentials(groovy.lang.Closure code) {
     withCredentials([string(credentialsId: 'SW_GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
         sh """
