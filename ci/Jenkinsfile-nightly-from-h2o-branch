@@ -3,7 +3,25 @@
 
 properties(
         [
-                pipelineTriggers([cron('H 16 * * *')]),
+                pipelineTriggers([cron('H 4 * * *')]),
+                parameters(
+                        [
+                                booleanParam(name: 'runAllSparkVersions', defaultValue: true, description: 'Run pipeline against all Spark versions'),
+                                booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run Scala unit tests'),
+                                booleanParam(name: 'runPyUnitTests', defaultValue: true, description: 'Run Python unit tests'),
+                                booleanParam(name: 'runUnitTestsForAllPythonVersions', defaultValue: false, description: 'Run unit tests against all Python versions, otherwise just oldest and newest supported python version.'),
+                                booleanParam(name: 'runRUnitTests', defaultValue: true, description: 'Run R unit tests'),
+                                booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run Scala integration tests'),
+                                booleanParam(name: 'runPyIntegTests', defaultValue: true, description: 'Run Python integration tests'),
+                                choice(
+                                        choices: 'both\ninternal\nexternal',
+                                        description: "Choose in which mode to run tests",
+                                        name: 'backendMode'
+                                ),
+                                booleanParam(name: 'uploadNightly', defaultValue: true, description: 'Upload Nightly Artifacts to S3'),
+                                booleanParam(name: 'uploadNightlyDockerImages', defaultValue: true, description: 'Upload nightly images to DockerHub'),
+                        ]
+                ),
                 buildDiscarder(logRotator(numToKeepStr: '30'))
         ]
 )
@@ -22,15 +40,15 @@ node("regular") {
 
 pipeline(params) { p ->
     sparkMajorVersions = sparkVersions
-    runUnitTests = "true"
-    runPyUnitTests = "true"
-    runUnitTestsForAllPythonVersions = "true"
-    runRUnitTests = "true"
-    runIntegTests = "true"
-    runPyIntegTests = "true"
+    runUnitTests = "${p.runUnitTests}"
+    runPyUnitTests = "${p.runPyUnitTests}"
+    runUnitTestsForAllPythonVersions = "${p.runUnitTestsForAllPythonVersions}"
+    runRUnitTests = "${p.runRUnitTests}"
+    runIntegTests = "${p.runIntegTests}"
+    runPyIntegTests = "${p.runPyIntegTests}"
     buildAgainstH2OBranch = "true"
     h2oBranch = testH2OBranch
-    backendMode = "both"
-    uploadNightly = "true"
-    uploadNightlyDockerImages = "true"
+    backendMode = "${p.backendMode}"
+    uploadNightly = "${p.uploadNightly}"
+    uploadNightlyDockerImages = "${p.uploadNightlyDockerImages}"
 }
