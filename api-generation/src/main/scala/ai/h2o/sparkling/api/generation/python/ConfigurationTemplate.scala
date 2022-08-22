@@ -18,10 +18,15 @@
 package ai.h2o.sparkling.api.generation.python
 
 import java.lang.reflect.Method
+import scala.collection.immutable.Map
 
-object ConfigurationTemplate extends ((Array[Method], Array[Method], Class[_]) => String) {
+object ConfigurationTemplate extends ((Array[Method], Array[Method], Map[String, List[Int]], Class[_]) => String) {
 
-  def apply(getters: Array[Method], setters: Array[Method], entity: Class[_]): String = {
+  def apply(
+      getters: Array[Method],
+      setters: Array[Method],
+      settersArityMap: Map[String, List[Int]],
+      entity: Class[_]): String = {
 
     s"""#
        |# Licensed to the Apache Software Foundation (ASF) under one or more
@@ -56,15 +61,15 @@ object ConfigurationTemplate extends ((Array[Method], Array[Method], Class[_]) =
        |    # Setters
        |    #
        |
-       |${generateSetters(setters)}""".stripMargin
+       |${generateSetters(setters, settersArityMap)}""".stripMargin
   }
 
   private def generateGetters(getters: Array[Method]): String = {
     getters.map(generateGetter).mkString("\n")
   }
 
-  private def generateSetters(setters: Array[Method]): String = {
-    setters.map(generateSetter).mkString("\n")
+  private def generateSetters(setters: Array[Method], settersArityMap: Map[String, List[Int]]): String = {
+    setters.map(generateSetter(_, settersArityMap)).mkString("\n")
   }
 
   private def generateGetter(m: Method): String = {
@@ -73,17 +78,29 @@ object ConfigurationTemplate extends ((Array[Method], Array[Method], Class[_]) =
        |""".stripMargin
   }
 
-  private def generateSetter(m: Method): String = {
-    if (m.getParameterCount == 0) {
-      s"""    def ${m.getName}(self):
-         |        self._jconf.${m.getName}()
+  private def generateSetter(m: Method, settersArityMap: Map[String, List[Int]]): String = {
+    val arities = settersArityMap(m.getName)
+    val overloaded = arities.length > 1
+    if (overloaded) {
+      s"""    def ${m.getName}(self, *args):
+         |        self._jconf.${m.getName}(*args)
          |        return self
          |""".stripMargin
     } else {
-      s"""    def ${m.getName}(self, value):
-         |        self._jconf.${m.getName}(value)
-         |        return self
-         |""".stripMargin
+      val arity = arities.head
+      if (arity == 0) {
+        s"""    def ${m.getName}(self):
+           |        self._jconf.${m.getName}()
+           |        return self
+           |""".stripMargin
+      } else {
+        val parameterNames = m.getParameters.map(_.getName)
+        val parameters = parameterNames.mkString(",")
+        s"""    def ${m.getName}(self, ${parameters}):
+           |        self._jconf.${m.getName}(${parameters})
+           |        return self
+           |""".stripMargin
+      }
     }
   }
 

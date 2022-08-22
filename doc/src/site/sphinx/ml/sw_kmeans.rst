@@ -3,7 +3,7 @@ Train KMeans Model in Sparkling Water
 
 Introduction
 ~~~~~~~~~~~~
-K-Means falls in the general category of clustering algorithms. For more more comprehensive description see `H2O-3 Deep learning documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/data-science/k-means.html>`__.
+K-Means falls in the general category of clustering algorithms. For more more comprehensive description see `H2O-3 K Means documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/data-science/k-means.html>`__.
 
 Example
 ~~~~~~~
@@ -52,7 +52,6 @@ and :ref:`model_details_H2OKMeansMOJOModel`.
             import ai.h2o.sparkling.ml.algos.H2OKMeans
             val estimator = new H2OKMeans()
                .setEstimateK(true)
-               .setK(10)
                .setSeed(1234)
                .setFeaturesCols(predictors)
             val model = estimator.fit(trainingDF)
@@ -111,7 +110,6 @@ and :ref:`model_details_H2OKMeansMOJOModel`.
             from pysparkling.ml import H2OKMeans
             estimator = H2OKMeans(
                            estimateK = True,
-                           k = 10,
                            seed = 1234,
                            featuresCols = predictors)
             model = estimator.fit(trainingDF)

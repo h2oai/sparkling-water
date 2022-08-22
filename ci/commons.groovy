@@ -13,7 +13,7 @@ String getAWSDockerRepo() {
 }
 
 def withAWSDocker(groovy.lang.Closure code) {
-    docker.withRegistry("https://${getAWSDockerRepo()}", 'ecr:us-west-2:SW_FULL_AWS_CREDS') {
+    docker.withRegistry("https://${getAWSDockerRepo()}", 'ecr:us-west-2:SW_OSS_AWS_CREDS') {
         code()
     }
 }
@@ -129,7 +129,13 @@ def terraformOutput(varName) {
 }
 
 def withAWSCredentials(groovy.lang.Closure code) {
-    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'SW_FULL_AWS_CREDS', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'SW_OSS_AWS_CREDS', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+        code()
+    }
+}
+
+def withRootAWSCredentials(groovy.lang.Closure code) {
+    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'SW_ROOT_AWS_CREDS', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
         code()
     }
 }
@@ -220,6 +226,7 @@ def gitCommit(files, msg) {
 
 def installDocker() {
     sh "sudo apt-get update"
+    sh "sudo apt -y install containerd"
     sh "sudo apt -y install docker.io"
     sh "sudo service docker start"
     sh "sudo chmod 666 /var/run/docker.sock"

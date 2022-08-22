@@ -182,6 +182,7 @@ def prepareSparklingEnvironmentStage(config) {
                             cd h2o-3
                             git checkout ${config.h2oBranch}
                             . /envs/h2o_env_python2.7/bin/activate
+                            unset CI
                             export BUILD_HADOOP=true
                             export H2O_TARGET=${getDriverHadoopVersion()}
                             ./gradlew build --parallel -x check -Duser.name=ec2-user
@@ -363,11 +364,13 @@ def integTests() {
 
 def pyIntegTests() {
     return { config ->
-        stage('QA: Py Integration Tests 3.6 - ' + config.backendMode) {
+        def allPythonVersions = config.commons.getSupportedPythonVersions(config.sparkMajorVersion)
+        def pythonVersion = allPythonVersions.last()
+        stage("QA: Py Integration Tests ${pythonVersion} - ${config.backendMode}") {
             if (config.runPyIntegTests.toBoolean()) {
                 try {
                     sh """
-                    ${getGradleCommand(config)} sparkling-water-py:integTest -PpythonPath=/home/jenkins/miniconda/envs/sw_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
+                    ${getGradleCommand(config)} sparkling-water-py:integTest -PpythonPath=/home/jenkins/miniconda/envs/sw_env_python${pythonVersion}/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                     """
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -381,7 +384,7 @@ def publishNightly() {
     return { config ->
         stage('Nightly: Publishing Artifacts to S3 - ' + config.backendMode) {
             if (config.uploadNightly.toBoolean()) {
-                config.commons.withAWSCredentials {
+                config.commons.withRootAWSCredentials {
                     def version = getVersion(config)
                     def path = getS3Path(config)
                     sh """

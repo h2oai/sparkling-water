@@ -11,7 +11,32 @@
     "source_ami": "ami-01f08ef3e76b957e5",
     "instance_type": "m3.medium",
     "ssh_username": "ec2-user",
-    "ami_name": "Sparkling Water Jenkins Slave"
+    "ami_name": "Sparkling Water Jenkins Slave",
+    "decode_authorization_messages": true,
+    "tags": {
+      "Name" : "SparklingWaterJenkinsMasterAmi",
+      "Owner" : "oss-dev@h2o.ai",
+      "Department" : "Engineering",
+      "Environment" : "QA",
+      "Project" : "SparklingWater",
+      "Scheduling" : "AlwaysOn"
+    },
+    "run_tags": {
+      "Name" : "SparklingWaterJenkinsMasterAmiBuilder",
+      "Owner" : "oss-dev@h2o.ai",
+      "Department" : "Engineering",
+      "Environment" : "QA",
+      "Project" : "SparklingWater",
+      "Scheduling" : "AlwaysOn"
+    },
+    "run_volume_tags": {
+      "Name" : "SparklingWaterJenkinsMasterAmiBuilderVolume",
+      "Owner" : "oss-dev@h2o.ai",
+      "Department" : "Engineering",
+      "Environment" : "QA",
+      "Project" : "SparklingWater",
+      "Scheduling" : "AlwaysOn"
+    }
   }],
   "post-processors": [
     {

@@ -26,9 +26,9 @@ case class H2OColumn(
     sigma: Double,
     numberOfZeros: Long,
     numberOfMissingElements: Long,
-    percentiles: Array[Double],
     domain: Array[String],
-    domainCardinality: Long) {
+    domainCardinality: Long,
+    private val percentilesGetter: String => Array[Double]) {
   def nullable: Boolean = numberOfMissingElements > 0
 
   def isString(): Boolean = dataType == H2OColumnType.string
@@ -40,4 +40,6 @@ case class H2OColumn(
   def isCategorical(): Boolean = dataType == H2OColumnType.`enum`
 
   def isUUID(): Boolean = dataType == H2OColumnType.uuid
+
+  def percentiles(): Array[Double] = percentilesGetter(name)
 }

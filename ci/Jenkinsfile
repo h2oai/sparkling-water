@@ -4,7 +4,7 @@
 // Job parameters
 properties(
         [
-                buildDiscarder(logRotator(numToKeepStr: '10'))
+                buildDiscarder(logRotator(numToKeepStr: '30'))
         ]
 )
 
@@ -13,7 +13,7 @@ cancelPreviousBuilds()
 def pipeline
 def sparkVersions
 def testH2OBranch
-node("docker") {
+node("regular") {
     cleanWs()
     checkout scm
     def commons = load 'ci/commons.groovy'

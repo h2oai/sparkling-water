@@ -30,8 +30,8 @@ trait K8sHeadlessService extends K8sUtils {
   }
 
   protected def installH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
-    val resource = client.load(spec(conf)).get
-    client.resourceList(resource).createOrReplaceAnd().waitUntilReady(conf.externalK8sServiceTimeout, TimeUnit.SECONDS)
+    val service = client.services().load(spec(conf)).get
+    client.services().inNamespace(conf.externalK8sNamespace).createOrReplace(service)
   }
 
   protected def deleteH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {

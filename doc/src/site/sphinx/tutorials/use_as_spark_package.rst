@@ -19,12 +19,4 @@ A similar command works for ``spark-shell``:
 
     $SPARK_HOME/bin/spark-shell --packages ai.h2o:sparkling-water-package_SUBST_SCALA_BASE_VERSION:SUBST_SW_VERSION
 
-The same command works for Python programs:
-
-.. code:: bash
-
-    $SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-package_SUBST_SCALA_BASE_VERSION:SUBST_SW_VERSION example.py
-
-
 **Note**: When you are using Spark packages, you do not need to download the Sparkling Water distribution. The Spark installation is sufficient.
-
