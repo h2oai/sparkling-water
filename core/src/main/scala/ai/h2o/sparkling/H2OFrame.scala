@@ -360,11 +360,11 @@ object H2OFrame extends RestCommunication {
   private def getPercentiles(conf: H2OConf, frameId: String)(columnName: String): Array[Double] = {
     val endpoint = getClusterEndpoint(conf)
     val frames = query[FramesV3](
-      endpoint,
-      s"/3/Frames/$frameId/columns/$columnName/summary",
-      conf,
-      Map("row_count" -> 0, "full_column_count" -> 0),
-      Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
+      endpoint = endpoint,
+      suffix = s"/3/Frames/$frameId/columns/$columnName/summary",
+      conf = conf,
+      params = Map("row_count" -> 0, "full_column_count" -> 0),
+      skippedFields = Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
     frames.frames(0).columns(0).percentiles
   }
 
