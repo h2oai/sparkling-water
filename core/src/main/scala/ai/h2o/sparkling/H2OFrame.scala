@@ -341,9 +341,9 @@ object H2OFrame extends RestCommunication {
     val endpoint = getClusterEndpoint(conf)
     val frames = query[FramesV3](
       endpoint,
-      s"/3/Frames/$frameId/summary",
+      s"/3/Frames/$frameId/light",
       conf,
-      Map("row_count" -> 0),
+      Map("row_count" -> 0, "full_column_count" -> 0),
       Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
     val frame = frames.frames(0)
     val chunks = if (frame.rows == 0) {
@@ -353,7 +353,19 @@ object H2OFrame extends RestCommunication {
       val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
       frameChunks.chunks.map(convertChunk(_, clusterNodes))
     }
-    new H2OFrame(frame.frame_id.name, frame.columns.map(convertColumn), chunks)
+    val percentilesGetter: String => Array[Double] = getPercentiles(conf, frameId)
+    new H2OFrame(frame.frame_id.name, frame.columns.map(column => convertColumn(column, percentilesGetter)), chunks)
+  }
+
+  private def getPercentiles(conf: H2OConf, frameId: String)(columnName: String): Array[Double] = {
+    val endpoint = getClusterEndpoint(conf)
+    val frames = query[FramesV3](
+      endpoint = endpoint,
+      suffix = s"/3/Frames/$frameId/columns/$columnName/summary",
+      conf = conf,
+      params = Map("row_count" -> 0, "full_column_count" -> 0),
+      skippedFields = Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
+    frames.frames(0).columns(0).percentiles
   }
 
   private def deleteFrame(conf: H2OConf, frameId: String): Unit = {
@@ -361,7 +373,7 @@ object H2OFrame extends RestCommunication {
     delete[FramesV3](endpoint, s"3/Frames/$frameId", conf)
   }
 
-  private def convertColumn(sourceColumn: ColV3): H2OColumn = {
+  private def convertColumn(sourceColumn: ColV3, percentilesGetter: String => Array[Double]): H2OColumn = {
     H2OColumn(
       name = sourceColumn.label,
       dataType = H2OColumnType.fromString(sourceColumn.`type`),
@@ -371,9 +383,9 @@ object H2OFrame extends RestCommunication {
       sigma = sourceColumn.sigma,
       numberOfZeros = sourceColumn.zero_count,
       numberOfMissingElements = sourceColumn.missing_count,
-      percentiles = sourceColumn.percentiles,
       domain = sourceColumn.domain,
-      domainCardinality = sourceColumn.domain_cardinality)
+      domainCardinality = sourceColumn.domain_cardinality,
+      percentilesGetter = percentilesGetter)
   }
 
   private def convertChunk(sourceChunk: FrameChunkV3, clusterNodes: Array[NodeDesc]): H2OChunk = {
