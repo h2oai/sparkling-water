@@ -39,7 +39,7 @@ object Word2VecTemplate {
 # limitations under the License.
 #
 
-from ai.h2o.sparkling import Initializer
+from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
 from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.models import H2OMOJOModel

@@ -75,7 +75,7 @@ store.addCredentials(domain, awsPrivateKey)
 
 def awsCredentials = new AWSCredentialsImpl(
         CredentialsScope.GLOBAL,
-        'SW_FULL_AWS_CREDS',
+        'SW_OSS_AWS_CREDS',
         'SUBST_AWS_ACCESS_KEY_ID',
         'SUBST_AWS_SECRET_ACCESS_KEY',
         'AWS Credentials',
@@ -83,6 +83,17 @@ def awsCredentials = new AWSCredentialsImpl(
         null
 )
 store.addCredentials(domain, awsCredentials)
+
+def awsRootCredentials = new AWSCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        'SW_ROOT_AWS_CREDS',
+        'SUBST_AWS_ACCESS_KEY_ID',
+        'SUBST_AWS_SECRET_ACCESS_KEY',
+        'AWS Credentials',
+        null,
+        null
+)
+store.addCredentials(domain, awsRootCredentials)
 
 def gitToken = new StringCredentialsImpl(
         CredentialsScope.GLOBAL,
@@ -231,7 +242,7 @@ def getPrivateKey() {
 def mac = "http://169.254.169.254/latest/meta-data/network/interfaces/macs/".toURL().text
 def subnetId = "http://169.254.169.254/latest/meta-data/network/interfaces/macs/${mac}/subnet-id".toURL().text
 def securityGroup = "http://169.254.169.254/latest/meta-data/network/interfaces/macs/${mac}/security-group-ids".toURL().text
-def ami = new SlaveTemplate(
+def regularSlaveTemplate = new SlaveTemplate(
         'SUBST_AMI_ID', // ami
         'us-west-2b', // zone
         null, // spot configuration
@@ -239,30 +250,84 @@ def ami = new SlaveTemplate(
         '/home/jenkins', // remoteFS
         InstanceType.fromValue('t2.xlarge'), // InstanceType type
         false, // ebsOptimized
-        'docker', // labelString
+        'regular', // labelString
         Node.Mode.NORMAL, // Node.Mode mode
-        'worker_jenkins', // description
+        'regular_worker_jenkins', // description
         '', // initScript
         '', // tmpDir
         '#!/bin/sh\nsudo cp -R /home/ec2-user/.ssh /home/jenkins\nsudo chown -R jenkins /home/jenkins\nsudo yum -y update --security', // userData
         '1', // numExecutors
         'jenkins', // remoteAdmin
-        new UnixData('', '', '', '22'), // amiType
+        new UnixData('', '', '', '22', null), // amiType
         '', // jvmopts
         false, // stopOnTerminate
         subnetId, // subnetId
-        [new EC2Tag('Name', 'SW-Tests-Jenkins-Slave')], //tags
-        '30', // idleTerminationMinutes
+        [
+                new EC2Tag('Name', 'SW-Regular-Jenkins-Slave'),
+                new EC2Tag('Owner', 'oss-dev@h2o.ai'),
+                new EC2Tag('Department', 'Engineering'),
+                new EC2Tag('Environment', 'QA'),
+                new EC2Tag('Project', 'SparklingWater'),
+                new EC2Tag('Scheduling', 'AlwaysOn')
+        ], //tags
+        '10', // idleTerminationMinutes
         0, // minimumNumberOfInstance
         0, // minimumNumberOfSpareInstances
-        '20', // instanceCapStr
+        '30', // instanceCapStr
         '', // iamInstanceProfile
         false, // deleteRootOnTermination
         false, // useEphemeralDevices
         false, // useDedicatedTenancy
         '', // launchTimeoutStr
         true, // associatePublicIp
-        '/dev/xvda=:80', // customDeviceMapping
+        '/dev/xvda=:160', // customDeviceMapping
+        true, // connectBySSHProcess
+        false, // monitoring
+        false, // t2Unlimited
+        hudson.plugins.ec2.ConnectionStrategy.PUBLIC_IP, // connectionStrategy
+        -1, // maxTotalUses
+        [] // node properties
+)
+
+def largeSlaveTemplate = new SlaveTemplate(
+        'SUBST_AMI_ID', // ami
+        'us-west-2b', // zone
+        null, // spot configuration
+        securityGroup, // securityGroups
+        '/home/jenkins', // remoteFS
+        InstanceType.fromValue('t2.2xlarge'), // InstanceType type
+        false, // ebsOptimized
+        'large', // labelString
+        Node.Mode.NORMAL, // Node.Mode mode
+        'large_worker_jenkins', // description
+        '', // initScript
+        '', // tmpDir
+        '#!/bin/sh\nsudo cp -R /home/ec2-user/.ssh /home/jenkins\nsudo chown -R jenkins /home/jenkins\nsudo yum -y update --security', // userData
+        '1', // numExecutors
+        'jenkins', // remoteAdmin
+        new UnixData('', '', '', '22', null), // amiType
+        '', // jvmopts
+        false, // stopOnTerminate
+        subnetId, // subnetId
+        [
+                new EC2Tag('Name', 'SW-Large-Jenkins-Slave'),
+                new EC2Tag('Owner', 'oss-dev@h2o.ai'),
+                new EC2Tag('Department', 'Engineering'),
+                new EC2Tag('Environment', 'QA'),
+                new EC2Tag('Project', 'SparklingWater'),
+                new EC2Tag('Scheduling', 'AlwaysOn')
+        ], //tags
+        '10', // idleTerminationMinutes
+        0, // minimumNumberOfInstance
+        0, // minimumNumberOfSpareInstances
+        '10', // instanceCapStr
+        '', // iamInstanceProfile
+        false, // deleteRootOnTermination
+        false, // useEphemeralDevices
+        false, // useDedicatedTenancy
+        '', // launchTimeoutStr
+        true, // associatePublicIp
+        '/dev/xvda=:160', // customDeviceMapping
         true, // connectBySSHProcess
         false, // monitoring
         false, // t2Unlimited
@@ -274,11 +339,11 @@ def ami = new SlaveTemplate(
 def cloud = new AmazonEC2Cloud(
         'SparklingWaterInfra',
         false,
-        'SW_FULL_AWS_CREDS',
+        'SW_OSS_AWS_CREDS',
         'us-west-2',
         getPrivateKey(),
         null,
-        [ami],
+        [regularSlaveTemplate, largeSlaveTemplate],
         '',
         ''
 )

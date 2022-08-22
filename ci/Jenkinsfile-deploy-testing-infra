@@ -47,7 +47,7 @@ node("mr-0xc10") {
             }
             commons.withTerraform {
                 dir("ci/aws/terraform") {
-                    def publicHostname = "sparkling-jenkins.h2o.ai"
+                    def publicHostname = "sparkling-jenkins.oss.h2o.ai"
 
                     def initJenkinsFile = "modules/jenkins/scripts/init_jenkins.groovy"
                     writeFile file: initJenkinsFile, text: readFile(initJenkinsFile)

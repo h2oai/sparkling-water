@@ -66,6 +66,7 @@ trait SparkTestContext extends BeforeAndAfterAll {
         .set("spark.ext.h2o.client.ip", clientIp)
         .set("spark.ext.h2o.external.start.mode", "auto")
         .set("spark.ext.h2o.external.memory", "1G")
+        .set("spark.ext.h2o.nthreads", "4")
       conf
     })
   }

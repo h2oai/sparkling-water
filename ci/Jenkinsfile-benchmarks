@@ -11,11 +11,11 @@ properties(
                         ]
                 ),
                 pipelineTriggers([cron('H 8 * * 6')]),
-                buildDiscarder(logRotator(numToKeepStr: '10'))
+                buildDiscarder(logRotator(numToKeepStr: '30'))
         ]
 )
 
-node("docker") {
+node("regular") {
     cleanWs()
     checkout scm
     def commons = load 'ci/commons.groovy'
