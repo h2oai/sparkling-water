@@ -40,7 +40,7 @@ and :ref:`model_details_H2ODeepLearningMOJOModel`.
             val datasetUrl = "https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/insurance.csv"
             spark.sparkContext.addFile(datasetUrl) //for example purposes, on a real cluster it's better to load directly from distributed storage
             val sparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("insurance.csv"))
-            val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
+            val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2), 23123)
 
         Train the model. You can configure all the available DeepLearning arguments using provided setters, such as the label column
         or the layout of hidden layers.
@@ -113,7 +113,7 @@ and :ref:`model_details_H2ODeepLearningMOJOModel`.
             import h2o
             frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/insurance.csv")
             sparkDF = hc.asSparkFrame(frame)
-            [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
+            [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2], 23123)
 
         Train the model. You can configure all the available Deep Learning arguments using provided setters or constructor parameters,
         such as the label column or the layout of hidden layers.
