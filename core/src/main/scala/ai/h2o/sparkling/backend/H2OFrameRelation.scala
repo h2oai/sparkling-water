@@ -66,9 +66,6 @@ case class H2OFrameRelation(frame: H2OFrame, copyMetadata: Boolean)(@transient v
         .putDouble("max", column.max)
         .putDouble("std", column.sigma)
         .putDouble("sparsity", column.numberOfZeros / numberOfRows.toDouble)
-      if (column.percentiles != null) {
-        builder.putDoubleArray("percentiles", column.percentiles)
-      }
     }
     builder.build()
   }

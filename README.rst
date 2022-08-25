@@ -18,6 +18,7 @@ User Documentation
 ~~~~~~~~~~~~~~~~~~
 The documentation contains also documentation for our clients, PySparkling and RSparkling.
 
+- `Sparkling Water For Spark 3.3 <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/index.html>`__
 - `Sparkling Water For Spark 3.2 <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/index.html>`__
 - `Sparkling Water For Spark 3.1 <http://docs.h2o.ai/sparkling-water/3.1/latest-stable/doc/index.html>`__
 - `Sparkling Water For Spark 3.0 <http://docs.h2o.ai/sparkling-water/3.0/latest-stable/doc/index.html>`__
@@ -28,6 +29,7 @@ The documentation contains also documentation for our clients, PySparkling and R
 Download Binaries
 ~~~~~~~~~~~~~~~~~
 
+- `Latest version for Spark 3.3 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/latest.html>`__
 - `Latest version for Spark 3.2 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/latest.html>`__
 - `Latest version for Spark 3.1 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/latest.html>`__
 - `Latest version for Spark 3.0 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/latest.html>`__
@@ -62,6 +64,7 @@ Sparkling Water Requirements
 -  Java 8+
 -  Python 2.7+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 2.2 - 3.0
 -  Python 3.6+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 3.1 - 3.2
+-  Python 3.7+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 3.3
 -  `Apache Spark 2.2+ <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
 
 ---------------
@@ -120,20 +123,20 @@ Use Sparkling Water with PySpark
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sparkling Water can be also used directly from PySpark and the integration is called PySparkling.
 
-See `PySparkling README <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/pysparkling.html>`__ to learn about PySparkling.
+See `PySparkling README <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/pysparkling.html>`__ to learn about PySparkling.
 
 Use Sparkling Water via Spark Packages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To see how Sparkling Water can be used as Spark package, please see `Use as Spark Package <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/tutorials/use_as_spark_package.html>`__.
+To see how Sparkling Water can be used as Spark package, please see `Use as Spark Package <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/tutorials/use_as_spark_package.html>`__.
 
 Use Sparkling Water in Windows environments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-See `Windows Tutorial <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/tutorials/run_on_windows.html>`__ to learn how to use Sparkling Water in Windows environments.
+See `Windows Tutorial <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/tutorials/run_on_windows.html>`__ to learn how to use Sparkling Water in Windows environments.
 
 Sparkling Water examples
 ~~~~~~~~~~~~~~~~~~~~~~~~
-To see how to run examples for Sparkling Water, please see `Running Examples <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/devel/running_examples.html>`__.
+To see how to run examples for Sparkling Water, please see `Running Examples <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/devel/running_examples.html>`__.
 
 --------------
 
@@ -146,22 +149,13 @@ backend. The backend can be specified before creation of the
 ``H2OContext``.
 
 For more details regarding the internal or external backend, please see
-`Backends <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/deployment/backends.html>`__.
+`Backends <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/deployment/backends.html>`__.
 
 --------------
 
 Roadmap
 -------
 - H2O-3 roadmap is located `here <https://github.com/h2oai/h2o-3#10-roadmap>`__.
-
-Sparkling Water 3.36.0.1-1 (Winter 2021/2022)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- [`SW-2629 <https://h2oai.atlassian.net/browse/SW-2629>`__] Rewrite ``H2OWord2Vec`` to be Sparkling Water feature estimator
-- [`SW-2633 <https://h2oai.atlassian.net/browse/SW-2633>`__] Add support for Apache Spark 3.2
-- [`SW-2646 <https://h2oai.atlassian.net/browse/SW-2646>`__] Add capability to ``H2OMOJOModel`` to calculate model metrics on arbitrary dataset
-- [`SW-2634 <https://h2oai.atlassian.net/browse/SW-2634>`__][`SW-2635 <https://h2oai.atlassian.net/browse/SW-2635>`__][`SW-2637 <https://h2oai.atlassian.net/browse/SW-2637>`__] Better interaction with a user during model training (report progress, show warnings from H2O backend)
-- Improvements of Sparkling Water conversion functions with the respect to training time of H2O algorithms
-- Add tutorials for the lesser known algorithms (``RuleFit``, ``GAM``, ...)
 
 Sparkling Water 3.38.0.1-1 (Summer 2022)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -175,19 +169,19 @@ Sparkling Water 3.38.0.1-1 (Summer 2022)
 FAQ
 ---
 
-List of all Frequently Asked Questions is available at `FAQ <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/FAQ.html>`__.
+List of all Frequently Asked Questions is available at `FAQ <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/FAQ.html>`__.
 
 --------------
 
 Development
 -----------
 
-Complete development documentation is available at `Development Documentation <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/devel/devel.html>`__.
+Complete development documentation is available at `Development Documentation <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/devel/devel.html>`__.
 
 Build Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~
 
-To see how to build Sparkling Water, please see `Build Sparkling Water <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/devel/build.html>`__.
+To see how to build Sparkling Water, please see `Build Sparkling Water <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/devel/build.html>`__.
 
 Develop applications with Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -254,7 +248,7 @@ We also respond to questions tagged with sparkling-water and h2o tags on the `St
 Change Logs
 ~~~~~~~~~~~
 
-Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/CHANGELOG.html>`__.
+Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/CHANGELOG.html>`__.
 
 ---------------
 

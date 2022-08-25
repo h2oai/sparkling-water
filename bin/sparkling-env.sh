@@ -143,6 +143,10 @@ fi
 
 function checkSparkVersion() {
   export INSTALLED_SPARK_FULL_VERSION=$(spark-submit --version 2>&1 | grep version | grep -v Scala | sed -e "s/.*version //")
+  if [ -z "$INSTALLED_SPARK_FULL_VERSION" ]; then
+    echo "Cannot determine Spark version"
+    exit 1
+  fi
   export INSTALLED_SPARK_MAJOR_MINOR_VERSION=$(echo "$INSTALLED_SPARK_FULL_VERSION" | sed -e "s/\([0-9][0-9]*.[0-9][0-9]*\).*/\1/")
   if ! [[ "$SPARK_VERSION" =~ "$INSTALLED_SPARK_MAJOR_MINOR_VERSION".* ]]; then
     echo "You are trying to use Sparkling Water built for Spark ${SPARK_VERSION}, but your Spark is of \

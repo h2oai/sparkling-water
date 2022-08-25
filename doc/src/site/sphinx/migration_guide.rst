@@ -10,6 +10,9 @@ From 3.38 to 3.40
   on ``H2OAlgorithmCommonParams`` have been removed without replacement. The behaviour will stay the same as it was
   for "true" value which was the default value in the past.
 
+- The parameter ``spark.ext.h2o.external.k8s.svc.timeout" and methods`` and methods ``externalK8sServiceTimeout``,
+  ``setExternalK8sServiceTimeout`` on ``ExternalBackendConf`` have been removed without replacement.
+
 From 3.36 to 3.38
 -----------------
 

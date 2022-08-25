@@ -8,6 +8,7 @@ to use this package for scoring with Driverless AI MOJO models.
 
 PySparkling Documentation is hosted at our documentation page:
 
+- For Spark 3.3 - http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/pysparkling.html
 - For Spark 3.2 - http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/pysparkling.html
 - For Spark 3.1 - http://docs.h2o.ai/sparkling-water/3.1/latest-stable/doc/pysparkling.html
 - For Spark 3.0 - http://docs.h2o.ai/sparkling-water/3.0/latest-stable/doc/pysparkling.html
