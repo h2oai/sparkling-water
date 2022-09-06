@@ -16,13 +16,13 @@
  */
 package water.webserver.jetty9
 
-import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.backend.api.ShutdownServlet
 import ai.h2o.sparkling.backend.api.dataframes.DataFramesServlet
 import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesServlet
 import ai.h2o.sparkling.backend.api.options.OptionsServlet
 import ai.h2o.sparkling.backend.api.rdds.RDDsServlet
 import ai.h2o.sparkling.backend.api.scalainterpreter.ScalaInterpreterServlet
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.proxy.ProxyServlet.Transparent
 import org.eclipse.jetty.security.SecurityHandler
@@ -31,6 +31,8 @@ import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler, Servlet
 import org.eclipse.jetty.util.ssl.SslContextFactory
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler
 import water.webserver.iface.{H2OHttpView, LoginType}
+
+import java.net.InetSocketAddress
 
 class SparklingWaterJettyHelper(hc: H2OContext, conf: H2OConf, h2oHttpView: H2OHttpView)
   extends Jetty9Helper(h2oHttpView) {
@@ -93,7 +95,8 @@ class SparklingWaterJettyHelper(hc: H2OContext, conf: H2OConf, h2oHttpView: H2OH
   }
 
   def startServer(port: Int): Server = {
-    val jettyServer = createJettyServer("0.0.0.0", port)
+    val address = new InetSocketAddress(port)
+    val jettyServer = createJettyServer(address.getAddress.getHostAddress, address.getPort)
     val context = createServletContextHandler()
     if (h2oHttpView.getConfig.loginType != LoginType.NONE) {
       context.setSecurityHandler(authWrapper(jettyServer).asInstanceOf[SecurityHandler])
