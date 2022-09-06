@@ -5,7 +5,7 @@ Introduction
 ~~~~~~~~~~~~
 
 H2O’s Deep Learning is based on a multi-layer feed-forward artificial neural network that is trained with stochastic gradient descent using back-propagation. The network can contain a large number of hidden layers consisting of neurons with tanh, rectifier, and maxout activation functions.
-For more more comprehensive description see `H2O-3 Deep learning documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/data-science/deep-learning.html>`__.
+For more comprehensive description see `H2O-3 Deep learning documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/data-science/deep-learning.html>`__.
 
 Example
 ~~~~~~~
