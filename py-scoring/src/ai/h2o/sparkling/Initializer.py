@@ -171,12 +171,13 @@ class Initializer(object):
         jvm = gateway.jvm
         loader = jvm.Thread.currentThread().getContextClassLoader()
         logger = Initializer.__get_logger(jvm)
+        urlClassLoaderClass = jvm.py4j.reflection.ReflectionUtil.classForName("java.net.URLClassLoader")
         while loader:
             try:
                 classClass = gateway.jvm.Class
                 classArray = gateway.new_array(classClass, 1)
                 classArray[0] = url.getClass()
-                method = loader.getClass().getDeclaredMethod("addURL", classArray)
+                method = urlClassLoaderClass.getDeclaredMethod("addURL", classArray)
                 method.setAccessible(True)
 
                 objectClass = gateway.jvm.Object
