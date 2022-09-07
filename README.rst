@@ -24,7 +24,6 @@ The documentation contains also documentation for our clients, PySparkling and R
 - `Sparkling Water For Spark 3.0 <http://docs.h2o.ai/sparkling-water/3.0/latest-stable/doc/index.html>`__
 - `Sparkling Water For Spark 2.4 <http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/index.html>`__
 - `Sparkling Water For Spark 2.3 <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/index.html>`__
-- `Sparkling Water For Spark 2.2 <http://docs.h2o.ai/sparkling-water/2.2/latest-stable/doc/index.html>`__
 
 Download Binaries
 ~~~~~~~~~~~~~~~~~
@@ -35,7 +34,6 @@ Download Binaries
 - `Latest version for Spark 3.0 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/latest.html>`__
 - `Latest version for Spark 2.4 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/latest.html>`__
 - `Latest version for Spark 2.3 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/latest.html>`__
-- `Latest version for Spark 2.2 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/latest.html>`__
 
 
 Maven
@@ -62,10 +60,10 @@ Sparkling Water Requirements
 
 -  Linux/OS X/Windows
 -  Java 8+
--  Python 2.7+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 2.2 - 3.0
+-  Python 2.7+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 2.3 - 3.0
 -  Python 3.6+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 3.1 - 3.2
 -  Python 3.7+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 3.3
--  `Apache Spark 2.2+ <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
+-  `Apache Spark 2.3+ <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
 
 ---------------
 
