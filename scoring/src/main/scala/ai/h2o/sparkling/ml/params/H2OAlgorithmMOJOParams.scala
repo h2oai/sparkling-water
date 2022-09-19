@@ -37,7 +37,12 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
   protected final val withContributions = new BooleanParam(
     this,
     "withContributions",
-    "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values.")
+    "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values of original features.")
+
+  protected final val withInternalContributions = new BooleanParam(
+    this,
+    "withInternalContributions",
+    "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values of transformed features. Supported only by DriverlessAI MOJO models.")
 
   protected final val featuresCols: StringArrayParam =
     new StringArrayParam(this, "featuresCols", "Name of feature columns")
@@ -60,6 +65,7 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
     predictionCol -> H2OMOJOSettings.default.predictionCol,
     detailedPredictionCol -> H2OMOJOSettings.default.detailedPredictionCol,
     withContributions -> H2OMOJOSettings.default.withContributions,
+    withInternalContributions -> H2OMOJOSettings.default.withInternalContributions,
     featuresCols -> Array.empty[String],
     namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns,
     withLeafNodeAssignments -> H2OMOJOSettings.default.withLeafNodeAssignments,
@@ -73,6 +79,8 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
   def getDetailedPredictionCol(): String = $(detailedPredictionCol)
 
   def getWithContributions(): Boolean = $(withContributions)
+
+  def getWithInternalContributions(): Boolean = $(withInternalContributions)
 
   def getFeaturesCols(): Array[String] = $(featuresCols)
 

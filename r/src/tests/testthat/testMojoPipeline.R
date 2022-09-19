@@ -79,4 +79,17 @@ test_that("test MOJO contribution (SHAP) values", {
     "contrib_bias_Iris-virginica"))      # output contributions
 })
 
+test_that("test MOJO internal contribution (SHAP) values", {
+  mojo_path <- paste0("file://", locate("daiMojoShapleyInternal/pipeline.mojo"))
+  data_path <- paste0("file://", locate("daiMojoShapleyInternal/example.csv"))
+  dataset <- spark_read_csv(sc, path = data_path, infer_schema = TRUE, header = TRUE)
+  # request contributions
+  settings <- H2OMOJOSettings(withInternalContributions = TRUE)
+  mojo <- H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
+  mojoOutput <- mojo$transform(dataset)
+
+  flattenedContributions <- sdf_unnest_wider(mojoOutput, "intrnal_contributions")
+  expect_equal(length(colnames(flattenedContributions)), length(colnames(dataset) + 1 + 115))
+})
+
 spark_disconnect(sc)

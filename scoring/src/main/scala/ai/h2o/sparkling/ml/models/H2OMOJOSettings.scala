@@ -27,6 +27,7 @@ case class H2OMOJOSettings(
     convertInvalidNumbersToNa: Boolean = false,
     namedMojoOutputColumns: Boolean = true,
     withContributions: Boolean = false,
+    withInternalContributions: Boolean = false,
     withLeafNodeAssignments: Boolean = false,
     withStageResults: Boolean = false,
     dataFrameSerializer: String = DataFrameSerializer.default.getClass().getName())
@@ -39,6 +40,7 @@ object H2OMOJOSettings {
       predictionCol = params.getPredictionCol(),
       detailedPredictionCol = params.getDetailedPredictionCol(),
       withContributions = params.getWithContributions(),
+      withInternalContributions = params.getWithInternalContributions(),
       convertUnknownCategoricalLevelsToNa = params.getConvertUnknownCategoricalLevelsToNa(),
       convertInvalidNumbersToNa = params.getConvertInvalidNumbersToNa(),
       withLeafNodeAssignments = params.getWithLeafNodeAssignments(),

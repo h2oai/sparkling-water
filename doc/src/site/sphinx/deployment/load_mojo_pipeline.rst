@@ -211,7 +211,11 @@ Customizing the MOJO Settings
 We can configure the output and format of predictions via the H2OMOJOSettings. The available options are
 
 - ``predictionCol`` - Specifies the name of the generated prediction column. The default value is `prediction`.
-- ``namedMojoOutputColumns`` - Enables or disables named output columns. By default, it is enabled.
+- ``withContributions`` - If enabled, it appends the `contributions` column to the input dataset.
+  The column contains sub-columns with Shapley values for the original features from the dataset. By default, this option is disabled.
+- ``withInternalContributions`` -  If enabled, it appends the `internal_contributions` column to the input dataset.
+  The column contains sub-columns with Shapley values for the transformed features entering the models inside MOJO pipeline.
+  By default, this option is disabled.
 
 Troubleshooting
 ~~~~~~~~~~~~~~~
