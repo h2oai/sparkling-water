@@ -88,7 +88,7 @@ test_that("test MOJO internal contribution (SHAP) values", {
   mojo <- H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
   mojoOutput <- mojo$transform(dataset)
 
-  flattenedContributions <- sdf_unnest_wider(mojoOutput, "intrnal_contributions")
+  flattenedContributions <- sdf_unnest_wider(mojoOutput, "internal_contributions")
   expect_equal(length(colnames(flattenedContributions)), length(colnames(dataset) + 1 + 115))
 })
 
