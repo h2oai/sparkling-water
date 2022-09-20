@@ -77,6 +77,12 @@ class H2OMOJOPipelineModel(override val uid: String)
       "outputSubTypesInternalContributions",
       "Types of contribution sub-columns under the internal contributions column (contributions on transformed features)")
 
+  protected final val withInternalContributions = new BooleanParam(
+    this,
+    "withInternalContributions",
+    "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values of transformed features. Supported only by DriverlessAI MOJO models.")
+
+
   def getOutputSubCols(): Array[String] = $ { outputSubCols }
 
   def getContributionsCol(): String = "contributions"
@@ -84,6 +90,8 @@ class H2OMOJOPipelineModel(override val uid: String)
   def getInternalContributionsCol(): String = "internal_contributions"
 
   def getTransportCol(): String = "SparklingWater_transport"
+
+  def getWithInternalContributions(): Boolean = $(withInternalContributions)
 
   @transient private lazy val mojoPipeline: MojoPipeline = H2OMOJOPipelineCache.getMojoBackend(uid, getMojo)
 

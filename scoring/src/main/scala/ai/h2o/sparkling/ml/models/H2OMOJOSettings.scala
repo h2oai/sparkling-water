@@ -40,7 +40,6 @@ object H2OMOJOSettings {
       predictionCol = params.getPredictionCol(),
       detailedPredictionCol = params.getDetailedPredictionCol(),
       withContributions = params.getWithContributions(),
-      withInternalContributions = params.getWithInternalContributions(),
       convertUnknownCategoricalLevelsToNa = params.getConvertUnknownCategoricalLevelsToNa(),
       convertInvalidNumbersToNa = params.getConvertInvalidNumbersToNa(),
       withLeafNodeAssignments = params.getWithLeafNodeAssignments(),
