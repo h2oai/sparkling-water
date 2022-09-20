@@ -495,7 +495,7 @@ object H2OContext extends Logging {
     val version = SparkSessionUtils.active.version
     if (version.startsWith("2.1.")) {
       Some("3.34.0.1-1")
-    } else if ( version.startsWith("2.2.")) {
+    } else if (version.startsWith("2.2.")) {
       Some("3.38.0.1-1")
     } else {
       None
