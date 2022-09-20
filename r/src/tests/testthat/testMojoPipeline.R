@@ -89,7 +89,7 @@ test_that("test MOJO internal contribution (SHAP) values", {
   mojoOutput <- mojo$transform(dataset)
 
   flattenedContributions <- sdf_unnest_wider(mojoOutput, "internal_contributions")
-  expect_equal(length(colnames(flattenedContributions)), length(colnames(dataset) + 1 + 115))
+  expect_equal(length(colnames(flattenedContributions)), length(colnames(dataset)) + 1 + 115)
 })
 
 spark_disconnect(sc)
