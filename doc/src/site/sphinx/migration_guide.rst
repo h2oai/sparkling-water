@@ -20,6 +20,12 @@ From 3.36 to 3.38
 
 - org.apache.spark.h2o.H2OContext has been replaced by ai.h2o.sparkling.H2OContext
 
+- The legacy and unstable way of communication with H2O cluster from Spark driver called 'H2O client' was removed.
+  H2O client was a virtual H2O node running on the Spark driver which communicated with the cluster via
+  the same protocol as H2O nodes used among themselves. The sparkling water option ``spark.ext.h2o.rest.api.based.client``
+  has no effect any more and Sparkling Water will always communicate with H2O cluster via REST API. Scala/Java users
+  can't use H2O-3 api anymore. The functionality of H2O-3 cluster must be accessed via Sparkling Water Scala API.
+
 - The support for Apache Spark 2.2.x has been removed.
 
 - The parameter ``variableImportances`` of ``H2ODeepLearning`` has been replaced with ``calculateFeatureImportances`` as
