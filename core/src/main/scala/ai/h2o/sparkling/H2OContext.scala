@@ -491,19 +491,21 @@ object H2OContext extends Logging {
     getOrCreate(Option(instantiatedContext.get()).map(_.getConf).getOrElse(new H2OConf()))
   }
 
-  private def isSparkVersionUnsupported(): Boolean = {
-    SparkSessionUtils.active.version.startsWith("2.1.")
-  }
-
-  private def isSparkVersionDeprecated(): Boolean = {
-    SparkSessionUtils.active.version.startsWith("2.2.")
+  private def getFirstUnsupportedSWVersion(): Option[String] = {
+    val version = SparkSessionUtils.active.version
+    if (version.startsWith("2.1.")) {
+      Some("3.34.0.1-1")
+    } else if ( version.startsWith("2.2.")) {
+      Some("3.38.0.1-1")
+    } else {
+      None
+    }
   }
 
   private def logStartingInfo(conf: H2OConf): Unit = {
     logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
-    val deprecationSuffix = if (isSparkVersionDeprecated) " (deprecated)" else ""
-    val unsupportedSuffix = if (isSparkVersionUnsupported) " (unsupported)" else ""
-    logInfo("Spark version: " + SparkSessionUtils.active.version + deprecationSuffix + unsupportedSuffix)
+    val unsupportedSuffix = if (getFirstUnsupportedSWVersion.isDefined) " (unsupported)" else ""
+    logInfo("Spark version: " + SparkSessionUtils.active.version + unsupportedSuffix)
     logInfo("Integrated H2O version: " + BuildInfo.H2OVersion)
     logInfo("The following Spark configuration is used: \n    " + conf.getAll.mkString("\n    "))
   }
@@ -522,15 +524,11 @@ object H2OContext extends Logging {
           s" but your Spark is of version ${sc.version}. Please make sure to use correct Sparkling Water for your" +
           s" Spark and re-run the application.")
     }
-    if (isSparkVersionUnsupported) {
+    val unsupportedSWVersion = getFirstUnsupportedSWVersion()
+    if (unsupportedSWVersion.isDefined) {
       logWarning(
-        s"Apache Spark ${SparkSessionUtils.active.version} is unsupported since the Sparkling Water version 3.34.0.1-1.")
-    }
-
-    if (isSparkVersionDeprecated) {
-      logWarning(
-        s"Apache Spark ${SparkSessionUtils.active.version} is deprecated and " +
-          "the support will be removed in the Sparkling Water version 3.38.")
+        s"Apache Spark ${SparkSessionUtils.active.version} is unsupported" +
+          s"since the Sparkling Water version ${unsupportedSWVersion.get}.")
     }
   }
 }
