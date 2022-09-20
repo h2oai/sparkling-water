@@ -98,7 +98,10 @@ class H2OMOJOPipelineModel(override val uid: String)
   // if contributions are requested, there is utilized a second pipeline
   // that's setup the way to calculate contributions.
   @transient private lazy val mojoPipelineInternalContributions: MojoPipeline = {
-    H2OMOJOPipelineCache.getMojoBackend(uid + ".internal_contributions", getMojo, Map[String, Any]("enableShap" -> true))
+    H2OMOJOPipelineCache.getMojoBackend(
+      uid + ".internal_contributions",
+      getMojo,
+      Map[String, Any]("enableShap" -> true))
   }
 
   private def prepareBooleans(colType: Type, colData: Any): Any = {
@@ -226,9 +229,7 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     val baseDf = applyPredictionUdf(dataset, modelUdf)
-    val withPredictionsDF = baseDf.withColumn(
-      getPredictionCol(),
-      col(s"${getTransportCol()}.${getPredictionCol()}"))
+    val withPredictionsDF = baseDf.withColumn(getPredictionCol(), col(s"${getTransportCol()}.${getPredictionCol()}"))
     val withContributionsDF = if (getWithContributions()) {
       withPredictionsDF.withColumn(getContributionsCol(), col(s"${getTransportCol()}.${getContributionsCol()}"))
     } else {
@@ -317,7 +318,8 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    StructType(schema.fields ++ getPredictionColSchema() ++ getContributionsColSchema() ++ getInternalContributionsColSchema())
+    StructType(
+      schema.fields ++ getPredictionColSchema() ++ getContributionsColSchema() ++ getInternalContributionsColSchema())
   }
 }
 
@@ -372,7 +374,9 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
       val pipelineMojoInternalContributions = MojoPipelineService.loadPipeline(model.getMojo(), config)
       val outputColsContributions = pipelineMojoInternalContributions.getOutputMeta.getColumns.asScala
       model.set(model.outputSubColsInternalContributions, outputColsContributions.map(_.getColumnName).toArray)
-      model.set(model.outputSubTypesInternalContributions, outputColsContributions.map(_.getColumnType.toString).toArray)
+      model.set(
+        model.outputSubTypesInternalContributions,
+        outputColsContributions.map(_.getColumnType.toString).toArray)
     } else {
       model.set(model.outputSubColsInternalContributions, Array[String]())
       model.set(model.outputSubTypesInternalContributions, Array[String]())
