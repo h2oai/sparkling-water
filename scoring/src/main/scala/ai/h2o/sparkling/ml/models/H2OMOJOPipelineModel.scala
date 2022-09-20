@@ -82,7 +82,6 @@ class H2OMOJOPipelineModel(override val uid: String)
     "withInternalContributions",
     "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values of transformed features. Supported only by DriverlessAI MOJO models.")
 
-
   def getOutputSubCols(): Array[String] = $ { outputSubCols }
 
   def getContributionsCol(): String = "contributions"
