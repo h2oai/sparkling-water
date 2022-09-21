@@ -84,9 +84,6 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   logInfo("Connecting to H2O cluster.")
   private val nodes = getAndVerifyWorkerNodes(conf)
   backendHeartbeatThread.start() // start backend heartbeats
-  if (H2OClientUtils.isH2OClientBased(conf)) {
-    H2OClientUtils.startH2OClient(this, conf, nodes)
-  }
   verifyExtensionJarIsAvailable()
   RestApiUtils.setTimeZone(conf, "UTC")
   // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
@@ -230,9 +227,6 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   def h2oLocalClientPort: Int = flowPort
 
   def setH2OLogLevel(level: String): Unit = {
-    if (H2OClientUtils.isH2OClientBased(conf)) {
-      water.util.Log.setLogLevel(level)
-    }
     RestApiUtils.setLogLevel(conf, level)
   }
 
@@ -251,21 +245,14 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
       // In internal backend, Spark takes care of stopping executors automatically
       // In manual mode of external backend, the H2O cluster is managed by the user
       if (conf.runsInExternalClusterMode && conf.isAutoClusterStartUsed) {
-        if (H2OClientUtils.isH2OClientBased(conf)) {
-          H2O.orderlyShutdown(conf.externalBackendStopTimeout)
-        } else {
-          RestApiUtils.shutdownCluster(conf)
-          if (conf.externalAutoStartBackend == ExternalBackendConf.KUBERNETES_BACKEND) {
-            K8sExternalBackendClient.stopExternalH2OOnKubernetes(conf)
-          }
+        RestApiUtils.shutdownCluster(conf)
+        if (conf.externalAutoStartBackend == ExternalBackendConf.KUBERNETES_BACKEND) {
+          K8sExternalBackendClient.stopExternalH2OOnKubernetes(conf)
         }
       }
       ProxyStarter.stopFlowProxy()
       H2OContext.instantiatedContext.set(null)
       stopped = true
-      if (stopJvm && H2OClientUtils.isH2OClientBased(conf)) {
-        H2O.exit(0)
-      }
     } else {
       logWarning("H2OContext is already stopped!")
     }
@@ -359,11 +346,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
                 logError("H2O cluster not healthy!")
                 if (conf.isKillOnUnhealthyClusterEnabled) {
                   logError("Stopping external H2O cluster as it is not healthy.")
-                  if (H2OClientUtils.isH2OClientBased(conf)) {
-                    H2OContext.this.stop(true)
-                  } else {
-                    H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
-                  }
+                  H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
                 }
               }
             }
@@ -446,38 +429,23 @@ object H2OContext extends Logging {
     * @return H2O Context
     */
   def getOrCreate(conf: H2OConf): H2OContext = synchronized {
-    if (H2OClientUtils.isH2OClientBased(conf)) {
-      if (instantiatedContext.get() == null)
-        if (H2O.API_PORT == 0) { // api port different than 0 means that client is already running
+    val existingContext = instantiatedContext.get()
+    if (existingContext != null) {
+      val isExternalBackend = conf.runsInExternalClusterMode
+      val startedManually = existingContext.getConf.isManualClusterStartUsed
+      if (isExternalBackend && startedManually) {
+        if (conf.h2oCluster.isEmpty) {
+          throw new IllegalArgumentException("H2O cluster endpoint has to be specified!")
+        }
+        if (connectingToNewCluster(existingContext, conf)) {
           val checkedConf = checkAndUpdateConf(conf)
           instantiatedContext.set(new H2OContext(checkedConf))
-        } else {
-          throw new IllegalArgumentException(
-            """
-              |H2O context hasn't been started successfully in the previous attempt and H2O client with previous configuration is already running.
-              |Because of the current H2O limitation that it can't be restarted within a running JVM,
-              |please restart your job or spark session and create new H2O context with new configuration.")
-          """.stripMargin)
+          logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
         }
-    } else {
-      val existingContext = instantiatedContext.get()
-      if (existingContext != null) {
-        val isExternalBackend = conf.runsInExternalClusterMode
-        val startedManually = existingContext.getConf.isManualClusterStartUsed
-        if (isExternalBackend && startedManually) {
-          if (conf.h2oCluster.isEmpty) {
-            throw new IllegalArgumentException("H2O cluster endpoint has to be specified!")
-          }
-          if (connectingToNewCluster(existingContext, conf)) {
-            val checkedConf = checkAndUpdateConf(conf)
-            instantiatedContext.set(new H2OContext(checkedConf))
-            logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
-          }
-        }
-      } else {
-        val checkedConf = checkAndUpdateConf(conf)
-        instantiatedContext.set(new H2OContext(checkedConf))
       }
+    } else {
+      val checkedConf = checkAndUpdateConf(conf)
+      instantiatedContext.set(new H2OContext(checkedConf))
     }
     instantiatedContext.get()
   }

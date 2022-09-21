@@ -151,7 +151,6 @@ trait SharedBackendUtils extends Logging with Serializable {
     */
   def getH2OCommonArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
-      .add(H2OClientUtils.getH2OCommonArgsWhenClientBased(conf), H2OClientUtils.isH2OClientBased(conf))
       .add("-internal_security_conf_rel_paths")
       .add("-name", conf.cloudName.get)
       .add("-port_offset", conf.internalPortOffset)
