@@ -313,6 +313,26 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     assertContributionValues(onlyContributions.take(2))
   }
 
+  test("Mojo pipeline can expose internal contribution (SHAP) values") {
+
+    val mojoSettings = H2OMOJOSettings(withInternalContributions = true)
+    val pipeline = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapleyInternal/pipeline.mojo"),
+      "pipeline.internal.mojo",
+      mojoSettings)
+
+    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapleyInternal/example.csv")
+    val predictionsAndContributions = pipeline.transform(df)
+    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getInternalContributionsCol()}.*")
+    val contributionColumnsNo = 115
+
+    onlyContributions.columns should have length contributionColumnsNo
+    forAll(onlyContributions.columns) { _ should startWith("contrib_") }
+
+    val contributions = onlyContributions.take(2)
+    contributions(0).toSeq should not equal contributions(1).toSeq
+  }
+
   private def assertContributionValues(contributions: Array[Row]): Unit = {
     contributions(0).getDouble(0) shouldBe 2.556562795555615
     contributions(0).getDouble(1) shouldBe -1.8716305396517994
@@ -356,6 +376,20 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
       mojoSettings)
 
     val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
+    val outputSchema = pipeline.transform(df).schema
+    val transformedSchema = pipeline.transformSchema(df.schema)
+
+    transformedSchema should equal(outputSchema)
+  }
+
+  test("Transform and transformSchema methods are aligned when (SHAP) internal contributions are enabled") {
+    val mojoSettings = H2OMOJOSettings(withInternalContributions = true)
+    val pipeline = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapleyInternal/pipeline.mojo"),
+      "pipeline.internal.mojo",
+      mojoSettings)
+
+    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapleyInternal/example.csv")
     val outputSchema = pipeline.transform(df).schema
     val transformedSchema = pipeline.transformSchema(df.schema)
 

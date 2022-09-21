@@ -27,6 +27,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                              convertInvalidNumbersToNa = "logical",
                                              namedMojoOutputColumns = "logical",
                                              withContributions = "logical",
+                                             withInternalContributions = "logical",
                                              withLeafNodeAssignments = "logical",
                                              withStageResults = "logical",
                                              dataFrameSerializer = "character"),
@@ -37,6 +38,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                                        convertInvalidNumbersToNa = FALSE,
                                                        namedMojoOutputColumns = TRUE,
                                                        withContributions = FALSE,
+                                                       withInternalContributions = FALSE,
                                                        withLeafNodeAssignments = FALSE,
                                                        withStageResults = FALSE,
                                                        dataFrameSerializer = "ai.h2o.sparkling.utils.JSONDataFrameSerializer") {
@@ -46,6 +48,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                    .self$convertInvalidNumbersToNa <- convertInvalidNumbersToNa
                                    .self$namedMojoOutputColumns <- namedMojoOutputColumns
                                    .self$withContributions <- withContributions
+                                   .self$withInternalContributions <- withInternalContributions
                                    .self$withLeafNodeAssignments <- withLeafNodeAssignments
                                    .self$withStageResults <- withStageResults
                                    .self$dataFrameSerializer <- dataFrameSerializer
@@ -59,6 +62,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                               .self$convertInvalidNumbersToNa,
                                               .self$namedMojoOutputColumns,
                                               .self$withContributions,
+                                              .self$withInternalContributions,
                                               .self$withLeafNodeAssignments,
                                               .self$withStageResults,
                                               .self$dataFrameSerializer)

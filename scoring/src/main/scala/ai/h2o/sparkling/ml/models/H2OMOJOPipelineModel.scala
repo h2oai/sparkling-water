@@ -58,18 +58,39 @@ class H2OMOJOPipelineModel(override val uid: String)
     new StringArrayParam(
       this,
       "outputSubColsContributions",
-      "Names of contribution sub-columns under the contributions column")
+      "Names of contribution sub-columns under the contributions column (contributions on original features)")
   protected final val outputSubTypesContributions: StringArrayParam =
     new StringArrayParam(
       this,
       "outputSubTypesContributions",
-      "Types of contribution sub-columns under the contributions column")
+      "Types of contribution sub-columns under the contributions column (contributions on original features)")
+
+  // MOJO output columns describing contributions on transformed features
+  protected final val outputSubColsInternalContributions: StringArrayParam =
+    new StringArrayParam(
+      this,
+      "outputSubColsInternalContributions",
+      "Names of contribution sub-columns under the internal contributions column (contributions on transformed features)")
+  protected final val outputSubTypesInternalContributions: StringArrayParam =
+    new StringArrayParam(
+      this,
+      "outputSubTypesInternalContributions",
+      "Types of contribution sub-columns under the internal contributions column (contributions on transformed features)")
+
+  protected final val withInternalContributions = new BooleanParam(
+    this,
+    "withInternalContributions",
+    "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values of transformed features. Supported only by DriverlessAI MOJO models.")
 
   def getOutputSubCols(): Array[String] = $ { outputSubCols }
 
   def getContributionsCol(): String = "contributions"
 
+  def getInternalContributionsCol(): String = "internal_contributions"
+
   def getTransportCol(): String = "SparklingWater_transport"
+
+  def getWithInternalContributions(): Boolean = $(withInternalContributions)
 
   @transient private lazy val mojoPipeline: MojoPipeline = H2OMOJOPipelineCache.getMojoBackend(uid, getMojo)
 
@@ -78,6 +99,16 @@ class H2OMOJOPipelineModel(override val uid: String)
   // that's setup the way to calculate contributions.
   @transient private lazy val mojoPipelineContributions: MojoPipeline = {
     H2OMOJOPipelineCache.getMojoBackend(uid + ".contributions", getMojo, Map[String, Any]("enableShapOriginal" -> true))
+  }
+
+  // As the mojoPipeline can't provide predictions and contributions at the same time, then
+  // if contributions are requested, there is utilized a second pipeline
+  // that's setup the way to calculate contributions.
+  @transient private lazy val mojoPipelineInternalContributions: MojoPipeline = {
+    H2OMOJOPipelineCache.getMojoBackend(
+      uid + ".internal_contributions",
+      getMojo,
+      Map[String, Any]("enableShap" -> true))
   }
 
   private def prepareBooleans(colType: Type, colData: Any): Any = {
@@ -147,21 +178,9 @@ class H2OMOJOPipelineModel(override val uid: String)
   private val modelUdf = (names: Array[String]) => {
     val schemaTransport = getTransportSchema()
     val schemaPredict = getPredictionColSchemaInternal()
-    val schemaContrib = getContributionsColSchemaInternal()
     val namedOutputColumns = getNamedMojoOutputColumns()
 
     val function = (row: Row) => {
-      def mojoFrameToArray(mf: MojoFrame) = {
-        mf.getColumnNames.zipWithIndex.map {
-          case (_, i) =>
-            val columnData = mf.getColumnData(i).asInstanceOf[Array[_]]
-            if (columnData.length != 1) {
-              throw new RuntimeException("Invalid state, we predict on each row by row, independently at this moment.")
-            }
-            columnData(0)
-        }
-      }
-
       val contentBuilder = mutable.ArrayBuffer[Any]()
 
       val inputMojoFrameForPredictions = rowToMojoFrame(mojoPipeline, names, row)
@@ -171,10 +190,17 @@ class H2OMOJOPipelineModel(override val uid: String)
       contentBuilder += new GenericRowWithSchema(content, schemaPredict)
 
       if (getWithContributions()) {
-        val inputMojoFrameForContributions = rowToMojoFrame(mojoPipelineContributions, names, row)
-        val outputContributions = mojoPipelineContributions.transform(inputMojoFrameForContributions)
-        val contributions = mojoFrameToArray(outputContributions)
-        contentBuilder += new GenericRowWithSchema(contributions, schemaContrib)
+        val columnNames = $(outputSubColsContributions)
+        val types = $(outputSubTypesContributions)
+        val schema = getContributionsColSchemaInternal(columnNames, types)
+        addContributions(mojoPipelineContributions, names, row, schema, contentBuilder)
+      }
+
+      if (getWithInternalContributions()) {
+        val columnNames = $(outputSubColsInternalContributions)
+        val types = $(outputSubTypesInternalContributions)
+        val schema = getContributionsColSchemaInternal(columnNames, types)
+        addContributions(mojoPipelineInternalContributions, names, row, schema, contentBuilder)
       }
 
       new GenericRowWithSchema(contentBuilder.toArray, schemaTransport)
@@ -183,21 +209,47 @@ class H2OMOJOPipelineModel(override val uid: String)
     swudf(function, schemaTransport)
   }
 
+  private def addContributions(
+      pipeline: MojoPipeline,
+      names: Array[String],
+      row: Row,
+      schema: StructType,
+      contentBuilder: mutable.ArrayBuffer[Any]): Unit = {
+    val inputMojoFrameForContributions = rowToMojoFrame(pipeline, names, row)
+    val outputContributions = pipeline.transform(inputMojoFrameForContributions)
+    val contributions = mojoFrameToArray(outputContributions)
+    contentBuilder += new GenericRowWithSchema(contributions, schema)
+  }
+
+  private def mojoFrameToArray(mf: MojoFrame) = {
+    mf.getColumnNames.zipWithIndex.map {
+      case (_, i) =>
+        val columnData = mf.getColumnData(i).asInstanceOf[Array[_]]
+        if (columnData.length != 1) {
+          throw new RuntimeException("Invalid state, we predict on each row by row, independently at this moment.")
+        }
+        columnData(0)
+    }
+  }
+
   override def copy(extra: ParamMap): H2OMOJOPipelineModel = defaultCopy(extra)
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     val baseDf = applyPredictionUdf(dataset, modelUdf)
-
-    if (getWithContributions()) {
-      baseDf
-        .withColumn(getPredictionCol(), col(s"${getTransportCol()}.${getPredictionCol()}"))
-        .withColumn(getContributionsCol(), col(s"${getTransportCol()}.${getContributionsCol()}"))
-        .drop(getTransportCol())
+    val withPredictionsDF = baseDf.withColumn(getPredictionCol(), col(s"${getTransportCol()}.${getPredictionCol()}"))
+    val withContributionsDF = if (getWithContributions()) {
+      withPredictionsDF.withColumn(getContributionsCol(), col(s"${getTransportCol()}.${getContributionsCol()}"))
     } else {
-      baseDf
-        .withColumn(getPredictionCol(), col(s"${getTransportCol()}.${getPredictionCol()}"))
-        .drop(getTransportCol())
+      withPredictionsDF
     }
+    val withInternalContributionsDF = if (getWithInternalContributions()) {
+      withContributionsDF.withColumn(
+        getInternalContributionsCol(),
+        col(s"${getTransportCol()}.${getInternalContributionsCol()}"))
+    } else {
+      withContributionsDF
+    }
+    withInternalContributionsDF.drop(getTransportCol())
   }
 
   private def toSparkType(t: Type): DataType = t match {
@@ -225,23 +277,34 @@ class H2OMOJOPipelineModel(override val uid: String)
     Seq(StructField(getPredictionCol(), getPredictionColSchemaInternal(), nullable = true))
   }
 
-  private def getContributionsColSchemaInternal(): StructType = {
-    val outputContributions = $(outputSubColsContributions).zip($(outputSubTypesContributions))
-    StructType(outputContributions.map {
+  private def getContributionsColSchemaInternal(names: Array[String], types: Array[String]): StructType = {
+    StructType(names.zip(types).map {
       case (cn, ct) => StructField(cn, toSparkType(Type.valueOf(ct)), nullable = true)
     })
   }
 
   protected def getContributionsColSchema(): Seq[StructField] = {
     if (getWithContributions()) {
-      Seq(StructField(getContributionsCol(), getContributionsColSchemaInternal(), nullable = true))
+      val names = $(outputSubColsContributions)
+      val types = $(outputSubTypesContributions)
+      Seq(StructField(getContributionsCol(), getContributionsColSchemaInternal(names, types), nullable = true))
+    } else {
+      Seq.empty[StructField]
+    }
+  }
+
+  protected def getInternalContributionsColSchema(): Seq[StructField] = {
+    if (getWithInternalContributions()) {
+      val names = $(outputSubColsInternalContributions)
+      val types = $(outputSubTypesInternalContributions)
+      Seq(StructField(getInternalContributionsCol(), getContributionsColSchemaInternal(names, types), nullable = true))
     } else {
       Seq.empty[StructField]
     }
   }
 
   private def getTransportSchema() = {
-    StructType(getPredictionColSchema() ++ getContributionsColSchema())
+    StructType(getPredictionColSchema() ++ getContributionsColSchema() ++ getInternalContributionsColSchema())
   }
 
   def selectPredictionUDF(column: String): Column = {
@@ -262,7 +325,8 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    StructType(schema.fields ++ getPredictionColSchema() ++ getContributionsColSchema())
+    StructType(
+      schema.fields ++ getPredictionColSchema() ++ getContributionsColSchema() ++ getInternalContributionsColSchema())
   }
 }
 
@@ -274,6 +338,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     setGeneralParameterrs(model, settings)
     setPredictionPipelineParameterrs(model)
     setContributionPipelineParameters(model, settings)
+    setInternalContributionPipelineParameters(model, settings)
 
     model
   }
@@ -281,6 +346,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
   private def setGeneralParameterrs(model: H2OMOJOPipelineModel, settings: H2OMOJOSettings): Any = {
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     model.set(model.withContributions, settings.withContributions)
+    model.set(model.withInternalContributions, settings.withInternalContributions)
   }
 
   private def setPredictionPipelineParameterrs(model: H2OMOJOPipelineModel) = {
@@ -308,6 +374,21 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
       model.set(model.outputSubTypesContributions, Array[String]())
     }
   }
+
+  private def setInternalContributionPipelineParameters(model: H2OMOJOPipelineModel, settings: H2OMOJOSettings): Any = {
+    if (settings.withInternalContributions) {
+      val config = PipelineConfig.builder().enableShap(true)
+      val pipelineMojoInternalContributions = MojoPipelineService.loadPipeline(model.getMojo(), config)
+      val outputColsContributions = pipelineMojoInternalContributions.getOutputMeta.getColumns.asScala
+      model.set(model.outputSubColsInternalContributions, outputColsContributions.map(_.getColumnName).toArray)
+      model.set(
+        model.outputSubTypesInternalContributions,
+        outputColsContributions.map(_.getColumnType.toString).toArray)
+    } else {
+      model.set(model.outputSubColsInternalContributions, Array[String]())
+      model.set(model.outputSubTypesInternalContributions, Array[String]())
+    }
+  }
 }
 
 private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline] {
@@ -315,6 +396,9 @@ private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline] {
     val configBuilder = PipelineConfig.builder()
     if (configMap.contains("enableShapOriginal") && configMap("enableShapOriginal").asInstanceOf[Boolean]) {
       configBuilder.enableShapOriginal(true)
+    }
+    if (configMap.contains("enableShap") && configMap("enableShap").asInstanceOf[Boolean]) {
+      configBuilder.enableShap(true)
     }
     val config = configBuilder.build()
     MojoPipelineService.loadPipeline(mojo, config)
