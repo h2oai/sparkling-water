@@ -126,22 +126,48 @@ def testMojoPipelineProtoBackendWithoutError(spark):
     prediction.collect()
 
 
-def test_h2o_mojo_pipeline_contributions(spark):
-    test_folder = "daiMojoShapley"
-    mojo_path = "file://" + os.path.abspath("../ml/src/test/resources/" + test_folder + "/pipeline.mojo")
-    data_path = "file://" + os.path.abspath("../ml/src/test/resources/" + test_folder + "/example.csv")
+def getMojoPath(testFolder):
+    return "file://" + os.path.abspath("../ml/src/test/resources/" + testFolder + "/pipeline.mojo")
+
+
+def getDataPath(testFolder):
+    return "file://" + os.path.abspath("../ml/src/test/resources/" + testFolder + "/example.csv")
+
+
+def testMojoPipelineContributions(spark):
+    testFolder = "daiMojoShapley"
+    mojoPath = getMojoPath(testFolder)
+    dataPath = getDataPath(testFolder)
 
     # request pipeline to provide contribution (SHAP) values
     settings = H2OMOJOSettings(withContributions=True)
-    mojo = H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
+    mojo = H2OMOJOPipelineModel.createFromMojo(mojoPath, settings)
 
-    df = spark.read.csv(data_path, header=True, inferSchema=True)
+    df = spark.read.csv(dataPath, header=True, inferSchema=True)
     contributions = mojo.transform(df).select("contributions.*")
 
     featureColumns = 4
     classes = 3
     bias = 1
     contribution_columns = classes * (featureColumns + bias)
+
+    assert contribution_columns == len(contributions.columns)
+    assert all(c.startswith("contrib_") for c in contributions.columns)
+
+
+def testMojoPipelineInternalContributions(spark):
+    testFolder = "daiMojoShapleyInternal"
+    mojoPath = getMojoPath(testFolder)
+    dataPath = getDataPath(testFolder)
+
+    # request pipeline to provide internal contribution (SHAP) values
+    settings = H2OMOJOSettings(withInternalContributions=True)
+    mojo = H2OMOJOPipelineModel.createFromMojo(mojoPath, settings)
+
+    df = spark.read.csv(dataPath, header=True, inferSchema=True)
+    contributions = mojo.transform(df).select("internal_contributions.*")
+
+    contribution_columns = 115
 
     assert contribution_columns == len(contributions.columns)
     assert all(c.startswith("contrib_") for c in contributions.columns)
