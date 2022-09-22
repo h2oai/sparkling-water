@@ -58,6 +58,7 @@ class H2OExtendedIsolationForestTestSuite extends FunSuite with Matchers with Sh
       "prediction")
     val predictions = score.select("prediction").collect()
     predictions.head should not equal predictions.tail.head
+    score.unpersist()
   }
 
   test("H2OExtendedIsolationForest Pipeline serialization and deserialization") {
