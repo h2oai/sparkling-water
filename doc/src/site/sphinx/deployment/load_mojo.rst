@@ -281,6 +281,7 @@ The list of specific MOJO models:
 - ``H2ODeepLearningMOJOModel``
 - ``H2OKMeansMOJOModel``
 - ``H2OIsolationForestMOJOModel``
+- ``H2OExtendedIsolationForestMOJOModel``
 - ``H2OCoxPHMOJOModel``
 - ``H2OTargetEncoderMOJOModel``
 - ``H2OAutoEncoderMOJOModel``
