@@ -1,6 +1,40 @@
 Change Log
 ==========
 
+v3.38.0.1-1 (2022-09-22)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.1-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.1-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.1-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.1-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.1-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.1-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.1-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2751 <https://0xdata.atlassian.net/browse/SW-2751>`__ - Remove Deprecated Parameters on H2ODeepLearning
+   -  `SW-2750 <https://0xdata.atlassian.net/browse/SW-2750>`__ - Upgrade to H2O 3.38.0.1
+   -  `SW-2714 <https://0xdata.atlassian.net/browse/SW-2714>`__ - Improve ipv6 handling
+   -  `SW-2199 <https://0xdata.atlassian.net/browse/SW-2199>`__ - Remove code related to H2OClient from SW codebase
+
+-  New Feature
+
+   -  `SW-2749 <https://0xdata.atlassian.net/browse/SW-2749>`__ - Add Ability to Calculate Contributions for Transformed Features On H2OMOJOPipelineModel
+   -  `SW-2737 <https://0xdata.atlassian.net/browse/SW-2737>`__ - Add Extended Isolation Forest to SW API
+
+-  Engineering Story
+
+   -  `SW-2746 <https://0xdata.atlassian.net/browse/SW-2746>`__ - Fix GBM MOJO Test in Python
+   -  `SW-2745 <https://0xdata.atlassian.net/browse/SW-2745>`__ - Remove Support for Spark 2.2
+   -  `SW-2739 <https://0xdata.atlassian.net/browse/SW-2739>`__ - Update Number of Parameters in GBM MOJO Test
+   -  `SW-2675 <https://0xdata.atlassian.net/browse/SW-2675>`__ - Upgrade Sparkling Water Snapshot Version to 3.38.0.1-1-SNAPSHOT
+
+-  Bug
+
+   -  `SW-2734 <https://0xdata.atlassian.net/browse/SW-2734>`__ - Fix Time Conversion Tests in Python API
+
 v3.36.1.5-1 (2022-09-16)
 ------------------------
 Downloads:
