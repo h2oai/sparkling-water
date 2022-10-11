@@ -197,6 +197,34 @@ class H2OTypeConverters(object):
         return convert
 
     @staticmethod
+    def toNullableListBoolean():
+        def convert(value):
+            if value is None:
+                return None
+            else:
+                return H2OTypeConverters.toListBoolean()(value)
+
+        return convert
+
+    @staticmethod
+    def toListBoolean():
+        def convert(value):
+            if value is None:
+                raise TypeError("None is not allowed.")
+            else:
+                valueForConversion = value
+                if isinstance(value, JavaObject):
+                    valueForConversion = list(value)
+
+                if TypeConverters._can_convert_to_list(valueForConversion):
+                    valueForConversion = TypeConverters.toList(valueForConversion)
+                    if all(map(lambda v: type(v) == bool, valueForConversion)):
+                        return [bool(v) for v in valueForConversion]
+                raise TypeError("Could not convert %s to list of booleans" % valueForConversion)
+
+        return convert
+
+    @staticmethod
     def toNullableListInt():
         def convert(value):
             if value is None:
