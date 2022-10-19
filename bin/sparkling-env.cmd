@@ -11,7 +11,7 @@ for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /
 for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /r "^h2oBuild="') do (@set H2O_BUILD=%%i)
 for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /r "^h2oMajorName="') do (@set H2O_NAME=%%i)
 for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /r "^sparkVersion="') do (@set SPARK_VERSION=%%i)
-for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /r "^scalaBaseVersion="') do (@set SCALA_PARSED_VERSION=%%i)
+for /f "tokens=2 delims==" %%i in ('TYPE %TOPDIR%\gradle.properties ^| findstr /r "^scalaVersion="') do (@set SCALA_PARSED_VERSION=%%i)
 rem Ensure that scala version contains only major version
 for /f "tokens=1,2 delims=." %%j in ("%SCALA_PARSED_VERSION%") do (@set SCALA_VERSION=%%j.%%k)
 for /f "tokens=1,2 delims=." %%i in ("%SPARK_VERSION%") do (@set SPARK_MAJOR_VERSION=%%i.%%j)
@@ -19,9 +19,9 @@ for /f "tokens=1 delims=-" %%i in ("%VERSION%") do (@set VERSION_WITHOUT_SNAPSHO
 
 rem Fat jar for this distribution
 set FAT_JAR=sparkling-water-assembly_%SCALA_VERSION%-%VERSION%-all.jar
-set FAT_JAR_FILE=%TOPDIR%\assembly\build\libs\%FAT_JAR%
+set FAT_JAR_FILE=%TOPDIR%\jars\%FAT_JAR%
 set PY_ZIP=h2o_pysparkling_%SPARK_MAJOR_VERSION%-%VERSION%.zip
-set PY_ZIP_FILE=%TOPDIR%\py\build\dist\%PY_ZIP%
+set PY_ZIP_FILE=%TOPDIR%\py\%PY_ZIP%
 
 rem Setup loging and output
 
