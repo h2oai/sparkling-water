@@ -99,13 +99,14 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
       .setSeed(1)
       .setLambdaValue(Array(0.5))
       .setGamCols(Array(Array("PSA"), Array("AGE")))
+      .setSplinesNonNegative(Array(true, false))
       .setNumKnots(Array(5, 5))
       .setBs(Array(1, 1))
       .setScale(Array(.5, .5))
       .setSplineOrders(Array(-1, -1))
     val mojo = algorithm.fit(dataset)
 
-    compareParameterValues(algorithm, mojo, Set("getFeaturesCols"))
+    compareParameterValues(algorithm, mojo, Set("getFeaturesCols", "getSplinesNonNegative"))
   }
 
   test("Test MOJO parameters on Deep Learning") {

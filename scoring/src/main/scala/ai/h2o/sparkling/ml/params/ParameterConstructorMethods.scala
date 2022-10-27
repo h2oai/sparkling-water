@@ -69,6 +69,10 @@ trait ParameterConstructorMethods extends Params {
     new NullableDoubleArrayArrayParam(this, name, doc)
   }
 
+  protected def nullableBooleanArrayParam(name: String, doc: String): NullableBooleanArrayParam = {
+    new NullableBooleanArrayParam(this, name, doc)
+  }
+
   protected def nullableIntArrayParam(name: String, doc: String): NullableIntArrayParam = {
     new NullableIntArrayParam(this, name, doc)
   }
