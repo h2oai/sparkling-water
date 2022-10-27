@@ -53,9 +53,10 @@ def testGLMParameters(prostateDataset):
 def testGAMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
     algorithm = H2OGAM(seed=1, labelCol="CAPSULE", gamCols=[["PSA"], ["AGE"]], numKnots=[5, 5], lambdaValue=[0.5],
-                       featuresCols=features, bs=[1, 1], scale=[0.5, 0.5], splineOrders=[-1, -1])
+                       featuresCols=features, bs=[1, 1], scale=[0.5, 0.5], splineOrders=[-1, -1],
+                       splinesNonNegative=[True, False])
     model = algorithm.fit(prostateDataset)
-    compareParameterValues(algorithm, model, ["getFeaturesCols"])
+    compareParameterValues(algorithm, model, ["getFeaturesCols", "getSplinesNonNegative"])
 
 
 def testDeepLearningParameters(prostateDataset):
