@@ -1,6 +1,29 @@
 Change Log
 ==========
 
+v3.38.0.2-1 (2022-11-01)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.2-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.2-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.2-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.2-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.2-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.2-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.2-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.2-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.2-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2756 <https://0xdata.atlassian.net/browse/SW-2756>`__ - Upgrade to H2O 3.38.0.2
+
+-  New Feature
+
+   -  `SW-2754 <https://0xdata.atlassian.net/browse/SW-2754>`__ - Expose splinesNonNegative parameter on H2OGAM
+
+-  Bug
+
+   -  `SW-2732 <https://0xdata.atlassian.net/browse/SW-2732>`__ - SW cannot be started in Windows environment
+
 v3.38.0.1-1 (2022-09-22)
 ------------------------
 Downloads:
