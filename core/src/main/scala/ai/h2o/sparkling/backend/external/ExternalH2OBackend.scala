@@ -19,7 +19,6 @@ package ai.h2o.sparkling.backend.external
 
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.Properties
-
 import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, SharedBackendUtils, ShellUtils}
 import ai.h2o.sparkling.backend.{SharedBackendConf, SparklingBackend}

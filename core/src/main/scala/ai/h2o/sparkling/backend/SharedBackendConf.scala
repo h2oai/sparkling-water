@@ -69,6 +69,8 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def kerberosLogin: Boolean = sparkConf.getBoolean(PROP_KERBEROS_LOGIN._1, PROP_KERBEROS_LOGIN._2)
 
+  def pamLogin: Boolean = sparkConf.getBoolean(PROP_PAM_LOGIN._1, PROP_PAM_LOGIN._2)
+
   def loginConf: Option[String] = sparkConf.getOption(PROP_LOGIN_CONF._1)
 
   def userName: Option[String] = sparkConf.getOption(PROP_USER_NAME._1)
@@ -233,6 +235,10 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setKerberosLoginEnabled(): H2OConf = set(PROP_KERBEROS_LOGIN._1, value = true)
 
   def setKerberosLoginDisabled(): H2OConf = set(PROP_KERBEROS_LOGIN._1, value = false)
+
+  def setPamLoginEnabled(): H2OConf = set(PROP_PAM_LOGIN._1, value = true)
+
+  def setPamLoginDisabled(): H2OConf = set(PROP_PAM_LOGIN._1, value = false)
 
   def setLoginConf(filePath: String): H2OConf = set(PROP_LOGIN_CONF._1, filePath)
 
@@ -476,6 +482,13 @@ object SharedBackendConf {
     """setKerberosLoginEnabled()
       |setKerberosLoginDisabled()""".stripMargin,
     "Enable Kerberos login.")
+
+  val PROP_PAM_LOGIN: BooleanOption = (
+    "spark.ext.h2o.pam.login",
+    false,
+    """setPamLoginEnabled()
+      |setPamLoginDisabled()""".stripMargin,
+    "Enable PAM login. PAM has to be configured on the system where Spark driver is running.")
 
   val PROP_LOGIN_CONF: OptionOption =
     ("spark.ext.h2o.login.conf", None, "setLoginConf(String)", "Login configuration file.")

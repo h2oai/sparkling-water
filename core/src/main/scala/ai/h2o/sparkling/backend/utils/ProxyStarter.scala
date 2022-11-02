@@ -38,7 +38,7 @@ private[sparkling] object ProxyStarter extends Logging {
       try {
         val config = NetworkInit.webServerConfig(confToH2OArgs(conf))
         val h2oHttpView = new H2OHttpViewImpl(config)
-        val helper = new SparklingWaterJettyHelper(hc, conf, h2oHttpView)
+        val helper = new SparklingWaterJettyHelper(hc, conf, conf.getCredentials(), h2oHttpView)
         port = findNextFreeFlowPort(conf.clientWebPort, port)
         server = helper.startServer(port)
         return new URI(
@@ -60,6 +60,7 @@ private[sparkling] object ProxyStarter extends Logging {
     args.context_path = conf.contextPath.orNull
     args.hash_login = conf.hashLogin
     args.ldap_login = conf.ldapLogin
+    args.pam_login = conf.pamLogin
     args.kerberos_login = conf.kerberosLogin
     args.embedded = true
     args

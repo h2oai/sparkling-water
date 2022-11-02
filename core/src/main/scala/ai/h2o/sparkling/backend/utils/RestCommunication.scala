@@ -236,17 +236,6 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     }
   }
 
-  private def getCredentials(conf: H2OConf): Option[String] = {
-    val username = conf.userName
-    val password = conf.password
-    if (username.isDefined && password.isDefined) {
-      val userpass = s"${username.get}:${password.get}"
-      Some("Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary(userpass.getBytes))
-    } else {
-      None
-    }
-  }
-
   private def urlToString(url: URL) = s"${url.getProtocol}://${url.getHost}:${url.getPort}"
 
   private def openUrlConnection(url: URL, conf: H2OConf): HttpURLConnection = {
@@ -333,7 +322,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       params: Map[String, Any],
       encodeParamsAsJson: Boolean = false,
       file: Option[String]): Unit = {
-    getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
+    conf.getCredentials().foreach(c => connection.setRequestProperty("Authorization", c.toBasicAuth))
     if (params.nonEmpty && file.isEmpty && requestType == "POST") {
       if (encodeParamsAsJson) {
         connection.setRequestProperty("Content-Type", "application/json")
@@ -408,7 +397,8 @@ trait RestCommunication extends Logging with RestEncodingUtils {
         throw new RestApiUnauthorisedException(
           s"""H2O node ${urlToString(url)} could not be reached because the client is not authorized.
            |Please make sure you have passed valid credentials to the client.
-           |Status code $statusCode : ${connection.getResponseMessage()}.""".stripMargin)
+           |Status code $statusCode : ${connection.getResponseMessage()}.
+           |Server error: ${getServerError(connection)}""".stripMargin)
       case _ => throw new RestApiCommunicationException(s"""H2O node ${urlToString(url)} responded with
            |Status code: $statusCode : ${connection.getResponseMessage()}
            |Server error: ${getServerError(connection)}""".stripMargin)

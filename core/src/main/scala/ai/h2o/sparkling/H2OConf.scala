@@ -23,6 +23,9 @@ import ai.h2o.sparkling.repl.H2OInterpreter
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkConf
 import org.apache.spark.expose.Logging
+import org.apache.spark.sql.SparkSession
+
+import java.io.{File, FileWriter}
 
 /**
   * Configuration holder which is representing
@@ -43,6 +46,7 @@ class H2OConf(val sparkConf: SparkConf)
   /** Copy this object */
   override def clone: H2OConf = {
     val conf = new H2OConf(sparkConf)
+    conf.generatedCredentials = this.generatedCredentials
     conf.setAll(getAll)
     conf
   }
@@ -111,6 +115,79 @@ class H2OConf(val sparkConf: SparkConf)
       "https"
     } else {
       "http"
+    }
+  }
+
+  /** Credentials used for the communication between proxy and h2o leader node. */
+  private[sparkling] def getCredentials(): Option[H2OCredentials] = {
+    if (hashLogin) {
+      if (!this.userName.isDefined) {
+        throw new IllegalStateException(
+          "Hash login is enabled, but the configuration property 'spark.ext.h2o.user.name' is not set.")
+      }
+      if (!this.password.isDefined) {
+        throw new IllegalStateException(
+          "Hash login is enabled, but the configuration property 'spark.ext.h2o.password' is not set.")
+      }
+    }
+
+    if (this.userName.isDefined && this.password.isDefined) {
+      val username = this.userName.get
+      val password = this.password.get
+      Some(new H2OCredentials(username, password))
+    } else if (this.pamLogin) {
+      Some(resolveGeneratedCredentials())
+    } else {
+      None
+    }
+  }
+
+  private var generatedCredentials: H2OCredentials = null
+
+  private var generatedLoginConfFile: String = null
+
+  private[sparkling] def getGeneratedLoginConfFile(): Option[String] = Option(generatedLoginConfFile)
+
+  def resolveGeneratedCredentials(): H2OCredentials = {
+    if (generatedCredentials == null) {
+      val username = System.getProperty("user.name")
+      val password = water.network.SecurityUtils.passwordGenerator(16)
+      generatedCredentials = new H2OCredentials(username, password)
+      val content = generatedCredentials.toHashFileEntry()
+      val tmpFile = File.createTempFile("sparkling-water-", "-hash-login.conf")
+      tmpFile.deleteOnExit()
+      val writer = new FileWriter(tmpFile);
+      writer.write(content)
+      writer.flush()
+      writer.close()
+      generatedLoginConfFile = tmpFile.getAbsolutePath
+      SparkSession.active.sparkContext.addFile(generatedLoginConfFile)
+    }
+    generatedCredentials
+  }
+
+  protected def resolveProxyCredentials(conf: H2OConf): Option[H2OCredentials] = {
+    if (conf.hashLogin) {
+      if (!conf.userName.isDefined) {
+        throw new IllegalStateException(
+          "Hash login is enabled, but the configuration property 'spark.ext.h2o.user.name' is not set.")
+      }
+      if (!conf.password.isDefined) {
+        throw new IllegalStateException(
+          "Hash login is enabled, but the configuration property 'spark.ext.h2o.password' is not set.")
+      }
+    }
+
+    if (conf.userName.isDefined && conf.password.isDefined) {
+      val username = conf.userName.get
+      val password = conf.password.get
+      Some(new H2OCredentials(username, password))
+    } else if (conf.pamLogin) {
+      val username = System.getProperty("user.name")
+      val password = water.network.SecurityUtils.passwordGenerator(16)
+      Some(new H2OCredentials(username, password))
+    } else {
+      None
     }
   }
 }
