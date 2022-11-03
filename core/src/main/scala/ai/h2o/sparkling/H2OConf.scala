@@ -161,7 +161,7 @@ class H2OConf(val sparkConf: SparkConf)
       writer.flush()
       writer.close()
       generatedLoginConfFile = tmpFile.getAbsolutePath
-      SparkSession.active.sparkContext.addFile(generatedLoginConfFile)
+      SparkSessionUtils.active.sparkContext.addFile(generatedLoginConfFile)
     }
     generatedCredentials
   }
