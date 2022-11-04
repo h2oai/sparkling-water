@@ -38,8 +38,6 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")'
                 """
 
-  runCommand "echo 'jenkins:jenkins' | chpasswd"
-
   user("jenkins")
   getAllFullSparkVersions().each { version ->
     if (version > "3.3") {
