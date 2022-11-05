@@ -65,10 +65,11 @@ class PamAuthentificationTestSuite extends FunSuite with SharedH2OTestContext {
     RestApiUtils.getPingInfo(conf)
   }
 
-  test("Proxy is not accessible with generated internal credentials") {
-    // when pam enabled : SW generates credentials for communication with h2o cluster via hash login
+  test("Proxy is not accessible with invalid credentials") {
     val conf = hc.getConf
     conf.setH2OCluster(hc.flowIp, hc.flowPort)
+    conf.setUserName("jenkins")
+    conf.setPassword("invalid")
     intercept[RestApiUnauthorisedException](RestApiUtils.getPingInfo(conf))
   }
 }

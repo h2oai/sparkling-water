@@ -23,7 +23,6 @@ import ai.h2o.sparkling.repl.H2OInterpreter
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkConf
 import org.apache.spark.expose.Logging
-import org.apache.spark.sql.SparkSession
 
 import java.io.{File, FileWriter}
 
