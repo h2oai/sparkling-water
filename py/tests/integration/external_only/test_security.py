@@ -76,13 +76,13 @@ def testPamAuth(spark):
     conf.setCloudName("test-cluster")
     conf.setClusterInfoFile("build/notify_file.txt")
     conf.setLoginConf("build/login.conf")
-    conf.setUserName("jenkins")
-    conf.setPassword("wrong_password")
-
-    with pytest.raises(Exception):
-        H2OContext.getOrCreate(conf)
-    # No app should be running
-    assert noYarnApps()
+#    conf.setUserName("jenkins")
+#    conf.setPassword("wrong_password")
+#
+#    with pytest.raises(Exception):
+#        H2OContext.getOrCreate(conf)
+#    # No app should be running
+#    assert noYarnApps()
     conf.setUserName("jenkins")
     conf.setPassword("jenkins")
     context = H2OContext.getOrCreate(conf)
