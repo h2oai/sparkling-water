@@ -64,13 +64,29 @@ def testAuthFailsWhenUsernamePasswordNotSpecified(spark):
     context.stop()
 
 
-def testPamAuth(spark):
+def createPamLoginFile():
     with open('build/login.conf', 'w') as f:
         f.write('pamloginmodule {\n')
         f.write('     de.codedo.jaas.PamLoginModule required\n')
         f.write('     service = common-auth;\n')
         f.write('};\n')
 
+
+def testPamAuthWithCorrectCredentials(spark):
+    createPamLoginFile()
+    conf = createH2OConf()
+    conf.setPamLoginEnabled()
+    conf.setCloudName("test-cluster")
+    conf.setClusterInfoFile("build/notify_file.txt")
+    conf.setLoginConf("build/login.conf")
+    conf.setUserName("jenkins")
+    conf.setPassword("jenkins")
+    context = H2OContext.getOrCreate(conf)
+    context.stop()
+
+
+def testPamAuthWithWrongCredentials(spark):
+    createPamLoginFile()
     conf = createH2OConf()
     conf.setPamLoginEnabled()
     conf.setCloudName("test-cluster")
@@ -81,9 +97,3 @@ def testPamAuth(spark):
 
     with pytest.raises(Exception):
         H2OContext.getOrCreate(conf)
-    # No app should be running
-    assert noYarnApps()
-    conf.setUserName("jenkins")
-    conf.setPassword("jenkins")
-    context = H2OContext.getOrCreate(conf)
-    context.stop()
