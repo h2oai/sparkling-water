@@ -97,3 +97,5 @@ def testPamAuthWithWrongCredentials(spark):
 
     with pytest.raises(Exception):
         H2OContext.getOrCreate(conf)
+    assert specificNumberOfYarnApps(1)
+    killAllYarnApps()
