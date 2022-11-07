@@ -60,6 +60,7 @@ class PamAuthentificationTestSuite extends FunSuite with SharedH2OTestContext {
   test("Proxy is accessible with correct credentials") {
     val conf = hc.getConf
     conf.setH2OCluster(hc.flowIp, hc.flowPort)
+    conf.setPamLoginDisabled() // Disabling Pam to avoid credentials generation
     conf.setUserName("jenkins")
     conf.setPassword("jenkins")
     RestApiUtils.getPingInfo(conf)
@@ -68,6 +69,7 @@ class PamAuthentificationTestSuite extends FunSuite with SharedH2OTestContext {
   test("Proxy is not accessible with invalid credentials") {
     val conf = hc.getConf
     conf.setH2OCluster(hc.flowIp, hc.flowPort)
+    conf.setPamLoginDisabled() // Disabling Pam to avoid credentials generation
     conf.setUserName("jenkins")
     conf.setPassword("invalid")
     intercept[RestApiUnauthorisedException](RestApiUtils.getPingInfo(conf))

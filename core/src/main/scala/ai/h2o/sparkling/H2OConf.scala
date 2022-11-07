@@ -130,12 +130,12 @@ class H2OConf(val sparkConf: SparkConf)
       }
     }
 
-    if (this.userName.isDefined && this.password.isDefined) {
+    if (this.pamLogin) {
+      Some(resolveGeneratedCredentials())
+    } else if (this.userName.isDefined && this.password.isDefined) {
       val username = this.userName.get
       val password = this.password.get
       Some(new H2OCredentials(username, password))
-    } else if (this.pamLogin) {
-      Some(resolveGeneratedCredentials())
     } else {
       None
     }

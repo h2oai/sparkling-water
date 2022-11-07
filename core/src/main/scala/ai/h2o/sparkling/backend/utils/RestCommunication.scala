@@ -323,6 +323,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       encodeParamsAsJson: Boolean = false,
       file: Option[String]): Unit = {
     conf.getCredentials().foreach(c => connection.setRequestProperty("Authorization", c.toBasicAuth))
+
     if (params.nonEmpty && file.isEmpty && requestType == "POST") {
       if (encodeParamsAsJson) {
         connection.setRequestProperty("Content-Type", "application/json")
