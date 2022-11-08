@@ -42,7 +42,7 @@ def noYarnApps():
 
 def specificNumberOfYarnApps(num):
     exp = "Total number of applications (application-types: [], states: [SUBMITTED, ACCEPTED, RUNNING] and tags: []):"
-    exp += num
+    exp += str(num)
     return exp in listYarnApps()
 
 
