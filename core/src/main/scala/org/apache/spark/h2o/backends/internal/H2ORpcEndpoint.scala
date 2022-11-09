@@ -18,7 +18,6 @@
 package org.apache.spark.h2o.backends.internal
 
 import java.net.InetAddress
-
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.NodeDesc
 import org.apache.spark.SparkEnv

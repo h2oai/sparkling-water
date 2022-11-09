@@ -18,14 +18,13 @@
 package ai.h2o.sparkling
 
 import java.util.concurrent.atomic.AtomicReference
-
 import ai.h2o.sparkling.backend._
 import ai.h2o.sparkling.backend.converters._
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException, WrongSparkVersion}
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import javax.net.ssl.{HostnameVerifier, HttpsURLConnection, SSLSession}
+
 import org.apache.spark.SparkContext
 import org.apache.spark.expose.{Logging, Utils}
 import org.apache.spark.h2o.SparkSpecificUtils

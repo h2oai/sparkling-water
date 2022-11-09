@@ -22,19 +22,26 @@ import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesServlet
 import ai.h2o.sparkling.backend.api.options.OptionsServlet
 import ai.h2o.sparkling.backend.api.rdds.RDDsServlet
 import ai.h2o.sparkling.backend.api.scalainterpreter.ScalaInterpreterServlet
-import ai.h2o.sparkling.{H2OConf, H2OContext}
+import ai.h2o.sparkling.{H2OConf, H2OContext, H2OCredentials}
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.proxy.ProxyServlet.Transparent
 import org.eclipse.jetty.security.SecurityHandler
-import org.eclipse.jetty.server.Server
+
+import org.eclipse.jetty.client.api.Request
+import org.eclipse.jetty.server.{Server}
 import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler, ServletHolder, ServletMapping}
 import org.eclipse.jetty.util.ssl.SslContextFactory
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler
 import water.webserver.iface.{H2OHttpView, LoginType}
 
 import java.net.InetSocketAddress
+import javax.servlet.http.HttpServletRequest
 
-class SparklingWaterJettyHelper(hc: H2OContext, conf: H2OConf, h2oHttpView: H2OHttpView)
+class SparklingWaterJettyHelper(
+    hc: H2OContext,
+    conf: H2OConf,
+    credentials: Option[H2OCredentials],
+    h2oHttpView: H2OHttpView)
   extends Jetty9Helper(h2oHttpView) {
 
   override def createServletContextHandler(): ServletContextHandler = {
@@ -54,7 +61,7 @@ class SparklingWaterJettyHelper(hc: H2OContext, conf: H2OConf, h2oHttpView: H2OH
 
   private def proxyContextHandler(conf: H2OConf): ServletHandler = {
     val handler = new ServletHandler()
-    val holder = new ServletHolder(new H2OFlowProxyServlet(conf))
+    val holder = new ServletHolder(new H2OFlowProxyServlet(conf, credentials))
     handler.addServlet(holder)
     val m = new ServletMapping()
     m.setServletName(holder.getName)
@@ -69,7 +76,7 @@ class SparklingWaterJettyHelper(hc: H2OContext, conf: H2OConf, h2oHttpView: H2OH
     handler
   }
 
-  class H2OFlowProxyServlet(val conf: H2OConf) extends Transparent {
+  class H2OFlowProxyServlet(val conf: H2OConf, val credentials: Option[H2OCredentials]) extends Transparent {
     override def newHttpClient(): HttpClient = {
       val client = if (conf.jks.isDefined) {
         val sslFactory = createSSLContextFactory(conf)
@@ -79,6 +86,13 @@ class SparklingWaterJettyHelper(hc: H2OContext, conf: H2OConf, h2oHttpView: H2OH
       }
       client.setScheduler(new ScheduledExecutorScheduler(null, true))
       client
+    }
+
+    override protected def addProxyHeaders(clientRequest: HttpServletRequest, proxyRequest: Request) = {
+      credentials.foreach { c =>
+        proxyRequest.getHeaders().remove("Authorization");
+        proxyRequest.header("Authorization", c.toBasicAuth)
+      }
     }
   }
 

@@ -27,12 +27,22 @@ def createH2OConf():
     return conf
 
 
+def killAllYarnApps():
+    command = "yarn application --list | awk '{print $1}' | grep application | xargs yarn application -kill"
+    return str(subprocess.check_output(command, shell=True))
+
+
 def listYarnApps():
     return str(subprocess.check_output("yarn application -list", shell=True))
 
 
 def noYarnApps():
-    exp = "Total number of applications (application-types: [], states: [SUBMITTED, ACCEPTED, RUNNING] and tags: []):0"
+    return specificNumberOfYarnApps(0)
+
+
+def specificNumberOfYarnApps(num):
+    exp = "Total number of applications (application-types: [], states: [SUBMITTED, ACCEPTED, RUNNING] and tags: []):"
+    exp += str(num)
     return exp in listYarnApps()
 
 
