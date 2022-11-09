@@ -349,6 +349,7 @@ def integTests() {
             if (config.runIntegTests.toBoolean()) {
                 try {
                     sh """
+                    echo 'jenkins:jenkins' | sudo chpasswd
                     ${getGradleCommand(config)} integTest -x :sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                     """
                 } finally {
@@ -370,6 +371,7 @@ def pyIntegTests() {
             if (config.runPyIntegTests.toBoolean()) {
                 try {
                     sh """
+                    echo 'jenkins:jenkins' | sudo chpasswd
                     ${getGradleCommand(config)} sparkling-water-py:integTest -PpythonPath=/home/jenkins/miniconda/envs/sw_env_python${pythonVersion}/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                     """
                 } finally {

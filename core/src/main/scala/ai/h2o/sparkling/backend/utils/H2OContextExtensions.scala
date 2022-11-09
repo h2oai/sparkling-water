@@ -20,7 +20,6 @@ package ai.h2o.sparkling.backend.utils
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
-
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiCommunicationException, RestApiException}
 import ai.h2o.sparkling.backend.external.{ExternalBackendConf, K8sExternalBackendClient}
 import ai.h2o.sparkling.backend.internal.InternalBackendConf
