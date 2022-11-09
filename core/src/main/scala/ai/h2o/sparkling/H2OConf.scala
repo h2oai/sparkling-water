@@ -164,31 +164,6 @@ class H2OConf(val sparkConf: SparkConf)
     }
     generatedCredentials
   }
-
-  protected def resolveProxyCredentials(conf: H2OConf): Option[H2OCredentials] = {
-    if (conf.hashLogin) {
-      if (!conf.userName.isDefined) {
-        throw new IllegalStateException(
-          "Hash login is enabled, but the configuration property 'spark.ext.h2o.user.name' is not set.")
-      }
-      if (!conf.password.isDefined) {
-        throw new IllegalStateException(
-          "Hash login is enabled, but the configuration property 'spark.ext.h2o.password' is not set.")
-      }
-    }
-
-    if (conf.userName.isDefined && conf.password.isDefined) {
-      val username = conf.userName.get
-      val password = conf.password.get
-      Some(new H2OCredentials(username, password))
-    } else if (conf.pamLogin) {
-      val username = System.getProperty("user.name")
-      val password = water.network.SecurityUtils.passwordGenerator(16)
-      Some(new H2OCredentials(username, password))
-    } else {
-      None
-    }
-  }
 }
 
 object H2OConf extends Logging {
