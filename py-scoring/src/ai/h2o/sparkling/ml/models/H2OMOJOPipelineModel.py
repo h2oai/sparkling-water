@@ -42,3 +42,6 @@ class H2OMOJOPipelineModel(H2OAlgorithmMOJOModelBase):
 
     def getWithInternalContributions(self):
         return self._java_obj.getWithInternalContributions()
+
+    def getScoringBulkSize(self):
+        return self._java_obj.getScoringBulkSize()

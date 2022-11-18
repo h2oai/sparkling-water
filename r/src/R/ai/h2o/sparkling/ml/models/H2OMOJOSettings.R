@@ -30,7 +30,8 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                              withInternalContributions = "logical",
                                              withLeafNodeAssignments = "logical",
                                              withStageResults = "logical",
-                                             dataFrameSerializer = "character"),
+                                             dataFrameSerializer = "character",
+                                             scoringBulkSize = "integer"),
                                methods = list(
                                  initialize = function(predictionCol = "prediction",
                                                        detailedPredictionCol = "detailed_prediction",
@@ -41,7 +42,8 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                                        withInternalContributions = FALSE,
                                                        withLeafNodeAssignments = FALSE,
                                                        withStageResults = FALSE,
-                                                       dataFrameSerializer = "ai.h2o.sparkling.utils.JSONDataFrameSerializer") {
+                                                       dataFrameSerializer = "ai.h2o.sparkling.utils.JSONDataFrameSerializer",
+                                                       scoringBulkSize = 1000) {
                                    .self$predictionCol <- predictionCol
                                    .self$detailedPredictionCol <- detailedPredictionCol
                                    .self$convertUnknownCategoricalLevelsToNa <- convertUnknownCategoricalLevelsToNa
@@ -52,6 +54,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                    .self$withLeafNodeAssignments <- withLeafNodeAssignments
                                    .self$withStageResults <- withStageResults
                                    .self$dataFrameSerializer <- dataFrameSerializer
+                                   .self$scoringBulkSize <- scoringBulkSize
                                  },
                                  toJavaObject = function() {
                                    sc <- spark_connection_find()[[1]]
@@ -65,6 +68,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                               .self$withInternalContributions,
                                               .self$withLeafNodeAssignments,
                                               .self$withStageResults,
-                                              .self$dataFrameSerializer)
+                                              .self$dataFrameSerializer,
+                                              .self$scoringBulkSize)
                                  }
                                ))
