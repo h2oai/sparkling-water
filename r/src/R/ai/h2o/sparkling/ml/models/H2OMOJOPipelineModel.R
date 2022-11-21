@@ -30,5 +30,5 @@ H2OMOJOPipelineModel <- setRefClass("H2OMOJOPipelineModel", contains = ("H2OAlgo
   },
   getScoringBulkSize = function() {
     invoke(.self$jmojo, "getScoringBulkSize")
-  },
+  }
 ))
