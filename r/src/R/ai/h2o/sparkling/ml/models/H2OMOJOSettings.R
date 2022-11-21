@@ -43,7 +43,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                                        withLeafNodeAssignments = FALSE,
                                                        withStageResults = FALSE,
                                                        dataFrameSerializer = "ai.h2o.sparkling.utils.JSONDataFrameSerializer",
-                                                       scoringBulkSize = 1000) {
+                                                       scoringBulkSize = 1000L) {
                                    .self$predictionCol <- predictionCol
                                    .self$detailedPredictionCol <- detailedPredictionCol
                                    .self$convertUnknownCategoricalLevelsToNa <- convertUnknownCategoricalLevelsToNa
