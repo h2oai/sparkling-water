@@ -151,19 +151,6 @@ For more details regarding the internal or external backend, please see
 
 --------------
 
-Roadmap
--------
-- H2O-3 roadmap is located `here <https://github.com/h2oai/h2o-3#10-roadmap>`__.
-
-Sparkling Water 3.38.0.1-1 (Summer 2022)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- Expose `UpliftTrees` and ``ExtendedIsolationForest`` in Sparkling Water
-- Parity of parameters between the ``asH2OFrame`` function and the function ``h2o.H2OFrame`` in H2O-3
-- MOJO2 (Driverless AI) API improvements (Shapley values, ability to use arbitrary MOJO2 runtime library)
-- Add IBM Spectrum Conductor SW launch scripts to repo and add integration tests (using IBM SC docker images)
-- Add compatibility tests with different versions of AWS EMR
-- Redesign of K8s tests
-
 FAQ
 ---
 
