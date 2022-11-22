@@ -30,7 +30,8 @@ case class H2OMOJOSettings(
     withInternalContributions: Boolean = false,
     withLeafNodeAssignments: Boolean = false,
     withStageResults: Boolean = false,
-    dataFrameSerializer: String = DataFrameSerializer.default.getClass().getName())
+    dataFrameSerializer: String = DataFrameSerializer.default.getClass().getName(),
+    scoringBulkSize: Int = 1000)
 
 object H2OMOJOSettings {
   def default = H2OMOJOSettings()
