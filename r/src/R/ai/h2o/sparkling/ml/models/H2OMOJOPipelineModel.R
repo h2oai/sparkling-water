@@ -28,6 +28,9 @@ H2OMOJOPipelineModel <- setRefClass("H2OMOJOPipelineModel", contains = ("H2OAlgo
   getWithInternalContributions = function() {
     invoke(.self$jmojo, "getWithInternalContributions")
   },
+  getWithPredictionInterval = function() {
+    invoke(.self$jmojo, "getWithPredictionInterval")
+  },
   getScoringBulkSize = function() {
     invoke(.self$jmojo, "getScoringBulkSize")
   }
