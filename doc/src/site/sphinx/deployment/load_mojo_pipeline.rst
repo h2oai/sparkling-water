@@ -216,6 +216,7 @@ We can configure the output and format of predictions via the H2OMOJOSettings. T
 - ``withInternalContributions`` -  If enabled, it appends the `internal_contributions` column to the input dataset.
   The column contains sub-columns with Shapley values for the transformed features entering the models inside MOJO pipeline.
   By default, this option is disabled.
+- ``scoringBulkSize`` - A number of records passed at once to the underlying mojo2 runtime library.
 
 Troubleshooting
 ~~~~~~~~~~~~~~~

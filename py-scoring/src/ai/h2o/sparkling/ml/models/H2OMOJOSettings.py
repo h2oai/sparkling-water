@@ -31,7 +31,8 @@ class H2OMOJOSettings(JavaWrapper):
                  withInternalContributions=False,
                  withLeafNodeAssignments=False,
                  withStageResults=False,
-                 dataFrameSerializer="ai.h2o.sparkling.utils.JSONDataFrameSerializer"):
+                 dataFrameSerializer="ai.h2o.sparkling.utils.JSONDataFrameSerializer",
+                 scoringBulkSize=1000):
         self._java_obj = None
 
         assert isinstance(predictionCol, str)
@@ -44,6 +45,7 @@ class H2OMOJOSettings(JavaWrapper):
         assert isinstance(withLeafNodeAssignments, bool)
         assert isinstance(withStageResults, bool)
         assert isinstance(dataFrameSerializer, str)
+        assert isinstance(scoringBulkSize, int)
         self.predictionCol = predictionCol
         self.detailedPredictionCol = detailedPredictionCol
         self.convertUnknownCategoricalLevelsToNa = convertUnknownCategoricalLevelsToNa
@@ -54,6 +56,7 @@ class H2OMOJOSettings(JavaWrapper):
         self.withLeafNodeAssignments = withLeafNodeAssignments
         self.withStageResults = withStageResults
         self.dataFrameSerializer = dataFrameSerializer
+        self.scoringBulkSize = scoringBulkSize
 
     def toJavaObject(self):
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.models.H2OMOJOSettings",
@@ -66,7 +69,8 @@ class H2OMOJOSettings(JavaWrapper):
                                             self.withInternalContributions,
                                             self.withLeafNodeAssignments,
                                             self.withStageResults,
-                                            self.dataFrameSerializer)
+                                            self.dataFrameSerializer,
+                                            self.scoringBulkSize)
         return self._java_obj
 
     @staticmethod
