@@ -327,7 +327,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     model.setMojo(mojo, uid)
 
     setGeneralParameters(model, settings)
-    setPredictionPipelineParameters(model)
+    setPredictionPipelineParameters(model, settings)
     setContributionPipelineParameters(model, settings)
     setInternalContributionPipelineParameters(model, settings)
 
@@ -342,8 +342,9 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     model.set(model.scoringBulkSize, settings.scoringBulkSize)
   }
 
-  private def setPredictionPipelineParameters(model: H2OMOJOPipelineModel) = {
-    val pipelineMojo = MojoPipelineService.loadPipeline(model.getMojo(), PipelineConfig.DEFAULT)
+  private def setPredictionPipelineParameters(model: H2OMOJOPipelineModel, settings: H2OMOJOSettings) = {
+    val config = PipelineConfig.builder().withPredictionInterval(settings.withPredictionInterval)
+    val pipelineMojo = MojoPipelineService.loadPipeline(model.getMojo(), config)
     val inputCols = pipelineMojo.getInputMeta.getColumns.asScala
     val featureCols = inputCols.map(_.getColumnName).toArray
     model.set(model.featuresCols, featureCols)
