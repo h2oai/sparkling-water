@@ -79,6 +79,11 @@ class H2OMOJOPipelineModel(override val uid: String)
     "withInternalContributions",
     "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values of transformed features. Supported only by DriverlessAI MOJO models.")
 
+  protected final val withPredictionInterval = new BooleanParam(
+    this,
+    "withPredictionInterval",
+    "Enables or disables addition of prediction intervals under the prediction column. Supported only by DriverlessAI MOJO models.")
+
   protected final val scoringBulkSize = new IntParam(
     this,
     "scoringBulkSize",
@@ -92,9 +97,16 @@ class H2OMOJOPipelineModel(override val uid: String)
 
   def getWithInternalContributions(): Boolean = $(withInternalContributions)
 
+  def getWithPredictionInterval(): Boolean = $(withPredictionInterval)
+
   def getScoringBulkSize(): Int = $(scoringBulkSize)
 
-  @transient private lazy val mojoPipeline: MojoPipeline = H2OMOJOPipelineCache.getMojoBackend(uid, getMojo)
+  @transient private lazy val mojoPipeline: MojoPipeline = {
+    H2OMOJOPipelineCache.getMojoBackend(
+      uid,
+      getMojo,
+      Map[String, Any]("enablePredictionInterval" -> getWithPredictionInterval()))
+  }
 
   // As the mojoPipeline can't provide predictions and contributions at the same time, then
   // if contributions are requested, there is utilized a second pipeline
@@ -315,7 +327,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     model.setMojo(mojo, uid)
 
     setGeneralParameters(model, settings)
-    setPredictionPipelineParameters(model)
+    setPredictionPipelineParameters(model, settings)
     setContributionPipelineParameters(model, settings)
     setInternalContributionPipelineParameters(model, settings)
 
@@ -326,11 +338,13 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     model.set(model.withContributions, settings.withContributions)
     model.set(model.withInternalContributions, settings.withInternalContributions)
+    model.set(model.withPredictionInterval, settings.withPredictionInterval)
     model.set(model.scoringBulkSize, settings.scoringBulkSize)
   }
 
-  private def setPredictionPipelineParameters(model: H2OMOJOPipelineModel) = {
-    val pipelineMojo = MojoPipelineService.loadPipeline(model.getMojo(), PipelineConfig.DEFAULT)
+  private def setPredictionPipelineParameters(model: H2OMOJOPipelineModel, settings: H2OMOJOSettings) = {
+    val config = PipelineConfig.builder().withPredictionInterval(settings.withPredictionInterval)
+    val pipelineMojo = MojoPipelineService.loadPipeline(model.getMojo(), config)
     val inputCols = pipelineMojo.getInputMeta.getColumns.asScala
     val featureCols = inputCols.map(_.getColumnName).toArray
     model.set(model.featuresCols, featureCols)
@@ -379,6 +393,9 @@ private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline] {
     }
     if (configMap.contains("enableShap") && configMap("enableShap").asInstanceOf[Boolean]) {
       configBuilder.enableShap(true)
+    }
+    if (configMap.contains("enablePredictionInterval")) {
+      configBuilder.withPredictionInterval(configMap("enablePredictionInterval").asInstanceOf[Boolean])
     }
     val config = configBuilder.build()
     MojoPipelineService.loadPipeline(mojo, config)

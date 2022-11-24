@@ -395,4 +395,30 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
 
     transformedSchema should equal(outputSchema)
   }
+
+  test(
+    "Transform and transformSchema methods generates extra sub columns to prediction column if prediction intervals enabled") {
+    val mojoSettings = H2OMOJOSettings(withPredictionInterval = true)
+    val pipeline = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("daiPredictionInterval/pipeline.mojo"),
+      "prediction.interval.mojo",
+      mojoSettings)
+
+    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiPredictionInterval/example.csv")
+    val outputSchema = pipeline.transform(df).schema
+    val transformedSchema = pipeline.transformSchema(df.schema)
+
+    val prediction = pipeline.transform(df).select("prediction.*")
+
+    transformedSchema should equal(outputSchema)
+    prediction.columns.length shouldBe 3
+    prediction.columns.contains("secret_Pressure3pm") shouldBe true
+    prediction.columns.contains("secret_Pressure3pm.lower") shouldBe true
+    prediction.columns.contains("secret_Pressure3pm.upper") shouldBe true
+
+    val expectedCount = prediction.count()
+    prediction.select("secret_Pressure3pm").distinct().count() shouldBe expectedCount
+    prediction.select("`secret_Pressure3pm.lower`").distinct().count() shouldBe expectedCount
+    prediction.select("`secret_Pressure3pm.upper`").distinct().count() shouldBe expectedCount
+  }
 }

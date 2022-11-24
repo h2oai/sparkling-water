@@ -92,4 +92,17 @@ test_that("test MOJO internal contribution (SHAP) values", {
   expect_equal(length(colnames(flattenedContributions)), length(colnames(dataset)) + 1 + 115)
 })
 
+test_that("test MOJO predicition intervals", {
+  mojo_path <- paste0("file://", locate("daiPredictionInterval/pipeline.mojo"))
+  data_path <- paste0("file://", locate("daiPredictionInterval/example.csv"))
+  dataset <- spark_read_csv(sc, path = data_path, infer_schema = TRUE, header = TRUE)
+
+  settings <- H2OMOJOSettings(withPredictionInterval = TRUE)
+  mojo <- H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
+  mojoOutput <- mojo$transform(dataset)
+
+  flattenedContributions <- sdf_unnest_wider(data = mojoOutput, col = "prediction")
+  expect_equal(length(colnames(flattenedContributions)), length(colnames(dataset)) + 3)
+})
+
 spark_disconnect(sc)
