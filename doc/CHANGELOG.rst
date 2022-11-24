@@ -1,6 +1,31 @@
 Change Log
 ==========
 
+v3.38.0.3-1 (2022-11-24)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.3-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.3-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.3-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.3-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.3-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.3-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.3-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.3-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.3-1-3.3/index.html>`__
+
+-  Engineering Story
+
+   -  `SW-2761 <https://0xdata.atlassian.net/browse/SW-2761>`__ - Remove Outdated Roadmap
+
+-  Improvement
+
+   -  `SW-2760 <https://0xdata.atlassian.net/browse/SW-2760>`__ - Upgrade to H2O 3.38.0.3
+   -  `SW-2759 <https://0xdata.atlassian.net/browse/SW-2759>`__ - Adding prediction interval option to MOJOs in H2OMOJOSettings when using pysparkling
+
+-  New Feature
+
+   -  `SW-2758 <https://0xdata.atlassian.net/browse/SW-2758>`__ - Improvement in overall scoring performance for DAI mojo's 
+   -  `SW-2755 <https://0xdata.atlassian.net/browse/SW-2755>`__ - Add PAM Authentication
+
 v3.38.0.2-1 (2022-11-01)
 ------------------------
 Downloads:
