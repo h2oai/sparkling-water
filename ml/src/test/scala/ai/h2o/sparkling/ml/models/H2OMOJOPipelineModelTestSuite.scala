@@ -411,14 +411,14 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val prediction = pipeline.transform(df).select("prediction.*")
 
     transformedSchema should equal(outputSchema)
-    prediction.columns.length should be(3)
-    prediction.columns.contains("secret_Pressure3pm") should be(true)
-    prediction.columns.contains("secret_Pressure3pm.lower") should be(true)
-    prediction.columns.contains("secret_Pressure3pm.upper") should be(true)
+    prediction.columns.length shouldBe 3
+    prediction.columns.contains("secret_Pressure3pm") shouldBe true
+    prediction.columns.contains("secret_Pressure3pm.lower") shouldBe true
+    prediction.columns.contains("secret_Pressure3pm.upper") shouldBe true
 
     val expectedCount = prediction.count()
-    prediction.select("secret_Pressure3pm").distinct().count() should be(expectedCount)
-    prediction.select("`secret_Pressure3pm.lower`").distinct().count() should be(expectedCount)
-    prediction.select("`secret_Pressure3pm.upper`").distinct().count() should be(expectedCount)
+    prediction.select("secret_Pressure3pm").distinct().count() shouldBe expectedCount
+    prediction.select("`secret_Pressure3pm.lower`").distinct().count() shouldBe expectedCount
+    prediction.select("`secret_Pressure3pm.upper`").distinct().count() shouldBe expectedCount
   }
 }

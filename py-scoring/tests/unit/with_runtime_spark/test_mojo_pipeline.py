@@ -174,7 +174,7 @@ def testMojoPipelineInternalContributions(spark):
 
 
 def testMojoPipelinePredictionInterval(spark):
-    testFolder = "daiPredictionInternal"
+    testFolder = "daiPredictionInterval"
     mojoPath = getMojoPath(testFolder)
     dataPath = getDataPath(testFolder)
 
