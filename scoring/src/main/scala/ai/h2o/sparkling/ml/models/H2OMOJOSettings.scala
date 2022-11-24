@@ -28,6 +28,7 @@ case class H2OMOJOSettings(
     namedMojoOutputColumns: Boolean = true,
     withContributions: Boolean = false,
     withInternalContributions: Boolean = false,
+    withPredictionInterval: Boolean = false,
     withLeafNodeAssignments: Boolean = false,
     withStageResults: Boolean = false,
     dataFrameSerializer: String = DataFrameSerializer.default.getClass().getName(),

@@ -171,3 +171,21 @@ def testMojoPipelineInternalContributions(spark):
 
     assert contribution_columns == len(contributions.columns)
     assert all(c.startswith("contrib_") for c in contributions.columns)
+
+
+def testMojoPipelinePredictionInterval(spark):
+    testFolder = "daiPredictionInterval"
+    mojoPath = getMojoPath(testFolder)
+    dataPath = getDataPath(testFolder)
+
+    settings = H2OMOJOSettings(withPredictionInterval=True)
+    mojo = H2OMOJOPipelineModel.createFromMojo(mojoPath, settings)
+
+    df = spark.read.csv(dataPath, header=True, inferSchema=True)
+    predictionDF = mojo.transform(df).select("prediction.*")
+
+    assert len(predictionDF.columns) == 3
+    expectedCount = predictionDF.count()
+    assert predictionDF.select("secret_Pressure3pm").distinct().count() == expectedCount
+    assert predictionDF.select("`secret_Pressure3pm.lower`").distinct().count() == expectedCount
+    assert predictionDF.select("`secret_Pressure3pm.upper`").distinct().count() == expectedCount

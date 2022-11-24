@@ -29,6 +29,7 @@ class H2OMOJOSettings(JavaWrapper):
                  namedMojoOutputColumns=True,
                  withContributions=False,
                  withInternalContributions=False,
+                 withPredictionInterval=False,
                  withLeafNodeAssignments=False,
                  withStageResults=False,
                  dataFrameSerializer="ai.h2o.sparkling.utils.JSONDataFrameSerializer",
@@ -42,6 +43,7 @@ class H2OMOJOSettings(JavaWrapper):
         assert isinstance(namedMojoOutputColumns, bool)
         assert isinstance(withContributions, bool)
         assert isinstance(withInternalContributions, bool)
+        assert isinstance(withPredictionInterval, bool)
         assert isinstance(withLeafNodeAssignments, bool)
         assert isinstance(withStageResults, bool)
         assert isinstance(dataFrameSerializer, str)
@@ -53,6 +55,7 @@ class H2OMOJOSettings(JavaWrapper):
         self.namedMojoOutputColumns = namedMojoOutputColumns
         self.withContributions = withContributions
         self.withInternalContributions = withInternalContributions
+        self.withPredictionInterval = withPredictionInterval
         self.withLeafNodeAssignments = withLeafNodeAssignments
         self.withStageResults = withStageResults
         self.dataFrameSerializer = dataFrameSerializer
@@ -67,6 +70,7 @@ class H2OMOJOSettings(JavaWrapper):
                                             self.namedMojoOutputColumns,
                                             self.withContributions,
                                             self.withInternalContributions,
+                                            self.withPredictionInterval,
                                             self.withLeafNodeAssignments,
                                             self.withStageResults,
                                             self.dataFrameSerializer,
