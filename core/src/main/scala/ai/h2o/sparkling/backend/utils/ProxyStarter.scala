@@ -56,7 +56,7 @@ private[sparkling] object ProxyStarter extends Logging {
     args.jks_pass = conf.jksPass.orNull
     args.jks_alias = conf.jksAlias.orNull
     args.login_conf = conf.loginConf.orNull
-    args.user_name = conf.userName.orNull
+    args.user_name = conf.userName.getOrElse(System.getProperty("user.name"))
     args.context_path = conf.contextPath.orNull
     args.hash_login = conf.hashLogin
     args.ldap_login = conf.ldapLogin

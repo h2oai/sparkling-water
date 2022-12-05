@@ -75,3 +75,47 @@ class PamAuthentificationTestSuite extends FunSuite with SharedH2OTestContext {
     intercept[RestApiUnauthorisedException](RestApiUtils.getPingInfo(conf))
   }
 }
+
+@RunWith(classOf[JUnitRunner])
+class PamAuthentificationCustomUserTestSuite extends FunSuite with SharedH2OTestContext {
+
+  override def createSparkSession(): SparkSession = {
+    val tmpFile = File.createTempFile("sparkling-water-", "-pam-login.conf")
+    tmpFile.deleteOnExit()
+    val writer = new FileWriter(tmpFile);
+    val content =
+      """pamloginmodule {
+        |     de.codedo.jaas.PamLoginModule required
+        |     service = common-auth;
+        |};
+        |""".stripMargin
+    writer.write(content)
+    writer.flush()
+    writer.close()
+    val sparkConf = defaultSparkConf
+      .set("spark.ext.h2o.user.name", "root")
+      .set("spark.ext.h2o.pam.login", "true")
+      .set("spark.ext.h2o.login.conf", tmpFile.getAbsolutePath)
+    sparkSession("local-cluster[2,1,1024]", sparkConf)
+  }
+
+  test("Proxy is not accessible because the cluster is owned by a different user") {
+    val conf = hc.getConf
+    conf.setH2OCluster(hc.flowIp, hc.flowPort)
+    conf.setPamLoginDisabled() // Disabling Pam to avoid credentials generation
+    conf.setUserName("jenkins")
+    conf.setPassword("jenkins")
+    val thrown = intercept[RestApiUnauthorisedException](RestApiUtils.getPingInfo(conf))
+
+    assert(thrown.getMessage.contains("Login name does not match cluster owner name"))
+  }
+
+  test("Proxy is not accessible with invalid credentials") {
+    val conf = hc.getConf
+    conf.setH2OCluster(hc.flowIp, hc.flowPort)
+    conf.setPamLoginDisabled() // Disabling Pam to avoid credentials generation
+    conf.setUserName("root")
+    conf.setPassword("invalid")
+    intercept[RestApiUnauthorisedException](RestApiUtils.getPingInfo(conf))
+  }
+}
