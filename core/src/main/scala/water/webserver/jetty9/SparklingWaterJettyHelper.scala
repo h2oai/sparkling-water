@@ -128,7 +128,11 @@ class SparklingWaterJettyHelper(
 
   private class ProxyLoginHandler extends HandlerWrapper {
 
-    override def handle(target: String, baseRequest: Request, request: HttpServletRequest, response: HttpServletResponse): Unit = {
+    override def handle(
+        target: String,
+        baseRequest: Request,
+        request: HttpServletRequest,
+        response: HttpServletResponse): Unit = {
       val handled = h2oHttpView.proxyLoginHandler(target, request, response)
       if (handled) {
         baseRequest.setHandled(true)
