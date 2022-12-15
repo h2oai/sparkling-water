@@ -550,26 +550,3 @@ class H2OTypeConverters(object):
             return [H2OTypeConverters.scalaArrayToPythonArray(v) for v in array]
         else:
             raise TypeError("Invalid type.")
-
-    @staticmethod
-    def scalaToPythonDataFrame(jdf):
-        if jdf is None:
-            return None
-        elif isinstance(jdf, JavaObject):
-            session = SparkSession.builder.getOrCreate()
-            if hasattr(session, '_wrapped'):
-                sqlContext = session._wrapped
-            else:
-                sqlContext = session  # Spark 3.3+ utilizes SparkSession instead of SQLContext
-            return DataFrame(jdf, sqlContext)
-        else:
-            raise TypeError("Invalid type.")
-
-    @staticmethod
-    def scalaDfArrayToPythonDfArray(array):
-        if array is None:
-            return None
-        elif isinstance(array, JavaObject):
-            return [H2OTypeConverters.scalaToPythonDataFrame(v) for v in array]
-        else:
-            raise TypeError("Invalid type.")
