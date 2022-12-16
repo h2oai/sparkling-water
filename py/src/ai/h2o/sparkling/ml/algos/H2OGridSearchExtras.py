@@ -16,7 +16,7 @@
 #
 
 from ai.h2o.sparkling.ml.models import H2OMOJOModel
-from ai.h2o.sparkling.ml.params.H2ODataFrameConverters import H2ODataFrameConverters
+from ai.h2o.sparkling.H2ODataFrameConverters import H2ODataFrameConverters
 
 
 class H2OGridSearchExtras:
