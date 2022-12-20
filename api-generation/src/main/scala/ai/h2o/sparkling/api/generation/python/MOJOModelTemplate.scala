@@ -58,7 +58,8 @@ object MOJOModelTemplate
       "py4j.java_gateway.JavaObject",
       "ai.h2o.sparkling.Initializer.Initializer",
       "ai.h2o.sparkling.ml.models.H2OMOJOSettings.H2OMOJOSettings",
-      "ai.h2o.sparkling.ml.params.H2OTypeConverters.H2OTypeConverters") ++
+      "ai.h2o.sparkling.ml.params.H2OTypeConverters.H2OTypeConverters",
+      "ai.h2o.sparkling.H2ODataFrameConverters.H2ODataFrameConverters") ++
       explicitFields.map(field => s"ai.h2o.sparkling.ml.params.$field.$field")
 
     val entitySubstitutionContext = EntitySubstitutionContext(namespace, entityName, parents, imports)
@@ -104,7 +105,7 @@ object MOJOModelTemplate
   private def generateValueConversion(parameter: Parameter): String = parameter.dataType match {
     case x if x.isArray && x.getComponentType.isArray() => "H2OTypeConverters.scala2DArrayToPython2DArray(value)"
     case x if x.isArray => "H2OTypeConverters.scalaArrayToPythonArray(value)"
-    case x if x.getSimpleName == "TwoDimTableV3" => "H2OTypeConverters.scalaToPythonDataFrame(value)"
+    case x if x.getSimpleName == "TwoDimTableV3" => "H2ODataFrameConverters.scalaToPythonDataFrame(value)"
     case _ => "value"
   }
 }
