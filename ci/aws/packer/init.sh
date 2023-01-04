@@ -1,7 +1,7 @@
 #!/bin/bash
 
-sudo yum install docker git java-1.8.0-openjdk -y
-sudo alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+sudo yum install docker git -y
+sudo amazon-linux-extras install java-openjdk11 -y
 sudo yum -y update --security
 sudo usermod -a -G docker ec2-user
 sudo chkconfig docker on
