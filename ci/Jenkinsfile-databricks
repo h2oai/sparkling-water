@@ -32,6 +32,7 @@ static String getSparklingVersion(props) {
 
 def shWithSWPyEnv(script) {
     def scriptWithPrefix =  """
+        . ~/miniconda/etc/profile.d/conda.sh
         conda activate sw_env_python3.6
         ${script}
         conda deactivate
