@@ -28,28 +28,24 @@ def withDockerHubCredentials(groovy.lang.Closure code) {
     }
 }
 
+String getGradleProperty(String propertyName, String fileName = "gradle.properties") {
+    readFile(fileName).split("\n").find() { line -> line.startsWith(propertyName) }.split('=')[1]
+}
+
 Integer getDockerImageVersion() {
-    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('dockerImageVersion') }
-    return versionLine.split("=")[1].toInteger()
+    return getGradleProperty('dockerImageVersion').toInteger()
 }
 
 def getSupportedSparkVersions() {
-    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('supportedSparkVersions') }
-    sparkVersions = versionLine.split("=")[1].split(" ")
-
-    return sparkVersions
+    return getGradleProperty('supportedSparkVersions').split(" ")
 }
 
 def getTestingBaseImage() {
-    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('testingBaseImage') }
-    return versionLine.split("=")[1]
+    return getGradleProperty('testingBaseImage')
 }
 
 def getSupportedPythonVersions(sparkVersion) {
-    def versionLine = readFile("gradle-spark${sparkVersion}.properties")
-        .split("\n")
-        .find() { line -> line.startsWith('supportedPythonVersions') }
-    return versionLine.split("=")[1].split(" ")
+    return getGradleProperty('supportedPythonVersions', "gradle-spark${sparkVersion}.properties").split(" ")
 }
 
 def withDocker(image, groovy.lang.Closure code, String dockerOptions = "", groovy.lang.Closure initCode = {}) {
@@ -60,11 +56,10 @@ def withDocker(image, groovy.lang.Closure code, String dockerOptions = "", groov
     }
 }
 
-def withSparklingWaterDockerImage(code) {
+def withSparklingWaterDockerImage(code, dockerOptions = "--init --privileged") {
     def repoUrl = getAWSDockerRepo()
     withAWSDocker {
         def image = "${repoUrl}/opsh2oai/sparkling_water_tests:" + getDockerImageVersion()
-        def dockerOptions = "--init --privileged"
         groovy.lang.Closure initCode = {
             sh "activate_java_8"
         }

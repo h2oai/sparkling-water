@@ -1,0 +1,52 @@
+#!/usr/bin/groovy
+@Library('test-shared-library') _
+
+node("regular") {
+    cleanWs()
+    checkout scm
+    def commons = load 'ci/commons.groovy'
+    String sparkVersion = "3.0"
+    String spectrumConductorBuildFolder = "sc_package_build"
+    withCredentials([string(credentialsId: 'conductor_h2o_sparklingwater_repo', variable: 'CONDUCTOR_H2O_SPARKLINGWATER_REPO')]) {
+        sh "git clone ${CONDUCTOR_H2O_SPARKLINGWATER_REPO} ${spectrumConductorBuildFolder}"
+    }
+    commons.withSparklingWaterDockerImage {
+        sh "./gradlew clean dist -Pspark=${sparkVersion}"
+    }
+    String distFileName = findFiles(glob: "**/sparkling-water-*-${sparkVersion}.zip")[0].name
+    String swFullVersion = distFileName - "sparkling-water-" - ".zip"
+
+    sh "mv ./dist/build/dist/sparkling-water-*-${sparkVersion}.zip ${spectrumConductorBuildFolder}"
+    sh "cd ${spectrumConductorBuildFolder};./build_package.sh ${swFullVersion}"
+    String dockerVolumePath = "${spectrumConductorBuildFolder}/build"
+    sh "cp ./ci/spectrumConductorTests/* ${dockerVolumePath}"
+    withCredentials([usernamePassword(credentialsId: 'DOCKER_SC_PASSWORD', passwordVariable: 'DOCKER_SC_PASSWORD', usernameVariable: 'DOCKER_SC_USERNAME')]) {
+        commons.withAWSDocker {
+            String dockerRegistry = commons.readFromInfraState("docker_registry_id")
+            sh "docker pull ${dockerRegistry}.dkr.ecr.us-west-2.amazonaws.com/sparkling-conductor:latest"
+            sh """docker run
+                        --hostname=management-host.conductor.h2o.ai
+                        --env=MANAGEMENT_HOST=management-host.conductor.h2o.ai
+                        --env=ADMIN_PASSWORD=${DOCKER_SC_PASSWORD}
+                        --volume=\$WORKSPACE/${dockerVolumePath}:/sparkling_conductor_package:rw
+                        --volume=/sparkling_conductor_package
+                        --privileged
+                        --publish 8080:8080
+                        --publish 54321:54321
+                        --publish 54322:54322
+                        --publish 54323:54323
+                        --publish 8280:8280
+                        --publish 8180:8180
+                        --publish 8780:8780
+                        --publish 8781:8781
+                        --publish 7077:7077
+                        --publish 7078:7078
+                        --publish 6067:6067
+                        --publish 6066:6066
+                        --entrypoint /bin/bash
+                        ${dockerRegistry}.dkr.ecr.us-west-2.amazonaws.com/sparkling-conductor:latest
+                        -c '\$SCRIPTS_DIR/start_conductor.sh; python3 \$SCRIPTS_DIR/deploy_sw.py; python3 /sparkling_conductor_package/test.py || tail -f /dev/null;'
+                        """.stripIndent().replace("\n", " ")
+        }
+    }
+}
