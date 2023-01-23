@@ -35,9 +35,6 @@ class H2OAlgorithmMOJOModelBase(H2OMOJOModelBase):
     def getFeaturesCols(self):
         return list(self._java_obj.getFeaturesCols())
 
-    def getNamedMojoOutputColumns(self):
-        return self._java_obj.getNamedMojoOutputColumns()
-
     def getWithContributions(self):
         return self._java_obj.getWithContributions()
 

@@ -26,7 +26,6 @@ class H2OMOJOSettings(JavaWrapper):
                  detailedPredictionCol="detailed_prediction",
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,
-                 namedMojoOutputColumns=True,
                  withContributions=False,
                  withInternalContributions=False,
                  withPredictionInterval=False,
@@ -40,7 +39,6 @@ class H2OMOJOSettings(JavaWrapper):
         assert isinstance(detailedPredictionCol, str)
         assert isinstance(convertUnknownCategoricalLevelsToNa, bool)
         assert isinstance(convertInvalidNumbersToNa, bool)
-        assert isinstance(namedMojoOutputColumns, bool)
         assert isinstance(withContributions, bool)
         assert isinstance(withInternalContributions, bool)
         assert isinstance(withPredictionInterval, bool)
@@ -52,7 +50,6 @@ class H2OMOJOSettings(JavaWrapper):
         self.detailedPredictionCol = detailedPredictionCol
         self.convertUnknownCategoricalLevelsToNa = convertUnknownCategoricalLevelsToNa
         self.convertInvalidNumbersToNa = convertInvalidNumbersToNa
-        self.namedMojoOutputColumns = namedMojoOutputColumns
         self.withContributions = withContributions
         self.withInternalContributions = withInternalContributions
         self.withPredictionInterval = withPredictionInterval
@@ -67,7 +64,6 @@ class H2OMOJOSettings(JavaWrapper):
                                             self.detailedPredictionCol,
                                             self.convertUnknownCategoricalLevelsToNa,
                                             self.convertInvalidNumbersToNa,
-                                            self.namedMojoOutputColumns,
                                             self.withContributions,
                                             self.withInternalContributions,
                                             self.withPredictionInterval,

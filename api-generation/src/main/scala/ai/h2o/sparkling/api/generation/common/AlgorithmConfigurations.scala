@@ -65,7 +65,6 @@ object AlgorithmConfigurations {
     "featuresCols" -> Array.empty[String],
     "predictionCol" -> "prediction",
     "detailedPredictionCol" -> "detailed_prediction",
-    "namedMojoOutputColumns" -> true,
     "withContributions" -> false,
     "withLeafNodeAssignments" -> false,
     "withStageResults" -> false) ++ defaultValuesOfCommonParameters

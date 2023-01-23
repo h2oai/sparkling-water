@@ -25,31 +25,6 @@ from pyspark.ml import Pipeline, PipelineModel
 from pysparkling.ml import H2OMOJOPipelineModel, H2OMOJOSettings
 
 
-def test_h2o_mojo_pipeline_predictions(prostateDataset):
-    # Try loading the Mojo and prediction on it without starting H2O Context
-    path = "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo")
-    settings = H2OMOJOSettings(namedMojoOutputColumns=False)
-    mojo = H2OMOJOPipelineModel.createFromMojo(path, settings)
-
-    preds = mojo.transform(prostateDataset).repartition(1)
-
-    normalSelection = preds.select("prediction.preds").take(5)
-
-    assert normalSelection[0][0][0] == 65.36339431549945
-    assert normalSelection[1][0][0] == 64.98931238070139
-    assert normalSelection[2][0][0] == 64.95047899851251
-    assert normalSelection[3][0][0] == 65.78738866816514
-    assert normalSelection[4][0][0] == 66.11292243968764
-
-    udfSelection = preds.select(mojo.selectPredictionUDF("AGE")).take(5)
-
-    assert udfSelection[0][0] == 65.36339431549945
-    assert udfSelection[1][0] == 64.98931238070139
-    assert udfSelection[2][0] == 64.95047899851251
-    assert udfSelection[3][0] == 65.78738866816514
-    assert udfSelection[4][0] == 66.11292243968764
-
-
 def test_h2o_mojo_pipeline_predictions_with_named_cols(prostateDataset):
     # Try loading the Mojo and prediction on it without starting H2O Context
     mojo = H2OMOJOPipelineModel.createFromMojo(
