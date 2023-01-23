@@ -3,6 +3,11 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
+From 3.40 to 3.42
+-----------------
+
+- The support for Apache Spark 2.3.x has been removed.
+
 From 3.38 to 3.40
 -----------------
 
