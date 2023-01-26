@@ -25,7 +25,6 @@ case class H2OMOJOSettings(
     detailedPredictionCol: String = "detailed_prediction",
     convertUnknownCategoricalLevelsToNa: Boolean = false,
     convertInvalidNumbersToNa: Boolean = false,
-    namedMojoOutputColumns: Boolean = true,
     withContributions: Boolean = false,
     withInternalContributions: Boolean = false,
     withPredictionInterval: Boolean = false,

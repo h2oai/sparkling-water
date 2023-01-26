@@ -25,7 +25,6 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                              detailedPredictionCol = "character",
                                              convertUnknownCategoricalLevelsToNa = "logical",
                                              convertInvalidNumbersToNa = "logical",
-                                             namedMojoOutputColumns = "logical",
                                              withContributions = "logical",
                                              withInternalContributions = "logical",
                                              withPredictionInterval = "logical",
@@ -38,7 +37,6 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                                        detailedPredictionCol = "detailed_prediction",
                                                        convertUnknownCategoricalLevelsToNa = FALSE,
                                                        convertInvalidNumbersToNa = FALSE,
-                                                       namedMojoOutputColumns = TRUE,
                                                        withContributions = FALSE,
                                                        withInternalContributions = FALSE,
                                                        withPredictionInterval = FALSE,
@@ -50,7 +48,6 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                    .self$detailedPredictionCol <- detailedPredictionCol
                                    .self$convertUnknownCategoricalLevelsToNa <- convertUnknownCategoricalLevelsToNa
                                    .self$convertInvalidNumbersToNa <- convertInvalidNumbersToNa
-                                   .self$namedMojoOutputColumns <- namedMojoOutputColumns
                                    .self$withContributions <- withContributions
                                    .self$withInternalContributions <- withInternalContributions
                                    .self$withPredictionInterval <- withPredictionInterval
@@ -66,7 +63,6 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                               .self$detailedPredictionCol,
                                               .self$convertUnknownCategoricalLevelsToNa,
                                               .self$convertInvalidNumbersToNa,
-                                              .self$namedMojoOutputColumns,
                                               .self$withContributions,
                                               .self$withInternalContributions,
                                               .self$withPredictionInterval,

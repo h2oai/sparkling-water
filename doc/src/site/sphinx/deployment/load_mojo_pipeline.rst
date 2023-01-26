@@ -156,7 +156,7 @@ object.
 Predictions Format
 ~~~~~~~~~~~~~~~~~~
 
-When the option ``namedMojoOutputColumns`` is enabled on ``H2OMOJOSettings``, the ``predictionCol`` contains sub-columns with
+The ``predictionCol`` contains sub-columns with
 names corresponding to the columns Driverless AI identified as output columns. For example, if Driverless API MOJO
 pipeline contains one output column `AGE` ( for example regression problem), the prediction column contains another sub-column
 named `AGE`. If The MOJO pipeline contains multiple output columns, such as `VALID.0` and `VALID.1` (for example classification problems),

@@ -46,12 +46,10 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     // Test data
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
 
-    // Test mojo
-    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
+    // Test mojo )
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo",
-      mojoSettings)
+      "prostate_pipeline.mojo")
 
     // Test also writing and loading the pipeline
     val pipeline = new Pipeline().setStages(Array(mojo))
@@ -64,28 +62,6 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val loadedModel = PipelineModel.load("ml/build/pipeline_model")
 
     loadedModel.transform(df).take(1)
-  }
-
-  test("Basic mojo pipeline prediction for unnamed column") {
-    // Test data
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
-    // Test mojo
-    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
-    val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo",
-      mojoSettings)
-
-    val transDf = mojo.transform(df)
-    val udfSelection = transDf.select(mojo.selectPredictionUDF("AGE"))
-    val normalSelection = transDf.select("prediction.preds")
-
-    val valuesNormalSelection = normalSelection.take(5)
-    assertPredictedValues(valuesNormalSelection)
-
-    // Verify also output of the udf prediction method. The UDF method always returns one column with correct name
-    val valuesUdfSelection = udfSelection.take(5)
-    assertPredictedValuesForNamedCols(valuesUdfSelection)
   }
 
   test("Verify that output columns are correct when using the named columns") {
@@ -281,12 +257,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     assert(transformedSchema === outputSchema)
   }
 
-  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is disabled") {
-    val settings = H2OMOJOSettings(namedMojoOutputColumns = false)
-    testTransformAndTransformSchemaAreAligned(settings)
-  }
-
-  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is enabled") {
+  test("Transform and transformSchema methods are aligned") {
     val settings = H2OMOJOSettings()
     testTransformAndTransformSchemaAreAligned(settings)
   }
@@ -344,28 +315,6 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     contributions(1).getDouble(2) shouldBe 6.374321717618108
     contributions(1).getDouble(3) shouldBe -0.006928643424840761
     contributions(1).getDouble(4) shouldBe 0.482689546
-  }
-
-  test("Mojo pipeline outputs named contribution values even if namedMojoOutputColumns was set to false") {
-
-    val mojoSettings = H2OMOJOSettings(withContributions = true, namedMojoOutputColumns = false)
-    val pipeline = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapley/pipeline.mojo"),
-      "pipeline.mojo",
-      mojoSettings)
-
-    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
-    val predictionsAndContributions = pipeline.transform(df)
-
-    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.*")
-
-    val featureColumns = 4
-    val classes = 3
-    val bias = 1
-    val contributionColumnsNo = classes * (featureColumns + bias)
-
-    onlyContributions.columns should have length contributionColumnsNo
-    forAll(onlyContributions.columns) { _ should startWith("contrib_") }
   }
 
   test("Transform and transformSchema methods are aligned when (SHAP) contributions are enabled") {
