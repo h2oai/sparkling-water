@@ -88,7 +88,7 @@ test_that("test MOJO internal contribution (SHAP) values", {
   mojo <- H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
   mojoOutput <- dplyr::collect(mojo$transform(dataset))
 
-  flattenedContributions <- tidyr::unnest_wider(data = mojoOutput, col = "internal_contributions", names_sep = "_")
+  flattenedContributions <- tidyr::unnest_wider(data = mojoOutput, col = "internal_contributions")
   expect_equal(length(colnames(flattenedContributions)), length(colnames(dataset)) + 1 + 115)
 })
 
@@ -101,7 +101,7 @@ test_that("test MOJO predicition intervals", {
   mojo <- H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
   mojoOutput <- dplyr::collect(mojo$transform(dataset))
 
-  flattenedContributions <- tidyr::unnest_wider(data = mojoOutput, col = "prediction", names_sep = "_")
+  flattenedContributions <- tidyr::unnest_wider(data = mojoOutput, col = "prediction")
   expect_equal(length(colnames(flattenedContributions)), length(colnames(dataset)) + 3)
 })
 
