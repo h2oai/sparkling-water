@@ -49,6 +49,16 @@ class H2OTypeConverters(object):
         return convert
 
     @staticmethod
+    def toNullableEnumString(enumClass):
+        def convert(value):
+            if value is None:
+                return None
+            else:
+                return H2OTypeConverters.toEnumString(enumClass)(value)
+
+        return convert
+
+    @staticmethod
     def toEnumString(enumClass):
         def convert(value):
             package = getattr(_jvm().ai.h2o.sparkling.ml.params, "EnumParamValidator$")
