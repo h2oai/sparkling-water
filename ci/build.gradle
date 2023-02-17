@@ -21,6 +21,8 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   destFile = outputFile
   from testingBaseImage
 
+  runCommand "echo 'nameserver 8.8.8.8' > /etc/resolv.conf"
+
   runCommand "rm /etc/startup/70_start_slapd"
 
   // Install Terraform
