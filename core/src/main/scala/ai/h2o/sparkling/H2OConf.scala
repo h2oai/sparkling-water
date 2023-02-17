@@ -120,17 +120,17 @@ class H2OConf(val sparkConf: SparkConf)
   /** Credentials used for the communication between proxy and h2o leader node. */
   private[sparkling] def getCredentials(): Option[H2OCredentials] = {
     if (hashLogin) {
-      if (!this.userName.isDefined) {
+      if (this.userName.isEmpty) {
         throw new IllegalStateException(
           "Hash login is enabled, but the configuration property 'spark.ext.h2o.user.name' is not set.")
       }
-      if (!this.password.isDefined) {
+      if (this.password.isEmpty) {
         throw new IllegalStateException(
           "Hash login is enabled, but the configuration property 'spark.ext.h2o.password' is not set.")
       }
     }
 
-    if (this.pamLogin) {
+    if (this.proxyLoginOnly) {
       Some(resolveGeneratedCredentials())
     } else if (this.userName.isDefined && this.password.isDefined) {
       val username = this.userName.get
