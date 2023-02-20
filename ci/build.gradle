@@ -30,7 +30,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 |   rm -f terraform.zip
                """.stripMargin()
 
-  environmentVariable("PATH","\${PATH//:\\/usr\\/local\\/R\\/current\\/bin\\/}")
+  environmentVariable("PATH","\${PATH//\\/usr\\/local\\/R\\/current\\/bin\\/:}")
 
   // Update to R 4.2
   runCommand """\\
