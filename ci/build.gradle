@@ -21,8 +21,6 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   destFile = outputFile
   from testingBaseImage
 
-  runCommand "echo 'nameserver 8.8.8.8' > /etc/resolv.conf"
-
   runCommand "rm /etc/startup/70_start_slapd"
 
   // Install Terraform
@@ -31,6 +29,18 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 |   unzip terraform.zip -d /usr/local/bin/ && \\
                 |   rm -f terraform.zip
                """.stripMargin()
+
+  environmentVariable("PATH","\${PATH//:\\/usr\\/local\\/R\\/current\\/bin\\/}")
+
+  // Update to R 4.2
+  runCommand """\\
+                apt install software-properties-common -y && \\
+                apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \\
+                add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu xenial-cran40/' && \\
+                apt update && \\
+                apt install r-base -y && \\
+                R -e 'update.packages(ask = FALSE, checkBuilt = TRUE)' 
+                """
 
   runCommand """\\
                 apt-get install libharfbuzz-dev libfribidi-dev && \\
