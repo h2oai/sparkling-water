@@ -119,7 +119,7 @@ task cleanGeneratedApi(type: Delete) {
   delete "$projectDir/src-gen"
 }
 
-task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-assembly:shadowJar']) {
+task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
   mainClass = "ai.h2o.sparkling.api.generation.ConfigurationRunner"
@@ -128,7 +128,7 @@ task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-wat
   errorOutput = System.err
 }
 
-task generateMetrics(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-assembly:shadowJar']) {
+task generateMetrics(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
   mainClass = "ai.h2o.sparkling.api.generation.MOJOModelAPIRunner"

@@ -205,7 +205,7 @@ task cleanGeneratedApi(type: Delete) {
   delete "$projectDir/src-gen"
 }
 
-task generateMOJOApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-assembly:shadowJar']) {
+task generateMOJOApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
   mainClass = "ai.h2o.sparkling.api.generation.MOJOModelAPIRunner"

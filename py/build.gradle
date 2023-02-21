@@ -383,7 +383,7 @@ task cleanGeneratedApi(type: Delete) {
   delete "$projectDir/src-gen"
 }
 
-task generateAlgorithmApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-assembly:shadowJar']) {
+task generateAlgorithmApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
   mainClass = "ai.h2o.sparkling.api.generation.AlgorithmAPIRunner"
@@ -392,7 +392,7 @@ task generateAlgorithmApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':spark
   errorOutput = System.err
 }
 
-task generateMOJOApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-assembly:shadowJar']) {
+task generateMOJOApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
   mainClass = "ai.h2o.sparkling.api.generation.MOJOModelAPIRunner"
@@ -401,7 +401,7 @@ task generateMOJOApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-
   errorOutput = System.err
 }
 
-task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-assembly:shadowJar']) {
+task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
   mainClass = "ai.h2o.sparkling.api.generation.ConfigurationRunner"
