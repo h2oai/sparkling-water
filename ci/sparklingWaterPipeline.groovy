@@ -324,12 +324,12 @@ def rUnitTests() {
                             sudo ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage
                             """
                     }
-                    sh "${getGradleCommand(config)} :sparkling-water-r:installRSparklingPackage"
+                    sh "sudo ${getGradleCommand(config)} :sparkling-water-r:installRSparklingPackage"
                     config.commons.withDAICredentials {
                         timeout(time: 7, unit: 'MINUTES') {
                             sh """
                                 unset MASTER
-                                sudo ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}
+                                ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}
                                 """
                         }
                     }
