@@ -317,11 +317,11 @@ def rUnitTests() {
                 try {
                     if (config.buildAgainstH2OBranch.toBoolean()) {
                         sh """
-                                R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OBranchMajorVersion()}.99999.tar.gz", type="source", repos=NULL)'
+                            sudo R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OBranchMajorVersion()}.99999.tar.gz", type="source", repos=NULL)'
                             """
                     } else {
                         sh """
-                            ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage
+                            sudo ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage
                             """
                     }
                     sh "${getGradleCommand(config)} :sparkling-water-r:installRSparklingPackage"
@@ -329,7 +329,7 @@ def rUnitTests() {
                         timeout(time: 7, unit: 'MINUTES') {
                             sh """
                                 unset MASTER
-                                ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}
+                                sudo ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}
                                 """
                         }
                     }
