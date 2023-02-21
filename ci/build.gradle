@@ -40,7 +40,8 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub && \\
                 apt update && \\
                 apt install r-base -y && \\
-                R -e 'update.packages(ask = FALSE, checkBuilt = TRUE)' 
+                R -e 'update.packages(ask = FALSE, checkBuilt = TRUE)' && \\
+                R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")'
                 """
 
   runCommand """\\
