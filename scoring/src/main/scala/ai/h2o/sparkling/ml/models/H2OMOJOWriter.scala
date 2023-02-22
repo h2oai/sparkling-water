@@ -41,9 +41,9 @@ private[models] class H2OMOJOWriter(instance: Params, val mojoPath: String) exte
       val cvModels = instance.asInstanceOf[H2OMOJOModel].getCrossValidationModels()
       if (cvModels != null) {
         val cvPath = new Path(path, H2OMOJOProps.crossValidationDirectoryName)
-        for (i <- 0 until cvModels.length) {
+        for (i <- cvModels.indices) {
           val cvModelPath = new Path(cvPath, i.toString)
-          val writer = new H2OMOJOWriter(cvModels(0), cvModels(0).getMojo().getAbsolutePath)
+          val writer = new H2OMOJOWriter(cvModels(i), cvModels(i).getMojo().getAbsolutePath)
           writer.saveImpl(cvModelPath.toString)
         }
       }
