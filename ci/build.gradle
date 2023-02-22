@@ -95,7 +95,9 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                bash /home/jenkins/miniconda.sh -b -p /home/jenkins/miniconda && \\
                rm /home/jenkins/miniconda.sh
                 """
-  environmentVariable("PATH", "\"/home/jenkins/miniconda/bin:\${PATH}\"")
+  environmentVariable("PATH", "/home/jenkins/miniconda/bin:/usr/lib/jvm/java-8-oracle/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+  environmentVariable("JAVA_HOME","/usr/lib/jvm/java-8-oracle")
+
   runCommand """\\
                 conda install anaconda-client conda-build conda-verify -y && \\
                 conda update conda -y && \\

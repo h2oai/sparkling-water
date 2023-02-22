@@ -315,8 +315,6 @@ def rUnitTests() {
         stage('QA: RUnit Tests - ' + config.backendMode) {
             if (config.runRUnitTests.toBoolean()) {
                 try {
-                    sh "export JAVA_HOME=/usr/lib/jvm/java-8-oracle"
-                    sh "export PATH=/usr/lib/jvm/java-8-oracle/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
                     if (config.buildAgainstH2OBranch.toBoolean()) {
                         sh """
                             sudo R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OBranchMajorVersion()}.99999.tar.gz", type="source", repos=NULL)'
