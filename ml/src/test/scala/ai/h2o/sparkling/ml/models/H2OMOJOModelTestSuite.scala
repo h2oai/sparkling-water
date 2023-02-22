@@ -771,6 +771,12 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
       cvModels should be(null)
     }
+
+    test("All cross validation models are saved [SW-2774]") {
+      val cvModels = model.getCrossValidationModels()
+
+      cvModels.map(_.uid).distinct shouldNot have size 1
+    }
   }
 
   test("H2ODeepLearningMOJOModel should return model summary") {
