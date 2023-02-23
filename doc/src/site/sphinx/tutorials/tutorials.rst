@@ -22,6 +22,7 @@ How to...
    kerberos_auth
    kerberized_cluster
    secured_flow
+   proxy_only_auth
 
 **Frames Conversions and Creation**
 

@@ -27,57 +27,7 @@ import org.scalatest.junit.JUnitRunner
 import java.io.{File, FileWriter}
 
 @RunWith(classOf[JUnitRunner])
-class PamAuthentificationTestSuite extends FunSuite with SharedH2OTestContext {
-
-  override def createSparkSession(): SparkSession = {
-    val tmpFile = File.createTempFile("sparkling-water-", "-pam-login.conf")
-    tmpFile.deleteOnExit()
-    val writer = new FileWriter(tmpFile);
-    val content =
-      """pamloginmodule {
-        |     de.codedo.jaas.PamLoginModule required
-        |     service = common-auth;
-        |};
-        |""".stripMargin
-    writer.write(content)
-    writer.flush()
-    writer.close()
-    val sparkConf = defaultSparkConf
-      .set("spark.ext.h2o.pam.login", "true")
-      .set("spark.ext.h2o.login.conf", tmpFile.getAbsolutePath)
-    sparkSession("local-cluster[2,1,1024]", sparkConf)
-  }
-
-  test("Convert dataframe to h2o frame") {
-    val df = spark.read
-      .option("header", "true")
-      .option("inferSchema", "true")
-      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
-
-    hc.asH2OFrame(df)
-  }
-
-  test("Proxy is accessible with correct credentials") {
-    val conf = hc.getConf
-    conf.setH2OCluster(hc.flowIp, hc.flowPort)
-    conf.setPamLoginDisabled() // Disabling Pam to avoid credentials generation
-    conf.setUserName("jenkins")
-    conf.setPassword("jenkins")
-    RestApiUtils.getPingInfo(conf)
-  }
-
-  test("Proxy is not accessible with invalid credentials") {
-    val conf = hc.getConf
-    conf.setH2OCluster(hc.flowIp, hc.flowPort)
-    conf.setPamLoginDisabled() // Disabling Pam to avoid credentials generation
-    conf.setUserName("jenkins")
-    conf.setPassword("invalid")
-    intercept[RestApiUnauthorisedException](RestApiUtils.getPingInfo(conf))
-  }
-}
-
-@RunWith(classOf[JUnitRunner])
-class PamAuthentificationCustomUserTestSuite extends FunSuite with SharedH2OTestContext {
+class PamProxyOnlyModeAuthCustomUserTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = {
     val tmpFile = File.createTempFile("sparkling-water-", "-pam-login.conf")
@@ -94,6 +44,7 @@ class PamAuthentificationCustomUserTestSuite extends FunSuite with SharedH2OTest
     writer.close()
     val sparkConf = defaultSparkConf
       .set("spark.ext.h2o.user.name", "root")
+      .set("spark.ext.h2o.proxy.login.only", "true")
       .set("spark.ext.h2o.pam.login", "true")
       .set("spark.ext.h2o.login.conf", tmpFile.getAbsolutePath)
     sparkSession("local-cluster[2,1,1024]", sparkConf)
