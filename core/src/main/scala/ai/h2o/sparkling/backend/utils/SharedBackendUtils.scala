@@ -133,14 +133,15 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-jks", getDistributedFilePath(conf.jks))
       .add("-jks_pass", conf.jksPass)
       .add("-jks_alias", conf.jksAlias)
-      .addIf("-hash_login", conf.hashLogin || conf.pamLogin)
-      .addIf("-ldap_login", conf.ldapLogin)
-      .addIf("-kerberos_login", conf.kerberosLogin)
+      .addIf("-hash_login", conf.hashLogin || conf.proxyLoginOnly)
+      .addIf("-pam_login", conf.pamLogin && !conf.proxyLoginOnly)
+      .addIf("-ldap_login", conf.ldapLogin && !conf.proxyLoginOnly)
+      .addIf("-kerberos_login", conf.kerberosLogin && !conf.proxyLoginOnly)
       .add("-user_name", conf.userName)
       .add("-internal_security_conf", getDistributedFilePath(conf.sslConf))
       .add("-allow_insecure_xgboost", conf.isInsecureXGBoostAllowed)
 
-    if (conf.pamLogin) {
+    if (conf.proxyLoginOnly) {
       builder.add("-login_conf", getDistributedFilePath(conf.getGeneratedLoginConfFile()))
     } else {
       builder.add("-login_conf", getDistributedFilePath(conf.loginConf))
