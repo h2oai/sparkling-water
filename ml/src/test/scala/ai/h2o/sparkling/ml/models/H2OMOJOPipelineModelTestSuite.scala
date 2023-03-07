@@ -124,46 +124,58 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
   }
 
   test("Testing dataset having an extra column should give the same prediction") {
-    val rdd = sc.parallelize(Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6")))
+    val rdd = sc.parallelize(
+      Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6"), Row("16", "0", "73", "1", "2", "1", "2.6", "0", "5")))
     val recordWithoutAdditionalColumn = spark.createDataFrame(rdd, prostateTestData.schema)
     val recordWithAdditionalColumn = recordWithoutAdditionalColumn.withColumn("extraCol", lit("8"))
 
-    val prediction = prostateMojoPipeline.transform(recordWithoutAdditionalColumn).select(PredictionCol).collect().head
+    val prediction = prostateMojoPipeline.transform(recordWithoutAdditionalColumn).select(PredictionCol).collect()
     val predictionWithAdditionalColumn =
-      prostateMojoPipeline.transform(recordWithAdditionalColumn).select(PredictionCol).collect().head
+      prostateMojoPipeline.transform(recordWithAdditionalColumn).select(PredictionCol).collect()
 
-    prediction shouldEqual predictionWithAdditionalColumn
+    prediction(0) shouldEqual predictionWithAdditionalColumn(0)
+    prediction(1) shouldEqual predictionWithAdditionalColumn(1)
+    prediction(0) shouldNot equal(prediction(1))
+    predictionWithAdditionalColumn(0) shouldNot equal(predictionWithAdditionalColumn(1))
   }
 
   test("Testing dataset with column order mixed should give the same prediction") {
-    val rdd = sc.parallelize(Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6")))
+    val rdd = sc.parallelize(
+      Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6"), Row("16", "0", "73", "1", "2", "1", "2.6", "0", "5")))
     val record = spark.createDataFrame(rdd, prostateTestData.schema)
     val recordWithDifferentColumnOrder = record.selectExpr(record.columns.reverse: _*).toDF()
     record.columns shouldNot equal(recordWithDifferentColumnOrder.columns)
     record.columns.sorted shouldEqual recordWithDifferentColumnOrder.columns.sorted
 
-    val prediction = prostateMojoPipeline.transform(record).select(PredictionCol).collect().head
+    val prediction = prostateMojoPipeline.transform(record).select(PredictionCol).collect()
     val predictionWithDifferentColumnOrder =
-      prostateMojoPipeline.transform(recordWithDifferentColumnOrder).select(PredictionCol).collect().head
+      prostateMojoPipeline.transform(recordWithDifferentColumnOrder).select(PredictionCol).collect()
 
-    prediction shouldEqual predictionWithDifferentColumnOrder
+    prediction(0) shouldEqual predictionWithDifferentColumnOrder(0)
+    prediction(1) shouldEqual predictionWithDifferentColumnOrder(1)
+    prediction(0) shouldNot equal(prediction(1))
+    predictionWithDifferentColumnOrder(0) shouldNot equal(predictionWithDifferentColumnOrder(1))
   }
 
   test("Testing dataset having an extra column and column order mixed should give the same prediction") {
-    val rdd = sc.parallelize(Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6")))
+    val rdd = sc.parallelize(
+      Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6"), Row("16", "0", "73", "1", "2", "1", "2.6", "0", "5")))
     val record = spark.createDataFrame(rdd, prostateTestData.schema)
     val recordWithDifferentColumnOrderAndAdditionalColumn =
       record.withColumn("extraCol", lit("8")).selectExpr(record.columns.reverse: _*).toDF()
 
-    val prediction = prostateMojoPipeline.transform(record).select(PredictionCol).collect().head
+    val prediction = prostateMojoPipeline.transform(record).select(PredictionCol).collect()
     val predictionWithAdditionalColumn =
       prostateMojoPipeline
         .transform(recordWithDifferentColumnOrderAndAdditionalColumn)
         .select(PredictionCol)
         .collect()
-        .head
 
-    prediction shouldEqual predictionWithAdditionalColumn
+    prediction(0) shouldEqual predictionWithAdditionalColumn(0)
+    prediction(1) shouldEqual predictionWithAdditionalColumn(1)
+    prediction(0) shouldNot equal(prediction(1))
+    predictionWithAdditionalColumn(0) shouldNot equal(predictionWithAdditionalColumn(1))
+
   }
 
   test("Prediction with null as row element") {
