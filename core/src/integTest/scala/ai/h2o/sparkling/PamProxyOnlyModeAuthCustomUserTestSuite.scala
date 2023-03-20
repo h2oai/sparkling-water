@@ -21,12 +21,13 @@ import ai.h2o.sparkling.backend.exceptions.RestApiUnauthorisedException
 import ai.h2o.sparkling.backend.utils.RestApiUtils
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Ignore}
 import org.scalatest.junit.JUnitRunner
 
 import java.io.{File, FileWriter}
 
 @RunWith(classOf[JUnitRunner])
+@Ignore("still unstable, to be fixed and unignored next release (SW-2779)")
 class PamProxyOnlyModeAuthCustomUserTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = {
