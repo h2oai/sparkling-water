@@ -27,7 +27,7 @@ import org.scalatest.junit.JUnitRunner
 import java.io.{File, FileWriter}
 
 @RunWith(classOf[JUnitRunner])
-@Ignore("still unstable, to be fixed and unignored next release (SW-2779)")
+@Ignore //still unstable, to be fixed and unignored next release (SW-2779)
 class PamProxyOnlyModeAuthCustomUserTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = {
