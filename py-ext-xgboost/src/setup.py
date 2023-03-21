@@ -11,7 +11,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION',
+    name='h2o_pysparkling_ext_xgboost',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -38,15 +38,8 @@ SUBST_PYTHON_VERSIONS
     packages=find_packages(),
 
     # run-time dependencies
-    install_requires=[
-        'requests',
-        'tabulate',
-        'future',
-        'h2o_pysparkling_ext_xgboost==SUBST_SW_VERSION',
-        'h2o_pysparkling_ext_jython_cfunc==SUBST_SW_VERSION'],
+    install_requires=[],
 
     # bundled binary packages
-    package_data={'sparkling_water': ['*.jar'],
-                  'h2o': ['version.txt', 'buildinfo.txt'],
-                  'ai.h2o.sparkling': ['version.txt']},
+    package_data={'sparkling_water_ext_xgboost': ['*.jar', 'version.txt']}},
 )

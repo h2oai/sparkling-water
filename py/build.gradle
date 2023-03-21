@@ -15,6 +15,7 @@ ext {
   FPS = File.pathSeparator
   pythonBinary = findProperty("pythonBinary") ?: "python"
   pkgDir = file("$buildDir/pkg")
+  distSourceDir = file("$buildDir/distSource")
   distDir = file("$buildDir/dist")
   condaDir = file("$buildDir/conda/h2o_pysparkling_${sparkMajorVersion}")
   wheelFile = file("${rootDir}/.gradle/wheels/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl")
@@ -47,12 +48,16 @@ python {
 }
 
 configurations {
-  sparklingWaterAssemblyJar
+  sparklingWaterSlimAssemblyJar
+  sparklingWaterXgboostAssemblyJar
+  sparklingWaterJythonAssemblyJar
   apiGeneration
 }
 
 dependencies {
-  sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
+  sparklingWaterSlimAssemblyJar project(path: ':sparkling-water-assembly-slim', configuration: 'shadow')
+  sparklingWaterXgboostAssemblyJar project(path: ':sparkling-water-assembly-ext-xgboost', configuration: 'shadow')
+  sparklingWaterJythonAssemblyJar project(path: ':sparkling-water-assembly-ext-jython-cfunc', configuration: 'shadow')
   apiGeneration "org.scala-lang:scala-library:${scalaVersion}"
   apiGeneration project(path: ':sparkling-water-api-generation', configuration: 'shadow')
   apiGeneration project(path: ':sparkling-water-assembly', configuration: 'shadow')
@@ -223,12 +228,8 @@ def copyH2OFromH2OWheel(File h2oPythonWheel) {
   }
 }
 
-//
-// Make PySparkling distribution zip package
-//
-task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.sparklingWaterAssemblyJar]) {
-
-  doFirst {
+task createPkg(dependsOn: [checkPythonEnv, configurations.sparklingWaterSlimAssemblyJar]) {
+  doLast {
     def H2O_HOME = System.getenv("H2O_HOME")
 
     // if both properties are set, give precedence to H2O_HOME
@@ -240,7 +241,7 @@ task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.sparklingW
     // Copy basic python setup
     copyPySetup()
     def replaceStr =
-      """
+            """
 import zipfile
 from os import path
 
@@ -283,20 +284,43 @@ else:
     }
 
     // Copy sparkling water assembly jar
-    def fatJar = configurations.sparklingWaterAssemblyJar.singleFile
+    def fatJar = configurations.sparklingWaterSlimAssemblyJar.singleFile
     copy {
       from fatJar
       into file("${project.pkgDir}/sparkling_water")
-      rename ".*", "sparkling_water_assembly.jar"
+      rename ".*", "sparkling_water_slim_assembly.jar"
     }
     // Save comment into module file
     file("${project.pkgDir}/sparkling_water/").mkdir()
     file("${project.pkgDir}/sparkling_water/__init__.py").write("# Sparkling-water JAR holder for pySparkling module.")
   }
+}
+
+task createDistSourceDir(type: Copy, dependsOn: createPkg) {
+  from pkgDir
+  into distSourceDir
+}
+
+task distPython(type: Zip, dependsOn: [createDistSourceDir]) {
+  doFirst {
+    copy {
+      from configurations.sparklingWaterXgboostAssemblyJar.singleFile
+      into file("${distSourceDir}/sparkling_water_ext_xgboost")
+      rename ".*", "sparkling_water_ext_xgboost_assembly.jar"
+    }
+    file("${distSourceDir}/sparkling_water_ext_xgboost/__init__.py").write("# Sparkling-water JAR holder for pySparklingExtXgboost module.")
+    copy {
+      from configurations.sparklingWaterJythonAssemblyJar.singleFile
+      into file("${distSourceDir}/sparkling_water_ext_jython_cfunc")
+      rename ".*", "sparkling_water_ext_jython_cfunc_assembly.jar"
+    }
+    file("${distSourceDir}/sparkling_water_ext_jython_cfunc/__init__.py").write("# Sparkling-water JAR holder for pySparklingExtJythonCfunc module.")
+  }
+  
   // Configure proper name
   archiveBaseName = "h2o_pysparkling_${sparkMajorVersion}"
 
-  from pkgDir
+  from distSourceDir
   destinationDirectory = distDir
 }
 
@@ -324,7 +348,7 @@ def createIntegTestArgs() {
     "spark.test.home=${sparkHome}",
     "spark.ext.h2o.log.dir=${buildDir}/h2ologs-itest",
     "spark.ext.h2o.external.disable.version.check=true",
-    "spark.ext.h2o.testing.path.to.sw.jar=${configurations.sparklingWaterAssemblyJar.singleFile}"
+    "spark.ext.h2o.testing.path.to.sw.jar=${configurations.sparklingWaterSlimAssemblyJar.singleFile}"
   ]
 }
 
@@ -429,10 +453,10 @@ task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-wat
 clean.dependsOn cleanPython
 clean.dependsOn cleanGeneratedApi
 createVersionFile.dependsOn clean
-distPython.dependsOn createVersionFile
-distPython.dependsOn generateAlgorithmApi
-distPython.dependsOn generateMOJOApi
-distPython.dependsOn generateConf
+createPkg.dependsOn createVersionFile
+createPkg.dependsOn generateAlgorithmApi
+createPkg.dependsOn generateMOJOApi
+createPkg.dependsOn generateConf
 
 build.dependsOn distPython
 test.dependsOn testPython

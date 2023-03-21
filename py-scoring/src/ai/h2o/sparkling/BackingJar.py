@@ -25,3 +25,27 @@ class BackingJar(object):
     @staticmethod
     def getRelativePath():
         return "sparkling_water/" + BackingJar.getName()
+
+
+class BackingJar(object):
+
+    def __init__(self, name, module):
+        self._name = name
+        self._module = module
+
+    def getName(self):
+        return self._name
+
+    def getModule(self):
+        return self._module
+
+    def getRelativePath(self):
+        return self._module + "/" + self._name
+
+    @staticmethod
+    def getMainBackingJar():
+        return BackingJar.getBackingJars()[0]
+
+    @staticmethod
+    def getBackingJars():
+        return [new BackingJar(name = "sparkling_water_scoring_assembly.jar", module = "sparkling_water"),]
