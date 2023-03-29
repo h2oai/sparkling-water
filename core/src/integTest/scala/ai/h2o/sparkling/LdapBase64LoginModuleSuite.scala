@@ -28,11 +28,11 @@ import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
-// POC ONLY, Base64 can be replaced with anything
 @RunWith(classOf[JUnitRunner])
-class CustomLdapAuthModuleSuite extends LdapTestSuiteBase {
+class LdapBase64LoginModuleSuite extends LdapTestSuiteBase {
 
-  private val LdapAdminPasswordB64 = Base64.getEncoder.encodeToString(LdapAdminPassword.getBytes(StandardCharsets.UTF_8))
+  private val LdapAdminPasswordB64 =
+    Base64.getEncoder.encodeToString(LdapAdminPassword.getBytes(StandardCharsets.UTF_8))
   private val LdapBase64ConnectionConfig =
     s"""
        |ldaploginmodule {
@@ -54,6 +54,7 @@ class CustomLdapAuthModuleSuite extends LdapTestSuiteBase {
     val conf = new H2OConf()
       .setUserName(SwClusterOwnerName)
       .setPassword(SwClusterOwnerPassword)
+      .setProxyLoginOnlyDisabled() //avoiding internal credentials generation in h2oconf, query method used to do a check
     query[PingV3](new URI(hc.flowURL()), "/3/Ping", conf)
   }
 
@@ -62,10 +63,11 @@ class CustomLdapAuthModuleSuite extends LdapTestSuiteBase {
     val sparkConf = defaultSparkConf
       .set("spark.ext.h2o.ldap.login", "true")
       .set("spark.ext.h2o.user.name", SwClusterOwnerName)
-      .set("spark.ext.h2o.password", SwClusterOwnerPassword)
+      .set("spark.ext.h2o.proxy.login.only", "true")
       .set("spark.ext.h2o.login.conf", tmpFile.getAbsolutePath)
     val result = sparkSession("local-cluster[2,1,1024]", sparkConf)
-    result.sparkContext.addFile(classOf[CustomLdapAuthModuleSuite].getClassLoader.getResource("log4j.properties").getPath)
+    result.sparkContext.addFile(
+      classOf[LdapBase64LoginModuleSuite].getClassLoader.getResource("log4j.properties").getPath)
     result
   }
 

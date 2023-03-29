@@ -23,7 +23,9 @@ import javax.security.auth.callback.CallbackHandler
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-// POC ONLY, Base64 can be replaced with anything
+/**
+  * An adapter for org.eclipse.jetty.jaas.spi.LdapLoginModule taking base64 password instead of plain text.
+  */
 class LdapBase64LoginModule extends org.eclipse.jetty.jaas.spi.LdapLoginModule {
 
   private val Base64PasswordPropertyName = "base64BindPassword"
@@ -36,17 +38,16 @@ class LdapBase64LoginModule extends org.eclipse.jetty.jaas.spi.LdapLoginModule {
       javaOptions: util.Map[String, _]): Unit = {
     val options = collection.mutable.Map(javaOptions.asScala.asInstanceOf[mutable.Map[String, AnyRef]].toSeq: _*)
     if (options.isDefinedAt(BindPasswordPropertyName)) {
-      throw new RuntimeException(
+      throw new IllegalArgumentException(
         s"$BindPasswordPropertyName option not supported, please use $Base64PasswordPropertyName")
     }
 
     options
-      .get(Base64PasswordPropertyName)
+      .remove(Base64PasswordPropertyName)
       .map(_.asInstanceOf[String])
       .foreach { pwd =>
         options.put(BindPasswordPropertyName, decodeBase64(pwd))
       }
-    options.remove(Base64PasswordPropertyName)
     super.initialize(subject, callbackHandler, sharedState, options.asJava)
   }
 
