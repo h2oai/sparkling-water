@@ -1,6 +1,58 @@
 Change Log
 ==========
 
+v3.40.0.2-1 (2023-03-21)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.2-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.2-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.2-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.2-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.2-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.2-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.2-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.2-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.2-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2780 <https://0xdata.atlassian.net/browse/SW-2780>`__ - Temporary ignoring of pam unstable tests
+   -  `SW-2778 <https://0xdata.atlassian.net/browse/SW-2778>`__ - Upgrade to H2O 3.40.0.2
+   -  `SW-2776 <https://0xdata.atlassian.net/browse/SW-2776>`__ - Improve DAI Mojo tests
+   -  `SW-2775 <https://0xdata.atlassian.net/browse/SW-2775>`__ - Refresh README
+
+v3.40.0.1-1 (2023-02-24)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.1-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.1-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.1-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.1-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.1-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.1-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.1-1-3.3/index.html>`__
+
+-  Bug
+
+   -  `SW-2774 <https://0xdata.atlassian.net/browse/SW-2774>`__ -  Bug in writing CV mojos (loop index not used)
+   -  `SW-2694 <https://0xdata.atlassian.net/browse/SW-2694>`__ - Integration test suite sometimes fails
+
+-  New Feature
+
+   -  `SW-2773 <https://0xdata.atlassian.net/browse/SW-2773>`__ - Add  "proxy only" authentication mode
+
+-  Improvement
+
+   -  `SW-2771 <https://0xdata.atlassian.net/browse/SW-2771>`__ - Uprade to H2O 3.40.0.1
+   -  `SW-2770 <https://0xdata.atlassian.net/browse/SW-2770>`__ - Add Support for Python 3.9
+   -  `SW-2769 <https://0xdata.atlassian.net/browse/SW-2769>`__ -  Remove namedMojoOutputColumns from API
+   -  `SW-2763 <https://0xdata.atlassian.net/browse/SW-2763>`__ - Update Spark in Docker Images to 3.2.3
+   -  `SW-2757 <https://0xdata.atlassian.net/browse/SW-2757>`__ - Update Spark in Docker Images to 3.3.2
+
+-  Engineering Story
+
+   -  `SW-2768 <https://0xdata.atlassian.net/browse/SW-2768>`__ - Deprecate Support for Apache  Spark 2.3
+   -  `SW-2767 <https://0xdata.atlassian.net/browse/SW-2767>`__ - Fix DBC tests
+   -  `SW-2753 <https://0xdata.atlassian.net/browse/SW-2753>`__ - Upgrade Sparkling Water Snapshot Version to 3.40.0.1-1-SNAPSHOT
+
 v3.38.0.4-1 (2023-01-06)
 ------------------------
 Downloads:

@@ -67,6 +67,8 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def ldapLogin: Boolean = sparkConf.getBoolean(PROP_LDAP_LOGIN._1, PROP_LDAP_LOGIN._2)
 
+  def proxyLoginOnly: Boolean = sparkConf.getBoolean(PROP_PROXY_LOGIN_ONLY._1, PROP_PROXY_LOGIN_ONLY._2)
+
   def kerberosLogin: Boolean = sparkConf.getBoolean(PROP_KERBEROS_LOGIN._1, PROP_KERBEROS_LOGIN._2)
 
   def pamLogin: Boolean = sparkConf.getBoolean(PROP_PAM_LOGIN._1, PROP_PAM_LOGIN._2)
@@ -231,6 +233,10 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setLdapLoginEnabled(): H2OConf = set(PROP_LDAP_LOGIN._1, value = true)
 
   def setLdapLoginDisabled(): H2OConf = set(PROP_LDAP_LOGIN._1, value = false)
+
+  def setProxyLoginOnlyEnabled(): H2OConf = set(PROP_PROXY_LOGIN_ONLY._1, value = true)
+
+  def setProxyLoginOnlyDisabled(): H2OConf = set(PROP_PROXY_LOGIN_ONLY._1, value = false)
 
   def setKerberosLoginEnabled(): H2OConf = set(PROP_KERBEROS_LOGIN._1, value = true)
 
@@ -475,6 +481,13 @@ object SharedBackendConf {
     """setLdapLoginEnabled()
       |setLdapLoginDisabled()""".stripMargin,
     "Enable LDAP login.")
+
+  val PROP_PROXY_LOGIN_ONLY: BooleanOption = (
+    "spark.ext.h2o.proxy.login.only",
+    false,
+    """setProxyLoginOnlyEnabled()
+      |setProxyLoginOnlyDisabled()""".stripMargin,
+    "Enable proxy only login for the chosen login method.")
 
   val PROP_KERBEROS_LOGIN: BooleanOption = (
     "spark.ext.h2o.kerberos.login",

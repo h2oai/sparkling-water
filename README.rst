@@ -1,12 +1,13 @@
+|sparkling-water-logo|
+
+|mvn-badge| |apache-2-0-license| |Powered by H2O.ai|
+
 Sparkling Water
 ===============
 
-|Join the chat at https://gitter.im/h2oai/sparkling-water|
-|image2| |image3| |Powered by H2O.ai|
+Sparkling Water integrates `H2O-3 <https://github.com/h2oai/h2o-3/>`__, a fast scalable machine learning engine with `Apache Spark <https://spark.apache.org/>`__. It provides:
 
-Sparkling Water integrates |H2O|'s fast scalable machine learning engine with Spark. It provides:
-
-- Utilities to publish Spark data structures (RDDs, DataFrames, Datasets) as H2O's frames and vice versa.
+- Utilities to publish Spark data structures (RDDs, DataFrames, Datasets) as H2O-3's frames and vice versa.
 - DSL to use Spark data structures as input for H2O's algorithms.
 - Basic building blocks to create ML applications utilizing Spark and H2O APIs.
 - Python interface enabling use of Sparkling Water directly from PySpark.
@@ -16,67 +17,38 @@ Getting Started
 
 User Documentation
 ~~~~~~~~~~~~~~~~~~
-The documentation contains also documentation for our clients, PySparkling and RSparkling.
 
-- `Sparkling Water For Spark 3.3 <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/index.html>`__
-- `Sparkling Water For Spark 3.2 <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/index.html>`__
-- `Sparkling Water For Spark 3.1 <http://docs.h2o.ai/sparkling-water/3.1/latest-stable/doc/index.html>`__
-- `Sparkling Water For Spark 3.0 <http://docs.h2o.ai/sparkling-water/3.0/latest-stable/doc/index.html>`__
-- `Sparkling Water For Spark 2.4 <http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/index.html>`__
-- `Sparkling Water For Spark 2.3 <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/index.html>`__
+`Read the documentation for Spark 3.3 <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/index.html>`__ (or
+`3.2 <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/index.html>`__ ,
+`3.1 <http://docs.h2o.ai/sparkling-water/3.1/latest-stable/doc/index.html>`__,
+`3.0 <http://docs.h2o.ai/sparkling-water/3.0/latest-stable/doc/index.html>`__,
+`2.4 <http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/index.html>`__,
+`2.3 <http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/index.html>`__)
 
 Download Binaries
 ~~~~~~~~~~~~~~~~~
 
-- `Latest version for Spark 3.3 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/latest.html>`__
-- `Latest version for Spark 3.2 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/latest.html>`__
-- `Latest version for Spark 3.1 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/latest.html>`__
-- `Latest version for Spark 3.0 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/latest.html>`__
-- `Latest version for Spark 2.4 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/latest.html>`__
-- `Latest version for Spark 2.3 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/latest.html>`__
+`Download the latest version for Spark 3.3 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/latest.html>`__ (or
+`3.2 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/latest.html>`__,
+`3.1 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/latest.html>`__,
+`3.0 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/latest.html>`__,
+`2.4 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/latest.html>`__,
+`2.3 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/latest.html>`__)
 
-
-Maven
-~~~~~
-
-Each Sparkling Water release is published into Maven central with following coordinates:
-
-- ``ai.h2o:sparkling-water-core_{{scala_version}}:{{version}}`` - Includes core of Sparkling Water
-- ``ai.h2o:sparkling-water-examples_{{scala_version}}:{{version}}`` - Includes example applications
-- ``ai.h2o:sparkling-water-repl_{{scala_version}}:{{version}}`` - Spark REPL integration into H2O Flow UI
-- ``ai.h2o:sparkling-water-ml_{{scala_version}}:{{version}}`` - Extends Spark ML package by H2O-based transformations
-- ``ai.h2o:sparkling-water-scoring_{{scala_version}}:{{version}}`` - A library containing scoring logic and definition of Sparkling Water MOJO models.
-- ``ai.h2o:sparkling-water-scoring-package_{{scala_version}}:{{version}}`` - Lightweight Sparkling Water package including all dependencies required just for scoring with H2O-3 and DAI MOJO models.
-- ``ai.h2o:sparkling-water-package_{{scala_version}}:{{version}}`` - Sparkling Water package containing all dependencies required for model training and scoring. This is designed to use as Spark package via ``--packages`` option.
-
-   **Note:** The ``{{version}}`` references to a release version of Sparkling Water, the ``{{scala_version}}``
-   references to Scala base version.
-
-The full list of published packages is available
-`here <http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*>`__.
-
-Sparkling Water Requirements
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--  Linux/OS X/Windows
--  Java 8+
--  Python 2.7+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 2.3 - 3.0
--  Python 3.6+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 3.1 - 3.2
--  Python 3.7+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 3.3
--  `Apache Spark 2.3+ <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
+Each Sparkling Water release is also published into the Maven Central (more details below).
 
 ---------------
 
-Use Sparkling Water
--------------------
+Try Sparkling Water!
+--------------------
 
 Sparkling Water is distributed as a Spark application library which can be used by any Spark application.
 Furthermore, we provide also zip distribution which bundles the library and shell scripts.
 
 There are several ways of using Sparkling Water:
 
-- Sparkling Shell
-- Sparkling Water driver
+- Sparkling Shell (Spark Shell with Sparkling Water included)
+- Sparkling Water driver (Spark Submit with Sparkling Water included)
 - Spark Shell and include Sparkling Water library via ``--jars`` or ``--packages`` option
 - Spark Submit and include Sparkling Water library via ``--jars`` or ``--packages`` option
 - PySpark with PySparkling
@@ -86,7 +58,7 @@ Run Sparkling shell
 ~~~~~~~~~~~~~~~~~~~
 
 The Sparkling shell encapsulates a regular Spark shell and append Sparkling Water library on the classpath via ``--jars`` option.
-The Sparkling Shell supports creation of an |H2O| cloud and execution of |H2O| algorithms.
+The Sparkling Shell supports creation of an H2O-3 cloud and execution of H2O-3 algorithms.
 
 1. Either download or build Sparkling Water
 2. Configure the location of Spark cluster:
@@ -114,7 +86,7 @@ The Sparkling Shell supports creation of an |H2O| cloud and execution of |H2O| a
       import ai.h2o.sparkling._
       val hc = H2OContext.getOrCreate()
 
-   ``H2OContext`` starts H2O services on top of Spark cluster and provides primitives for transformations between |H2O| and Spark data structures.
+   ``H2OContext`` starts H2O services on top of Spark cluster and provides primitives for transformations between H2O-3 and Spark data structures.
 
 
 Use Sparkling Water with PySpark
@@ -135,6 +107,25 @@ See `Windows Tutorial <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/
 Sparkling Water examples
 ~~~~~~~~~~~~~~~~~~~~~~~~
 To see how to run examples for Sparkling Water, please see `Running Examples <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/devel/running_examples.html>`__.
+
+Maven packages
+~~~~~~~~~~~~~~
+
+Each Sparkling Water release is published into Maven central with following coordinates:
+
+- ``ai.h2o:sparkling-water-core_{{scala_version}}:{{version}}`` - Includes core of Sparkling Water
+- ``ai.h2o:sparkling-water-examples_{{scala_version}}:{{version}}`` - Includes example applications
+- ``ai.h2o:sparkling-water-repl_{{scala_version}}:{{version}}`` - Spark REPL integration into H2O Flow UI
+- ``ai.h2o:sparkling-water-ml_{{scala_version}}:{{version}}`` - Extends Spark ML package by H2O-based transformations
+- ``ai.h2o:sparkling-water-scoring_{{scala_version}}:{{version}}`` - A library containing scoring logic and definition of Sparkling Water MOJO models.
+- ``ai.h2o:sparkling-water-scoring-package_{{scala_version}}:{{version}}`` - Lightweight Sparkling Water package including all dependencies required just for scoring with H2O-3 and DAI MOJO models.
+- ``ai.h2o:sparkling-water-package_{{scala_version}}:{{version}}`` - Sparkling Water package containing all dependencies required for model training and scoring. This is designed to use as Spark package via ``--packages`` option.
+
+   **Note:** The ``{{version}}`` references to a release version of Sparkling Water, the ``{{scala_version}}``
+   references to Scala base version.
+
+The full list of published packages is available
+`here <http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*>`__.
 
 --------------
 
@@ -239,11 +230,11 @@ Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/3.
 
 .. |Join the chat at https://gitter.im/h2oai/sparkling-water| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/h2oai/sparkling-water?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-.. |image2| image:: https://maven-badges.herokuapp.com/maven-central/ai.h2o/sparkling-water-core_2.12/badge.svg
+.. |mvn-badge| image:: https://maven-badges.herokuapp.com/maven-central/ai.h2o/sparkling-water-core_2.12/badge.svg
    :target: http://search.maven.org/#search%7Cgav%7C1%7Cg:%22ai.h2o%22%20AND%20a:%22sparkling-water-core_2.12%22
-.. |image3| image:: https://img.shields.io/badge/License-Apache%202-blue.svg
+.. |apache-2-0-license| image:: https://img.shields.io/badge/License-Apache%202-blue.svg
    :target: LICENSE
+.. |sparkling-water-logo| image:: http://s3.amazonaws.com/h2o-release/h2o-classic/master/1761/docs-website/_images/sparkling-water.png
 .. |Powered by H2O.ai| image:: https://img.shields.io/badge/powered%20by-h2oai-yellow.svg
    :target: https://github.com/h2oai/
-.. |H2O| replace:: H\ :sub:`2`\ O
 

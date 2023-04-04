@@ -118,6 +118,6 @@ class H2OConfTestSuite extends FunSuite with SparkTestContext with Matchers {
     val getterGroups = Seq(Set("backendClusterMode", "runsInExternalClusterMode", "runsInInternalClusterMode"))
     val numberOfProperties =
       testExistenceOfGettersAndSetters(classOf[SharedBackendConf], SharedBackendConf.getClass, getterGroups)
-    numberOfProperties shouldEqual 58
+    numberOfProperties shouldEqual 59
   }
 }

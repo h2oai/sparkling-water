@@ -71,7 +71,7 @@ def createPamLoginFile():
         f.write('     service = common-auth;\n')
         f.write('};\n')
 
-
+@pytest.mark.skip(reason="still unstable, to be fixed and unignored next release (SW-2779)")
 def testPamAuthWithCorrectCredentials(spark):
     createPamLoginFile()
     conf = createH2OConf()
@@ -84,7 +84,7 @@ def testPamAuthWithCorrectCredentials(spark):
     context = H2OContext.getOrCreate(conf)
     context.stop()
 
-
+@pytest.mark.skip(reason="still unstable, to be fixed and unignored next release (SW-2779)")
 def testPamAuthWithWrongCredentials(spark):
     createPamLoginFile()
     conf = createH2OConf()

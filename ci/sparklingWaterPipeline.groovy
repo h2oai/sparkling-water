@@ -315,9 +315,10 @@ def rUnitTests() {
         stage('QA: RUnit Tests - ' + config.backendMode) {
             if (config.runRUnitTests.toBoolean()) {
                 try {
+                    sh """R -e 'dir.create(Sys.getenv("R_LIBS_USER"), recursive = TRUE)'"""
                     if (config.buildAgainstH2OBranch.toBoolean()) {
                         sh """
-                                R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OBranchMajorVersion()}.99999.tar.gz", type="source", repos=NULL)'
+                            R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OBranchMajorVersion()}.99999.tar.gz", type="source", repos=NULL)'
                             """
                     } else {
                         sh """
