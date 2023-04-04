@@ -63,7 +63,7 @@ task cleanR(type: Delete) {
   delete getBuildDir()
 }
 
-task distR(type: Exec, dependsOn: [configurations.sparklingWaterAssemblyJar, cleanR]) {
+task distR(type: Exec, dependsOn: [':sparkling-water-assembly:shadowJar', cleanR]) {
   doFirst {
     copyRSetup()
   }
@@ -122,7 +122,7 @@ task cleanGeneratedApi(type: Delete) {
 task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
-  main = "ai.h2o.sparkling.api.generation.ConfigurationRunner"
+  mainClass = "ai.h2o.sparkling.api.generation.ConfigurationRunner"
   args = ["$projectDir/src-gen/R/ai/h2o/sparkling", "R"]
   standardOutput = System.out
   errorOutput = System.err
@@ -131,7 +131,7 @@ task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-wat
 task generateMetrics(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
-  main = "ai.h2o.sparkling.api.generation.MOJOModelAPIRunner"
+  mainClass = "ai.h2o.sparkling.api.generation.MOJOModelAPIRunner"
   args = ["R", "$projectDir/src-gen/R"]
   standardOutput = System.out
   errorOutput = System.err
