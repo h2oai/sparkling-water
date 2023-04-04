@@ -66,7 +66,7 @@ task testJar(type: Jar, dependsOn: testClasses) {
 }
 
 // Sources Jar generation
-task sourcesJar(type: Jar) {
+task sourcesJar(type: Jar, dependsOn: [':sparkling-water-assembly-extensions:embeddedAssemblyJar']) {
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
@@ -150,7 +150,7 @@ export H2O_DRIVER_JAR=/path/to/h2o-driver.jar
 // Override ScalaDoc classpath to look only for classes in the scala output dir preventing several warnings for
 // missing elements since we don't use java source dirs
 scaladoc {
-    classpath = files(project.sourceSets.main.compileClasspath, sourceSets.main.scala.outputDir.absolutePath)
+    classpath = files(project.sourceSets.main.compileClasspath, project.sourceSets.main.scala.classesDirectory)
 }
 
 check.dependsOn(checkScalaTestEnv)
