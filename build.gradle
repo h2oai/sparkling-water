@@ -8,17 +8,16 @@
 buildscript {
   repositories {
     mavenCentral()
-    jcenter()
     gradlePluginPortal()
   }
 
   dependencies {
-    classpath "com.bmuschko:gradle-docker-plugin:6.4.0"
-    classpath 'com.github.jengelman.gradle.plugins:shadow:6.0.0'
-    classpath 'net.researchgate:gradle-release:2.8.1'
-    classpath 'kr.motd.gradle:sphinx-gradle-plugin:2.9.0'
-    classpath 'ru.vyarus:gradle-use-python-plugin:2.2.0'
-    classpath 'com.github.jk1:gradle-license-report:1.16'
+    classpath 'com.bmuschko:gradle-docker-plugin:6.7.0'
+    classpath 'gradle.plugin.com.github.johnrengelman:shadow:7.1.2'
+    classpath 'net.researchgate:gradle-release:3.0.0'
+    classpath 'kr.motd.gradle:sphinx-gradle-plugin:2.10.1'
+    classpath 'ru.vyarus:gradle-use-python-plugin:2.3.0'
+    classpath 'com.github.jk1:gradle-license-report:2.0'
     classpath "com.diffplug.spotless:spotless-plugin-gradle:4.4.0"
   }
 }
@@ -167,7 +166,6 @@ configure(subprojects) { project ->
     }
 
     mavenCentral()
-    jcenter()
 
     // Public Sonatype repository
     maven {
