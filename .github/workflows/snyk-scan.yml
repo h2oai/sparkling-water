@@ -7,10 +7,11 @@ on:
       - 'RELEASE-[0-9]+.[0-9]+.[0-9]+.[0-9]+-[0-9]+'
     branches:
       - 'master'
+      - 'devops/snyk-integration'
 
 jobs:
   snyk_scan_test:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -18,19 +19,19 @@ jobs:
           fetch-depth: 0 # To fetch all commits history on branch (Refer: https://github.com/tj-actions/changed-files#usage)
 
       - name: Check changed Deps files
-        uses: tj-actions/changed-files@v10
+        uses: tj-actions/changed-files@v35
         id: changed-files
         with:
           files: |
-            build.gradle$
+            **/build.gradle
 
       - uses: snyk/actions/setup@master
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
           java-version: "8"
           distribution: 'adopt'
 
-      - name: Snyk scan for Java dependancies
+      - name: Snyk scan for Java dependencies
         if: steps.changed-files.outputs.any_changed == 'true'
         run: snyk test --all-projects -d --fail-on=all
         env:
@@ -44,23 +45,23 @@ jobs:
 
       - name: Extract github branch/tag name
         shell: bash
-        run: echo "##[set-output name=ref;]$(echo ${GITHUB_REF##*/})"
+        run: echo "ref=$(echo ${GITHUB_REF##*/})" >> $GITHUB_OUTPUT
         id: extract_ref
 
       - uses: snyk/actions/setup@master
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
           java-version: "8"
           distribution: 'adopt'
 
-      - name: Snyk scan for Java dependancies
+      - name: Snyk scan for Java dependencies
         run: |
           for file in $(find . -name "build.gradle"); do
             file=${file:2}
             echo ""
             echo "##### SCAN $file START #####"
             echo ""
-            snyk monitor --org=h2oai --remote-repo-url=Sparkling-Water --file=$file --project-name=Sparkling-Water/${{ steps.extract_ref.outputs.ref }}/$file -d
+            snyk monitor --org=sparkling-water --remote-repo-url=sparkling-water/${{ steps.extract_ref.outputs.ref }} --file=$file --project-name=SPARKLING-WATER/sparkling-water/${{ steps.extract_ref.outputs.ref }}/$file -d
             echo "##### SCAN $file END #####"
           done
         env:
