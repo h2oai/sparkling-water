@@ -17,7 +17,8 @@
 
 package water.webserver.jetty9
 
-import org.apache.spark.sql.SparkSession
+import ai.h2o.sparkling.H2OContext
+import ai.h2o.sparkling.backend.internal.InternalBackendConf
 
 import java.nio.charset.StandardCharsets
 import java.util
@@ -45,8 +46,8 @@ class LdapAesEncryptedBindPasswordLoginModule extends org.eclipse.jetty.jaas.spi
   private val PaddingMode = "PKCS5Padding"
   private val EncryptedBindPasswordPropertyName = "encryptedBindPassword"
   private val BindPasswordPropertyName = "bindPassword"
-  private val AesKeyPropertyName = "spark.ext.h2o.jetty.aes.login.module.key"
-  private val AesIvPropertyName = "spark.ext.h2o.jetty.aes.login.module.iv"
+  private val AesKeyPropertyName = InternalBackendConf.PROP_JETTY_LDAP_AES_ENCRYPTED_BIND_PASSWORD_LOGIN_MODULE_KEY._1
+  private val hc = H2OContext.get().getOrElse(throw new IllegalStateException("No H2O Session available!"))
 
   override def initialize(
       subject: Subject,
@@ -59,14 +60,10 @@ class LdapAesEncryptedBindPasswordLoginModule extends org.eclipse.jetty.jaas.spi
         s"$BindPasswordPropertyName option not supported, please use $EncryptedBindPasswordPropertyName")
     }
 
-    val spark = SparkSession.getActiveSession
-      .getOrElse(throw new IllegalStateException("No Spark Session available!"))
-    val inputKey = spark.conf
-      .getOption(AesKeyPropertyName)
+    val inputKey = hc.getConf.jettyLdapAesEncryptedBindPasswordLoginModuleKey
       .map(_.trim)
       .getOrElse(throw new IllegalStateException(s"$AesKeyPropertyName must be set"))
-    val inputIV = spark.conf
-      .getOption(AesIvPropertyName)
+    val inputIV = hc.getConf.jettyLdapAesEncryptedBindPasswordLoginModuleIV
       .map(_.trim)
       .getOrElse("0" * 32)
 
