@@ -56,6 +56,12 @@ trait InternalBackendConf extends SharedBackendConf with InternalBackendConfExte
   def isDirectIpConfigurationEnabled: Boolean =
     sparkConf.getBoolean(PROP_DIRECT_IP_CONFIGURATION._1, PROP_DIRECT_IP_CONFIGURATION._2)
 
+  def jettyLdapAesEncryptedBindPasswordLoginModuleKey: Option[String] =
+    sparkConf.getOption(PROP_JETTY_LDAP_AES_ENCRYPTED_BIND_PASSWORD_LOGIN_MODULE_KEY._1)
+
+  def jettyLdapAesEncryptedBindPasswordLoginModuleIV: Option[String] =
+    sparkConf.getOption(PROP_JETTY_LDAP_AES_ENCRYPTED_BIND_PASSWORD_LOGIN_MODULE_IV._1)
+
   /** Setters */
   def setNumH2OWorkers(numWorkers: Int): H2OConf = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
 
@@ -89,6 +95,12 @@ trait InternalBackendConf extends SharedBackendConf with InternalBackendConfExte
   def setDirectIpConfigurationEnabled(): H2OConf = set(PROP_DIRECT_IP_CONFIGURATION._1, true)
 
   def setDirectIpConfigurationDisabled(): H2OConf = set(PROP_DIRECT_IP_CONFIGURATION._1, false)
+
+  def setJettyLdapAesEncryptedBindPasswordLoginModuleKey(key: String): H2OConf =
+    set(PROP_JETTY_LDAP_AES_ENCRYPTED_BIND_PASSWORD_LOGIN_MODULE_KEY._1, key)
+
+  def setJettyLdapAesEncryptedBindPasswordLoginModuleIV(iv: String): H2OConf =
+    set(PROP_JETTY_LDAP_AES_ENCRYPTED_BIND_PASSWORD_LOGIN_MODULE_IV._1, iv)
 }
 
 object InternalBackendConf {
@@ -165,4 +177,18 @@ object InternalBackendConf {
     """If the property is disabled, Spark executor doesn't assign its IP address to H2O node directly. The IP address is
       |suggested to H2O node and its bootstrap logic performs additional network interface availability checks before
       |the IP is assigned to the node.""".stripMargin)
+
+  val PROP_JETTY_LDAP_AES_ENCRYPTED_BIND_PASSWORD_LOGIN_MODULE_KEY: OptionOption =
+    (
+      "spark.ext.h2o.jetty.aes.login.module.key",
+      None,
+      "setJettyLdapAesEncryptedBindPasswordLoginModuleKey(String)",
+      "Specific to water.webserver.jetty9.LdapAesEncryptedBindPasswordLoginModule. AES CBC Key")
+
+  val PROP_JETTY_LDAP_AES_ENCRYPTED_BIND_PASSWORD_LOGIN_MODULE_IV: OptionOption =
+    (
+      "spark.ext.h2o.jetty.aes.login.module.iv",
+      None,
+      "setJettyLdapAesEncryptedBindPasswordLoginModuleIV(String)",
+      "Specific to water.webserver.jetty9.LdapAesEncryptedBindPasswordLoginModule. AES CBC IV. When no IV is provided an all zero IV is used.")
 }
