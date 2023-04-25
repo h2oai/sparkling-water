@@ -102,7 +102,7 @@ class H2OConfTestSuite extends FunSuite with SparkTestContext with Matchers {
   test("Test parity between properties and getters/setters on InternalBackendConf") {
     val numberOfProperties =
       testExistenceOfGettersAndSetters(classOf[InternalBackendConf], InternalBackendConf.getClass)
-    numberOfProperties shouldEqual 9
+    numberOfProperties shouldEqual 11
   }
 
   test("Test parity between properties and getters/setters on ExternalBackendConf") {
