@@ -139,9 +139,17 @@ def copyPySetup() {
         .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
         .replaceAll("SUBST_PYTHON_VERSIONS", convertSupportedPythonVersionsToPyPiDefinitions(supportedPythonVersions))
     }
+    into pkgDir
+  }
+
+  copy {
     from("$projectDir") {
       include 'README.rst'
     }
+    into pkgDir
+  }
+
+  copy {
     from("$projectDir/src") {
       include 'MANIFEST.in'
       include 'setup.cfg'
@@ -149,6 +157,10 @@ def copyPySetup() {
       include 'ai/**/*'
       exclude '**/*.pyc'
     }
+    into pkgDir
+  }
+
+  copy {
     from("$rootDir/py-scoring/src") {
       include 'ai/h2o/sparkling/**/*'
       include 'pysparkling/**/*'
@@ -159,12 +171,15 @@ def copyPySetup() {
       exclude 'pysparkling/__init__.py'
       exclude '**/*.pyc'
     }
+    into pkgDir
+  }
+
+  copy {
     from("$projectDir/src-gen") {
       include 'ai/**/*'
       exclude '**/*.pyc'
     }
     into pkgDir
-    duplicatesStrategy DuplicatesStrategy.WARN
   }
 
   copy {
@@ -172,6 +187,10 @@ def copyPySetup() {
       include 'bld.bat'
       include 'build.sh'
     }
+    into condaDir
+  }
+
+  copy {
     from("$projectDir/conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION") {
       include 'meta.yaml'
     }
@@ -181,9 +200,7 @@ def copyPySetup() {
         .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
     }
     into condaDir
-    duplicatesStrategy DuplicatesStrategy.WARN
   }
-
 }
 
 
@@ -193,7 +210,6 @@ def copyH2OFromH2OHome(String h2oHome) {
     into file("${project.pkgDir}/h2o")
     exclude '**/*.pyc'
     exclude '**/h2o.jar'
-    duplicatesStrategy DuplicatesStrategy.WARN
   }
 }
 
@@ -204,14 +220,13 @@ def copyH2OFromH2OWheel(File h2oPythonWheel) {
     include 'h2o/**'
     exclude '**/*.pyc'
     exclude '**/h2o.jar'
-    duplicatesStrategy DuplicatesStrategy.WARN
   }
 }
 
 //
 // Make PySparkling distribution zip package
 //
-task distPython(type: Zip, dependsOn: [checkPythonEnv, ':sparkling-water-assembly:shadowJar']) {
+task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.sparklingWaterAssemblyJar]) {
 
   doFirst {
     def H2O_HOME = System.getenv("H2O_HOME")
@@ -273,7 +288,6 @@ else:
       from fatJar
       into file("${project.pkgDir}/sparkling_water")
       rename ".*", "sparkling_water_assembly.jar"
-      duplicatesStrategy DuplicatesStrategy.WARN
     }
     // Save comment into module file
     file("${project.pkgDir}/sparkling_water/").mkdir()
@@ -326,7 +340,6 @@ task buildTests(type: Copy, dependsOn: [distPython, cleanPythonTests]) {
     include '**/*.*'
   }
   into "${getBuildDir()}/tests"
-  duplicatesStrategy DuplicatesStrategy.WARN
 }
 
 task testPythonMojoPipeline(type: PythonTask, dependsOn: buildTests) {
@@ -386,7 +399,7 @@ task cleanGeneratedApi(type: Delete) {
 task generateAlgorithmApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
-  mainClass = "ai.h2o.sparkling.api.generation.AlgorithmAPIRunner"
+  main = "ai.h2o.sparkling.api.generation.AlgorithmAPIRunner"
   args = ["py", "$projectDir/src-gen"]
   standardOutput = System.out
   errorOutput = System.err
@@ -395,7 +408,7 @@ task generateAlgorithmApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':spark
 task generateMOJOApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
-  mainClass = "ai.h2o.sparkling.api.generation.MOJOModelAPIRunner"
+  main = "ai.h2o.sparkling.api.generation.MOJOModelAPIRunner"
   args = ["py", "$projectDir/src-gen"]
   standardOutput = System.out
   errorOutput = System.err
@@ -404,7 +417,7 @@ task generateMOJOApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-
 task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
-  mainClass = "ai.h2o.sparkling.api.generation.ConfigurationRunner"
+  main = "ai.h2o.sparkling.api.generation.ConfigurationRunner"
   args = ["$projectDir/src-gen/ai/h2o/sparkling", "py"]
   standardOutput = System.out
   errorOutput = System.err

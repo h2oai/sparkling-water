@@ -84,6 +84,17 @@ def copyPySetup() {
         .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
         .replaceAll("SUBST_PYTHON_VERSIONS", convertSupportedPythonVersionsToPyPiDefinitions(supportedPythonVersions))
     }
+    into pkgDir
+  }
+
+  copy {
+    from("$projectDir") {
+      include 'README.rst'
+    }
+    into pkgDir
+  }
+
+  copy {
     from("$projectDir/src") {
       include 'MANIFEST.in'
       include 'setup.cfg'
@@ -91,15 +102,15 @@ def copyPySetup() {
       include 'ai/**/*'
       exclude '**/*.pyc'
     }
-    from("$projectDir") {
-      include 'README.rst'
-    }
+    into pkgDir
+  }
+
+  copy {
     from("$projectDir/src-gen") {
       include 'ai/**/*'
       exclude '**/*.pyc'
     }
     into pkgDir
-    duplicatesStrategy DuplicatesStrategy.WARN
   }
 
   copy {
@@ -107,6 +118,10 @@ def copyPySetup() {
       include 'bld.bat'
       include 'build.sh'
     }
+    into condaDir
+  }
+
+  copy {
     from("$projectDir/conda/h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION") {
       include 'meta.yaml'
     }
@@ -116,14 +131,13 @@ def copyPySetup() {
         .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
     }
     into condaDir
-    duplicatesStrategy DuplicatesStrategy.WARN
   }
 }
 
 //
 // Make PySparkling distribution zip package
 //
-task distPython(type: Zip, dependsOn: ':sparkling-water-assembly:shadowJar') {
+task distPython(type: Zip, dependsOn: configurations.sparklingWaterAssemblyJar) {
 
   doFirst {
     copyPySetup()
@@ -134,7 +148,6 @@ task distPython(type: Zip, dependsOn: ':sparkling-water-assembly:shadowJar') {
       from fatJar
       into file("${project.pkgDir}/sparkling_water")
       rename ".*", "sparkling_water_scoring_assembly.jar"
-      duplicatesStrategy DuplicatesStrategy.WARN
     }
     // Save comment into module file
     file("${project.pkgDir}/sparkling_water/").mkdir()
@@ -171,7 +184,6 @@ task buildTests(type: Copy, dependsOn: [distPython, cleanPythonTests]) {
     include '**/*.*'
   }
   into "${getBuildDir()}/tests"
-  duplicatesStrategy DuplicatesStrategy.WARN
 }
 
 task testPythonMojoPipeline(type: PythonTask, dependsOn: buildTests) {
@@ -208,7 +220,7 @@ task cleanGeneratedApi(type: Delete) {
 task generateMOJOApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
-  mainClass = "ai.h2o.sparkling.api.generation.MOJOModelAPIRunner"
+  main = "ai.h2o.sparkling.api.generation.MOJOModelAPIRunner"
   args = ["py", "$projectDir/src-gen"]
   standardOutput = System.out
   errorOutput = System.err

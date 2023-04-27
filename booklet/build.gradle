@@ -40,7 +40,7 @@ task copySources(type: Copy, dependsOn: cleanBooklet) {
 task generateConfiguration(type: JavaExec, dependsOn: [copySources, build]) {
   group = "Execution"
   classpath = sourceSets.main.runtimeClasspath
-  mainClass = "ai.h2o.sparkling.booklet.generation.ConfigurationRunner"
+  main = "ai.h2o.sparkling.booklet.generation.ConfigurationRunner"
   args = ["${buildDir}/src/sections"]
   standardOutput = System.out
   errorOutput = System.err

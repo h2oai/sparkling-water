@@ -78,7 +78,7 @@ task cleanGeneratedConfiguration(type: Delete) {
 task generateAlgorithmParameters(type: JavaExec, dependsOn: [cleanGeneratedDoc, build]) {
   group = "Execution"
   classpath = sourceSets.main.runtimeClasspath
-  mainClass = 'ai.h2o.sparkling.doc.generation.Runner'
+  main = "ai.h2o.sparkling.doc.generation.Runner"
   args = ["${projectDir}/src/site/sphinx/parameters"]
   standardOutput = System.out
   errorOutput = System.err
@@ -87,7 +87,7 @@ task generateAlgorithmParameters(type: JavaExec, dependsOn: [cleanGeneratedDoc, 
 task generateModelDetails(type: JavaExec, dependsOn: [cleanGeneratedDoc, build]) {
   group = "Execution"
   classpath = sourceSets.main.runtimeClasspath
-  mainClass = "ai.h2o.sparkling.doc.generation.Runner"
+  main = "ai.h2o.sparkling.doc.generation.Runner"
   args = ["${projectDir}/src/site/sphinx/model_details"]
   standardOutput = System.out
   errorOutput = System.err
@@ -96,7 +96,7 @@ task generateModelDetails(type: JavaExec, dependsOn: [cleanGeneratedDoc, build])
 task generateMetrics(type: JavaExec, dependsOn: [cleanGeneratedDoc, build]) {
   group = "Execution"
   classpath = sourceSets.main.runtimeClasspath
-  mainClass = "ai.h2o.sparkling.doc.generation.Runner"
+  main = "ai.h2o.sparkling.doc.generation.Runner"
   args = ["${projectDir}/src/site/sphinx/metrics"]
   standardOutput = System.out
   errorOutput = System.err
@@ -105,7 +105,7 @@ task generateMetrics(type: JavaExec, dependsOn: [cleanGeneratedDoc, build]) {
 task generateConfiguration(type: JavaExec, dependsOn: [cleanGeneratedConfiguration, build]) {
   group = "Execution"
   classpath = sourceSets.main.runtimeClasspath
-  mainClass = "ai.h2o.sparkling.doc.generation.ConfigurationRunner"
+  main = "ai.h2o.sparkling.doc.generation.ConfigurationRunner"
   args = ["${projectDir}/src/site/sphinx/configuration"]
   standardOutput = System.out
   errorOutput = System.err
