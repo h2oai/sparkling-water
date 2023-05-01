@@ -13,6 +13,6 @@ release {
     preCommitText = ":tada: "
     versionPropertyFile = "gradle.properties"
     git {
-        requireBranch = null
+        requireBranch.set('')
     }
 }
