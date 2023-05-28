@@ -24,9 +24,6 @@ import javax.servlet.Servlet
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.types.{StructField, StructType}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
@@ -73,7 +70,7 @@ private[api] class RDDsServlet extends ServletBase {
     SparkSessionUtils.active.sparkContext.getPersistentRDDs.values.map(RDDInfo.fromRDD).toArray
   }
 
-  private def convertToH2OFrame(rdd: RDD[_], name: Option[String]): H2OFrame = {
+  private def convertToH2OFrame[T](rdd: RDD[T], name: Option[String]): H2OFrame = {
     if (rdd.isEmpty()) {
       // transform empty Seq in order to create empty H2OFrame
       hc.asH2OFrame(sc.parallelize(Seq.empty[Int]), name)
@@ -89,13 +86,8 @@ private[api] class RDDsServlet extends ServletBase {
         case _: java.sql.Timestamp =>
           hc.asH2OFrame(rdd.asInstanceOf[RDD[java.sql.Timestamp]], name)
         case _: Product =>
-          val first = rdd.asInstanceOf[RDD[Product]].first()
-          val fields = ScalaReflection.getConstructorParameters(first.getClass).map { v =>
-            val schema = ScalaReflection.schemaFor(v._2)
-            StructField(v._1, schema.dataType, schema.nullable)
-          }
-          val df = SparkSessionUtils.active
-            .createDataFrame(rdd.asInstanceOf[RDD[Product]].map(Row.fromTuple), StructType(fields))
+          val rddProduct = rdd.asInstanceOf[RDD[Product]]
+          val df = SparkSessionUtils.active.createDataFrame(rddProduct)
           hc.asH2OFrame(df, name)
         case t => throw new IllegalArgumentException(s"Do not understand type $t")
       }
