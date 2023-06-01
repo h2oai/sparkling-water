@@ -24,12 +24,12 @@ setup(
     download_url='https://github.com/h2oai/sparkling-water/',
     author='H2O.ai',
     author_email='support@h2o.ai',
-    license='Apache v2',
+    license='AGPLv3',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
-        'License :: OSI Approved :: Apache Software License',
+        'License :: OSI Approved :: GNU Affero General Public License v3',
 SUBST_PYTHON_VERSIONS
     ],
     keywords='machine learning, data mining, statistical analysis, modeling, big data, distributed, parallel',

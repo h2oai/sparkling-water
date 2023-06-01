@@ -27,7 +27,7 @@ Documentation describing scoring with Driverless AI MOJO models is located at:
 
 .. |Join the chat at https://gitter.im/h2oai/sparkling-water| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: Join the chat at https://gitter.im/h2oai/sparkling-water?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-.. |License| image:: https://img.shields.io/badge/License-Apache%202-blue.svg
+.. |License| image:: https://img.shields.io/badge/license-AGPL-blue.svg
    :target: LICENSE
 .. |Powered by H2O.ai| image:: https://img.shields.io/badge/powered%20by-h2oai-yellow.svg
    :target: https://github.com/h2oai/

@@ -24,7 +24,7 @@ Imports:
 Suggests: dplyr, testthat
 Description: An extension package for 'sparklyr' that provides an R interface to
     H2O Sparkling Water machine learning library (see <https://github.com/h2oai/sparkling-water> for more information).
-License: Apache License 2.0 | file LICENSE
+License: AGPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
 NeedsCompilation: no

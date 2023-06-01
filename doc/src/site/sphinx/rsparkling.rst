@@ -420,7 +420,7 @@ H2O Booklet (pdf) <http://docs.h2o.ai/h2o/latest-stable/h2o-docs/booklets/RBookl
 
 .. |Join the chat at https://gitter.im/h2oai/rsparkling| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: Join the chat at https://gitter.im/h2oai/rsparkling?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-.. |License| image:: https://img.shields.io/badge/License-Apache%202-blue.svg
+.. |License| image:: https://img.shields.io/badge/license-AGPL-blue.svg
    :target: LICENSE
 .. |Powered by H2O.ai| image:: https://img.shields.io/badge/powered%20by-h2oai-yellow.svg
    :target: https://github.com/h2oai/
