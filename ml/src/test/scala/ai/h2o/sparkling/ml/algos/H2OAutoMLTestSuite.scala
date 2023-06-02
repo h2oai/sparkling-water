@@ -114,4 +114,9 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     models.length shouldEqual automl.getLeaderboard().count()
     models.foreach(_.transform(dataset).collect())
   }
+
+  test("keep binary models should not fail with system agnostic filepath getting method") {
+    val algo = getAlgorithmForLeaderboardTesting.setKeepBinaryModels(true)
+    noException shouldBe thrownBy { algo.fit(dataset) }
+  }
 }

@@ -33,6 +33,7 @@ import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, _}
 
+import java.nio.file.Paths
 import scala.collection.JavaConverters._
 import scala.util.control.NoStackTrace
 
@@ -97,7 +98,7 @@ class H2OAutoML(override val uid: String)
 
     if (getKeepBinaryModels()) {
       val downloadedModel = downloadBinaryModel(leaderModelId, H2OContext.ensure().getConf)
-      binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(leaderModelId)))
+      binaryModel = Some(H2OBinaryModel.read(downloadedModel.toURI.toURL.toString, Some(leaderModelId)))
     } else {
       deleteBinaryModels()
     }
