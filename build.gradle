@@ -247,8 +247,8 @@ clean.doFirst {
 }
 
 static String waitForExitCode0AndReturnOutput(String scriptName, Process proc) {
-    int eightHours = 8 * 60 * 60 * 1000
-    if (proc.waitForOrKill(eightHours) != 0) {
+    int oneHour = 60 * 60 * 1000
+    if (proc.waitForOrKill(oneHour) != 0) {
         throw new IllegalStateException("Running script $scriptName failed! Output: ${proc.text}")
     }
     return proc.text
