@@ -38,15 +38,8 @@ set -x -e
 
 sudo python3 -m pip install -U requests
 sudo python3 -m pip install -U tabulate
-sudo python3 -m pip install -U future
 sudo python3 -m pip install -U six
 sudo python3 -m pip install -U scikit-learn
-
-sudo python2.7 -m pip install -U requests
-sudo python2.7 -m pip install -U tabulate
-sudo python2.7 -m pip install -U future
-sudo python2.7 -m pip install -U six
-sudo python2.7 -m pip install -U scikit-learn
 
 mkdir -p /home/hadoop/h2o
 cd /home/hadoop/h2o
@@ -57,7 +50,6 @@ unzip -o sparkling-water-${var.sw_version}.zip 1> /dev/null & wait
 
 PYSPARKLING_ZIP=$(find /home/hadoop/h2o/ -name h2o_pysparkling_*.zip)
 sudo python3 -m pip install $PYSPARKLING_ZIP
-sudo python2.7 -m pip install $PYSPARKLING_ZIP
 
 export MASTER="yarn-client"
 EOF

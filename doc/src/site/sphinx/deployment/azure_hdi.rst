@@ -15,7 +15,7 @@ The H2O Artificial Intelligence for Azure HDInsight is an application you can in
 Create the H2O AI for Azure HDInsight
 '''''''''''''''''''''''''''''''''''''
 
-**Requirement**: Python 2.7 or 3.
+**Requirements**: Python SUBST_MIN_SUPPORTED_PYTHON+.
 
 Follow the steps below to create a new H2O Artificial Intelligence for Azure HDInsight.
 
