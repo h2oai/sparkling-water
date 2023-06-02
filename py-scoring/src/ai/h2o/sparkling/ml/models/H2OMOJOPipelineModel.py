@@ -39,3 +39,12 @@ class H2OMOJOPipelineModel(H2OAlgorithmMOJOModelBase):
 
     def getOutputSubCols(self):
         return list(self._java_obj.getOutputSubCols())
+
+    def getWithInternalContributions(self):
+        return self._java_obj.getWithInternalContributions()
+
+    def getWithPredictionInterval(self):
+        return self._java_obj.getWithPredictionInterval()
+
+    def getScoringBulkSize(self):
+        return self._java_obj.getScoringBulkSize()

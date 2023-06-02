@@ -53,20 +53,56 @@ test_that("test MOJO contribution (SHAP) values", {
   # request contributions
   settings <- H2OMOJOSettings(withContributions = TRUE)
   mojo <- H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
-  mojoOutput <- mojo$transform(dataset)
+  mojoOutput <- dplyr::collect(mojo$transform(dataset))
 
-  flattenedContributions <- sdf_unnest_wider(mojoOutput, "contributions")
+  flattenedContributions <- tidyr::unnest_wider(data = mojoOutput, col = "contributions")
   expect_equal(colnames(flattenedContributions), c(
-    "ChangeTemp1",                  # input feature
-    "prediction",                   # output prediction
-    "contrib_ChangeTemp===1_c",     # output contributions
-    "contrib_bias_c",               # output contributions
-    "contrib_ChangeTemp===1_l",     # output contributions
-    "contrib_bias_l",               # output contributions
-    "contrib_ChangeTemp===1_n",     # output contributions
-    "contrib_bias_n",               # output contributions
-    "contrib_ChangeTemp===1_s",     # output contributions
-    "contrib_bias_s"))              # output contributions
+    "sepal_len",                         # input feature
+    "sepal_wid",                         # input feature
+    "petal_len",                         # input feature
+    "petal_wid",                         # input feature
+    "prediction",                        # output prediction
+    "contrib_sepal_len.Iris-setosa",     # output contributions
+    "contrib_sepal_wid.Iris-setosa",     # output contributions
+    "contrib_petal_len.Iris-setosa",     # output contributions
+    "contrib_petal_wid.Iris-setosa",     # output contributions
+    "contrib_bias.Iris-setosa",          # output contributions
+    "contrib_sepal_len.Iris-versicolor", # output contributions
+    "contrib_sepal_wid.Iris-versicolor", # output contributions
+    "contrib_petal_len.Iris-versicolor", # output contributions
+    "contrib_petal_wid.Iris-versicolor", # output contributions
+    "contrib_bias.Iris-versicolor",      # output contributions
+    "contrib_sepal_len.Iris-virginica",  # output contributions
+    "contrib_sepal_wid.Iris-virginica",  # output contributions
+    "contrib_petal_len.Iris-virginica",  # output contributions
+    "contrib_petal_wid.Iris-virginica",  # output contributions
+    "contrib_bias.Iris-virginica"))      # output contributions
+})
+
+test_that("test MOJO internal contribution (SHAP) values", {
+  mojo_path <- paste0("file://", locate("daiMojoShapleyInternal/pipeline.mojo"))
+  data_path <- paste0("file://", locate("daiMojoShapleyInternal/example.csv"))
+  dataset <- spark_read_csv(sc, path = data_path, infer_schema = TRUE, header = TRUE)
+  # request contributions
+  settings <- H2OMOJOSettings(withInternalContributions = TRUE)
+  mojo <- H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
+  mojoOutput <- dplyr::collect(mojo$transform(dataset))
+
+  flattenedContributions <- tidyr::unnest_wider(data = mojoOutput, col = "internal_contributions")
+  expect_equal(length(colnames(flattenedContributions)), length(colnames(dataset)) + 1 + 115)
+})
+
+test_that("test MOJO predicition intervals", {
+  mojo_path <- paste0("file://", locate("daiPredictionInterval/pipeline.mojo"))
+  data_path <- paste0("file://", locate("daiPredictionInterval/example.csv"))
+  dataset <- spark_read_csv(sc, path = data_path, infer_schema = TRUE, header = TRUE)
+
+  settings <- H2OMOJOSettings(withPredictionInterval = TRUE)
+  mojo <- H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
+  mojoOutput <- dplyr::collect(mojo$transform(dataset))
+
+  flattenedContributions <- tidyr::unnest_wider(data = mojoOutput, col = "prediction")
+  expect_equal(length(colnames(flattenedContributions)), length(colnames(dataset)) + 3)
 })
 
 spark_disconnect(sc)

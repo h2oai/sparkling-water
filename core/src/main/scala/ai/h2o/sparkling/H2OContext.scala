@@ -18,14 +18,13 @@
 package ai.h2o.sparkling
 
 import java.util.concurrent.atomic.AtomicReference
-
 import ai.h2o.sparkling.backend._
 import ai.h2o.sparkling.backend.converters._
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException, WrongSparkVersion}
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import javax.net.ssl.{HostnameVerifier, HttpsURLConnection, SSLSession}
+
 import org.apache.spark.SparkContext
 import org.apache.spark.expose.{Logging, Utils}
 import org.apache.spark.h2o.SparkSpecificUtils
@@ -84,9 +83,6 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   logInfo("Connecting to H2O cluster.")
   private val nodes = getAndVerifyWorkerNodes(conf)
   backendHeartbeatThread.start() // start backend heartbeats
-  if (H2OClientUtils.isH2OClientBased(conf)) {
-    H2OClientUtils.startH2OClient(this, conf, nodes)
-  }
   verifyExtensionJarIsAvailable()
   RestApiUtils.setTimeZone(conf, "UTC")
   // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
@@ -159,12 +155,21 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   }
 
   /** Transform DataFrame to H2OFrame */
-  def asH2OFrame(df: DataFrame): H2OFrame = asH2OFrame(df, None)
+  def asH2OFrame(df: DataFrame): H2OFrame = asH2OFrame(df, frameName = None)
+
+  def asH2OFrame(df: DataFrame, featureColumns: Seq[String]): H2OFrame =
+    asH2OFrame(df, frameName = None, Some(featureColumns))
 
   def asH2OFrame(df: DataFrame, frameName: String): H2OFrame = asH2OFrame(df, Option(frameName))
 
-  def asH2OFrame(df: DataFrame, frameName: Option[String]): H2OFrame = {
-    withConversionDebugPrints(sparkContext, "Dataframe", SparkDataFrameConverter.toH2OFrame(this, df, frameName))
+  def asH2OFrame(
+      df: DataFrame,
+      frameName: Option[String] = None,
+      featureColumns: Option[Seq[String]] = None): H2OFrame = {
+    withConversionDebugPrints(
+      sparkContext,
+      "Dataframe",
+      SparkDataFrameConverter.toH2OFrame(this, df, frameName, featureColumns))
   }
 
   /** Transforms Dataset[Supported type] to H2OFrame */
@@ -221,9 +226,6 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   def h2oLocalClientPort: Int = flowPort
 
   def setH2OLogLevel(level: String): Unit = {
-    if (H2OClientUtils.isH2OClientBased(conf)) {
-      water.util.Log.setLogLevel(level)
-    }
     RestApiUtils.setLogLevel(conf, level)
   }
 
@@ -242,21 +244,14 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
       // In internal backend, Spark takes care of stopping executors automatically
       // In manual mode of external backend, the H2O cluster is managed by the user
       if (conf.runsInExternalClusterMode && conf.isAutoClusterStartUsed) {
-        if (H2OClientUtils.isH2OClientBased(conf)) {
-          H2O.orderlyShutdown(conf.externalBackendStopTimeout)
-        } else {
-          RestApiUtils.shutdownCluster(conf)
-          if (conf.externalAutoStartBackend == ExternalBackendConf.KUBERNETES_BACKEND) {
-            K8sExternalBackendClient.stopExternalH2OOnKubernetes(conf)
-          }
+        RestApiUtils.shutdownCluster(conf)
+        if (conf.externalAutoStartBackend == ExternalBackendConf.KUBERNETES_BACKEND) {
+          K8sExternalBackendClient.stopExternalH2OOnKubernetes(conf)
         }
       }
       ProxyStarter.stopFlowProxy()
       H2OContext.instantiatedContext.set(null)
       stopped = true
-      if (stopJvm && H2OClientUtils.isH2OClientBased(conf)) {
-        H2O.exit(0)
-      }
     } else {
       logWarning("H2OContext is already stopped!")
     }
@@ -350,11 +345,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
                 logError("H2O cluster not healthy!")
                 if (conf.isKillOnUnhealthyClusterEnabled) {
                   logError("Stopping external H2O cluster as it is not healthy.")
-                  if (H2OClientUtils.isH2OClientBased(conf)) {
-                    H2OContext.this.stop(true)
-                  } else {
-                    H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
-                  }
+                  H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
                 }
               }
             }
@@ -437,38 +428,23 @@ object H2OContext extends Logging {
     * @return H2O Context
     */
   def getOrCreate(conf: H2OConf): H2OContext = synchronized {
-    if (H2OClientUtils.isH2OClientBased(conf)) {
-      if (instantiatedContext.get() == null)
-        if (H2O.API_PORT == 0) { // api port different than 0 means that client is already running
+    val existingContext = instantiatedContext.get()
+    if (existingContext != null) {
+      val isExternalBackend = conf.runsInExternalClusterMode
+      val startedManually = existingContext.getConf.isManualClusterStartUsed
+      if (isExternalBackend && startedManually) {
+        if (conf.h2oCluster.isEmpty) {
+          throw new IllegalArgumentException("H2O cluster endpoint has to be specified!")
+        }
+        if (connectingToNewCluster(existingContext, conf)) {
           val checkedConf = checkAndUpdateConf(conf)
           instantiatedContext.set(new H2OContext(checkedConf))
-        } else {
-          throw new IllegalArgumentException(
-            """
-              |H2O context hasn't been started successfully in the previous attempt and H2O client with previous configuration is already running.
-              |Because of the current H2O limitation that it can't be restarted within a running JVM,
-              |please restart your job or spark session and create new H2O context with new configuration.")
-          """.stripMargin)
+          logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
         }
-    } else {
-      val existingContext = instantiatedContext.get()
-      if (existingContext != null) {
-        val isExternalBackend = conf.runsInExternalClusterMode
-        val startedManually = existingContext.getConf.isManualClusterStartUsed
-        if (isExternalBackend && startedManually) {
-          if (conf.h2oCluster.isEmpty) {
-            throw new IllegalArgumentException("H2O cluster endpoint has to be specified!")
-          }
-          if (connectingToNewCluster(existingContext, conf)) {
-            val checkedConf = checkAndUpdateConf(conf)
-            instantiatedContext.set(new H2OContext(checkedConf))
-            logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
-          }
-        }
-      } else {
-        val checkedConf = checkAndUpdateConf(conf)
-        instantiatedContext.set(new H2OContext(checkedConf))
       }
+    } else {
+      val checkedConf = checkAndUpdateConf(conf)
+      instantiatedContext.set(new H2OContext(checkedConf))
     }
     instantiatedContext.get()
   }
@@ -482,19 +458,26 @@ object H2OContext extends Logging {
     getOrCreate(Option(instantiatedContext.get()).map(_.getConf).getOrElse(new H2OConf()))
   }
 
-  private def isSparkVersionUnsupported(): Boolean = {
-    SparkSessionUtils.active.version.startsWith("2.1.")
+  private def getFirstUnsupportedSWVersion(): Option[String] = {
+    val version = SparkSessionUtils.active.version
+    if (version.startsWith("2.1.")) {
+      Some("3.34.0.1-1")
+    } else if (version.startsWith("2.2.")) {
+      Some("3.38.0.1-1")
+    } else {
+      None
+    }
   }
 
   private def isSparkVersionDeprecated(): Boolean = {
-    SparkSessionUtils.active.version.startsWith("2.2.")
+    SparkSessionUtils.active.version.startsWith("2.3.")
   }
 
   private def logStartingInfo(conf: H2OConf): Unit = {
     logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
+    val unsupportedSuffix = if (getFirstUnsupportedSWVersion.isDefined) " (unsupported)" else ""
     val deprecationSuffix = if (isSparkVersionDeprecated) " (deprecated)" else ""
-    val unsupportedSuffix = if (isSparkVersionUnsupported) " (unsupported)" else ""
-    logInfo("Spark version: " + SparkSessionUtils.active.version + deprecationSuffix + unsupportedSuffix)
+    logInfo("Spark version: " + SparkSessionUtils.active.version + unsupportedSuffix + deprecationSuffix)
     logInfo("Integrated H2O version: " + BuildInfo.H2OVersion)
     logInfo("The following Spark configuration is used: \n    " + conf.getAll.mkString("\n    "))
   }
@@ -513,15 +496,16 @@ object H2OContext extends Logging {
           s" but your Spark is of version ${sc.version}. Please make sure to use correct Sparkling Water for your" +
           s" Spark and re-run the application.")
     }
-    if (isSparkVersionUnsupported) {
+    val unsupportedSWVersion = getFirstUnsupportedSWVersion()
+    if (unsupportedSWVersion.isDefined) {
       logWarning(
-        s"Apache Spark ${SparkSessionUtils.active.version} is unsupported since the Sparkling Water version 3.34.0.1-1.")
+        s"Apache Spark ${SparkSessionUtils.active.version} is unsupported" +
+          s"since the Sparkling Water version ${unsupportedSWVersion.get}.")
     }
-
     if (isSparkVersionDeprecated) {
       logWarning(
         s"Apache Spark ${SparkSessionUtils.active.version} is deprecated and " +
-          "the support will be removed in the Sparkling Water version 3.38.")
+          "the support will be removed in the Sparkling Water version 3.42.")
     }
   }
 }

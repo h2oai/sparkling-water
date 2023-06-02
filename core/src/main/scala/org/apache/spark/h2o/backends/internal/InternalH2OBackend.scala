@@ -18,9 +18,7 @@
 package org.apache.spark.h2o.backends.internal
 
 import java.io.File
-
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
-import ai.h2o.sparkling.backend.utils.RestApiUtils
 import ai.h2o.sparkling.backend.{NodeDesc, SparklingBackend}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.{H2OConf, H2OContext}
@@ -42,6 +40,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
   override def startH2OCluster(conf: H2OConf): Unit = {
     logInfo("Starting the H2O cluster inside Spark.")
+    conf.resolveGeneratedCredentials()
     if (hc.sparkContext.isLocal) {
       startSingleH2OWorker(conf)
     } else {

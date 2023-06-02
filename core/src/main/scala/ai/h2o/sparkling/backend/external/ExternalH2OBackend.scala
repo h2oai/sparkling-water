@@ -19,9 +19,8 @@ package ai.h2o.sparkling.backend.external
 
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.Properties
-
 import ai.h2o.sparkling.{H2OConf, H2OContext}
-import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, H2OClientUtils, SharedBackendUtils, ShellUtils}
+import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, SharedBackendUtils, ShellUtils}
 import ai.h2o.sparkling.backend.{SharedBackendConf, SparklingBackend}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
@@ -34,6 +33,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
 
   override def startH2OCluster(conf: H2OConf): Unit = {
     if (conf.isAutoClusterStartUsed) {
+      conf.resolveGeneratedCredentials()
       if (conf.externalAutoStartBackend == ExternalBackendConf.YARN_BACKEND) {
         launchExternalH2OOnYarn(conf)
       } else if (conf.externalAutoStartBackend == ExternalBackendConf.KUBERNETES_BACKEND) {
@@ -119,7 +119,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       .add("-baseport", conf.basePort)
       .add("-timeout", conf.clusterStartTimeout)
       .add("-disown")
-      .add(H2OClientUtils.getExtraExternalBackendArgsWhenClientBased(conf), H2OClientUtils.isH2OClientBased(conf))
       .add(Seq("-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString))
       .add("-run_as_user", conf.runAsUser)
       .add(

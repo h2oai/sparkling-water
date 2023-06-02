@@ -49,6 +49,16 @@ class H2OTypeConverters(object):
         return convert
 
     @staticmethod
+    def toNullableEnumString(enumClass):
+        def convert(value):
+            if value is None:
+                return None
+            else:
+                return H2OTypeConverters.toEnumString(enumClass)(value)
+
+        return convert
+
+    @staticmethod
     def toEnumString(enumClass):
         def convert(value):
             package = getattr(_jvm().ai.h2o.sparkling.ml.params, "EnumParamValidator$")
@@ -193,6 +203,34 @@ class H2OTypeConverters(object):
                     valueForConversion = list(value)
 
                 return TypeConverters.toListFloat(valueForConversion)
+
+        return convert
+
+    @staticmethod
+    def toNullableListBoolean():
+        def convert(value):
+            if value is None:
+                return None
+            else:
+                return H2OTypeConverters.toListBoolean()(value)
+
+        return convert
+
+    @staticmethod
+    def toListBoolean():
+        def convert(value):
+            if value is None:
+                raise TypeError("None is not allowed.")
+            else:
+                valueForConversion = value
+                if isinstance(value, JavaObject):
+                    valueForConversion = list(value)
+
+                if TypeConverters._can_convert_to_list(valueForConversion):
+                    valueForConversion = TypeConverters.toList(valueForConversion)
+                    if all(map(lambda v: type(v) == bool, valueForConversion)):
+                        return [bool(v) for v in valueForConversion]
+                raise TypeError("Could not convert %s to list of booleans" % valueForConversion)
 
         return convert
 
@@ -520,24 +558,5 @@ class H2OTypeConverters(object):
             return None
         elif isinstance(array, JavaObject):
             return [H2OTypeConverters.scalaArrayToPythonArray(v) for v in array]
-        else:
-            raise TypeError("Invalid type.")
-
-    @staticmethod
-    def scalaToPythonDataFrame(jdf):
-        if jdf is None:
-            return None
-        elif isinstance(jdf, JavaObject):
-            sqlContext = SparkSession.builder.getOrCreate()._wrapped
-            return DataFrame(jdf, sqlContext)
-        else:
-            raise TypeError("Invalid type.")
-
-    @staticmethod
-    def scalaDfArrayToPythonDfArray(array):
-        if array is None:
-            return None
-        elif isinstance(array, JavaObject):
-            return [H2OTypeConverters.scalaToPythonDataFrame(v) for v in array]
         else:
             raise TypeError("Invalid type.")

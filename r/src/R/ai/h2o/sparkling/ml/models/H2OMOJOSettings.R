@@ -25,30 +25,36 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                              detailedPredictionCol = "character",
                                              convertUnknownCategoricalLevelsToNa = "logical",
                                              convertInvalidNumbersToNa = "logical",
-                                             namedMojoOutputColumns = "logical",
                                              withContributions = "logical",
+                                             withInternalContributions = "logical",
+                                             withPredictionInterval = "logical",
                                              withLeafNodeAssignments = "logical",
                                              withStageResults = "logical",
-                                             dataFrameSerializer = "character"),
+                                             dataFrameSerializer = "character",
+                                             scoringBulkSize = "integer"),
                                methods = list(
                                  initialize = function(predictionCol = "prediction",
                                                        detailedPredictionCol = "detailed_prediction",
                                                        convertUnknownCategoricalLevelsToNa = FALSE,
                                                        convertInvalidNumbersToNa = FALSE,
-                                                       namedMojoOutputColumns = TRUE,
                                                        withContributions = FALSE,
+                                                       withInternalContributions = FALSE,
+                                                       withPredictionInterval = FALSE,
                                                        withLeafNodeAssignments = FALSE,
                                                        withStageResults = FALSE,
-                                                       dataFrameSerializer = "ai.h2o.sparkling.utils.JSONDataFrameSerializer") {
+                                                       dataFrameSerializer = "ai.h2o.sparkling.utils.JSONDataFrameSerializer",
+                                                       scoringBulkSize = 1000L) {
                                    .self$predictionCol <- predictionCol
                                    .self$detailedPredictionCol <- detailedPredictionCol
                                    .self$convertUnknownCategoricalLevelsToNa <- convertUnknownCategoricalLevelsToNa
                                    .self$convertInvalidNumbersToNa <- convertInvalidNumbersToNa
-                                   .self$namedMojoOutputColumns <- namedMojoOutputColumns
                                    .self$withContributions <- withContributions
+                                   .self$withInternalContributions <- withInternalContributions
+                                   .self$withPredictionInterval <- withPredictionInterval
                                    .self$withLeafNodeAssignments <- withLeafNodeAssignments
                                    .self$withStageResults <- withStageResults
                                    .self$dataFrameSerializer <- dataFrameSerializer
+                                   .self$scoringBulkSize <- scoringBulkSize
                                  },
                                  toJavaObject = function() {
                                    sc <- spark_connection_find()[[1]]
@@ -57,10 +63,12 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                               .self$detailedPredictionCol,
                                               .self$convertUnknownCategoricalLevelsToNa,
                                               .self$convertInvalidNumbersToNa,
-                                              .self$namedMojoOutputColumns,
                                               .self$withContributions,
+                                              .self$withInternalContributions,
+                                              .self$withPredictionInterval,
                                               .self$withLeafNodeAssignments,
                                               .self$withStageResults,
-                                              .self$dataFrameSerializer)
+                                              .self$dataFrameSerializer,
+                                              .self$scoringBulkSize)
                                  }
                                ))

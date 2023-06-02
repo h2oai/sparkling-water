@@ -18,13 +18,12 @@
 package ai.h2o.sparkling.ml.models
 
 import java.sql.{Date, Timestamp}
-
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import ai.h2o.sparkling.SparkTestContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.Inspectors._
@@ -35,92 +34,51 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
-  test("Mojo pipeline can be instantiated") {
-
-    H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo")
-  }
+  private val PredictionCol = "prediction"
+  private lazy val prostateTestData: DataFrame =
+    spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv").cache()
+  private lazy val prostateMojoPipeline: H2OMOJOPipelineModel = H2OMOJOPipelineModel.createFromMojo(
+    this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
+    "prostate_pipeline.mojo")
 
   test("Mojo pipeline can be saved and loaded") {
-    // Test data
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
-
-    // Test mojo
-    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
-    val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo",
-      mojoSettings)
-
-    // Test also writing and loading the pipeline
-    val pipeline = new Pipeline().setStages(Array(mojo))
+    val pipeline = new Pipeline().setStages(Array(prostateMojoPipeline))
     pipeline.write.overwrite().save("ml/build/pipeline")
     val loadedPipeline = Pipeline.load("ml/build/pipeline")
 
-    val model = loadedPipeline.fit(df)
+    val model = loadedPipeline.fit(prostateTestData)
 
     model.write.overwrite().save("ml/build/pipeline_model")
     val loadedModel = PipelineModel.load("ml/build/pipeline_model")
 
-    loadedModel.transform(df).take(1)
-  }
-
-  test("Basic mojo pipeline prediction for unnamed column") {
-    // Test data
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
-    // Test mojo
-    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
-    val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo",
-      mojoSettings)
-
-    val transDf = mojo.transform(df)
-    val udfSelection = transDf.select(mojo.selectPredictionUDF("AGE"))
-    val normalSelection = transDf.select("prediction.preds")
-
-    val valuesNormalSelection = normalSelection.take(5)
-    assertPredictedValues(valuesNormalSelection)
-
-    // Verify also output of the udf prediction method. The UDF method always returns one column with correct name
-    val valuesUdfSelection = udfSelection.take(5)
-    assertPredictedValuesForNamedCols(valuesUdfSelection)
+    loadedModel.transform(prostateTestData).take(1)
   }
 
   test("Verify that output columns are correct when using the named columns") {
-    // Test data
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
-    // Test mojo
-    val mojoSettings = H2OMOJOSettings()
-    val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo",
-      mojoSettings)
-
-    val transDf = mojo.transform(df)
-    val udfSelection = transDf.select(mojo.selectPredictionUDF("AGE"))
+    val transDf = prostateMojoPipeline.transform(prostateTestData)
+    val udfSelection = transDf.select(prostateMojoPipeline.selectPredictionUDF("AGE"))
     val normalSelection = transDf.select("prediction.AGE")
 
     // Check that frames returned using udf and normal selection are the same
-    assert(udfSelection.schema.head.name == normalSelection.schema.head.name)
-    assert(udfSelection.schema.head.dataType == normalSelection.schema.head.dataType)
-    assert(udfSelection.first() == normalSelection.first())
+    udfSelection.schema.head.name shouldEqual normalSelection.schema.head.name
+    udfSelection.schema.head.dataType shouldEqual normalSelection.schema.head.dataType
+    udfSelection.first() shouldEqual normalSelection.first()
 
-    assertPredictedValuesForNamedCols(udfSelection.take(5))
+    val rows = udfSelection.take(5)
+    rows(0).getDouble(0) shouldEqual 65.36339431549945
+    rows(1).getDouble(0) shouldEqual 64.98931238070139
+    rows(2).getDouble(0) shouldEqual 64.95047899851251
+    rows(3).getDouble(0) shouldEqual 65.78738866816514
+    rows(4).getDouble(0) shouldEqual 66.11292243968764
   }
 
   test("Test MOJO with different outputTypes") {
-    // Test data
-    val df = spark.read.option("header", "true").csv("examples/smalldata/airlines/airlines_big_data_100.csv")
-    // Test mojo
-    val mojoSettings = H2OMOJOSettings()
-    val mojo = H2OMOJOPipelineModel.createFromMojo(
+    val testDataDf = spark.read.option("header", "true").csv("examples/smalldata/airlines/airlines_big_data_100.csv")
+    val testMojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("daiMojos/stringFeaturesOutputPipeline.mojo"),
-      "stringFeaturesOutputPipeline.mojo",
-      mojoSettings)
+      "stringFeaturesOutputPipeline.mojo")
 
-    val resultDF = mojo.transform(df).select("prediction.*")
+    val resultDF = testMojo.transform(testDataDf).select("prediction.*")
     resultDF.collect()
 
     val columns = resultDF.schema.fields
@@ -131,7 +89,6 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
   }
 
   test("Named columns with multiple output columns") {
-
     val filePath = getClass.getResource("/mojo2_multiple_outputs/example.csv").getFile
     val df = spark.read.option("header", "true").csv(filePath)
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -139,80 +96,93 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
       "iris_pipeline.mojo")
 
     val transDf = mojo.transform(df)
-    assert(transDf.select("prediction.*").columns.length == 3)
+    transDf.select("prediction.*").columns.length shouldEqual 3
     val udfSelection = transDf.select(mojo.selectPredictionUDF("class.Iris-setosa"))
     val normalSelection = transDf.select("prediction.`class.Iris-setosa`") // we need to use ` as the dot is
     // part of the column name, it does not represent the nested column
 
-    // Check that frames returned using udf and normal selection are the same
-    assert(udfSelection.schema.head.name == normalSelection.schema.head.name)
-    assert(udfSelection.schema.head.dataType == normalSelection.schema.head.dataType)
-    assert(udfSelection.first() == normalSelection.first())
+    udfSelection.schema.head.name shouldEqual normalSelection.schema.head.name
+    udfSelection.schema.head.dataType shouldEqual normalSelection.schema.head.dataType
+    udfSelection.first() shouldEqual normalSelection.first()
   }
 
   test("Selection using udf on non-existent column") {
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
-    // Test mojo
-    val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo")
-
-    val transDf = mojo.transform(df)
+    val transDf = prostateMojoPipeline.transform(prostateTestData)
     intercept[org.apache.spark.sql.AnalysisException] {
-      transDf.select(mojo.selectPredictionUDF("I_DO_NOT_EXIST")).first()
+      transDf.select(prostateMojoPipeline.selectPredictionUDF("I_DO_NOT_EXIST")).first()
     }
   }
 
-  test("Testing dataset is missing one of feature columns") {
-    val schema = spark.read
-      .option("header", "true")
-      .csv("examples/smalldata/prostate/prostate.csv")
-      .drop("AGE")
-      .schema
-    val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo")
+  test("Testing dataset is missing one of the feature columns") {
+    val schema = prostateTestData.drop("AGE").schema
     val rdd = sc.parallelize(Seq(Row("1", "0", "1", "2", "1", "1.4", "0", "6")))
     val testingDF = spark.createDataFrame(rdd, schema)
 
-    val predictionsDF = mojo.transform(testingDF)
+    val predictionsDF = prostateMojoPipeline.transform(testingDF)
 
-    // materialize the frame to see that it is passing
-    predictionsDF.collect()
+    noException should be thrownBy predictionsDF.collect()
   }
 
-  test("Testing dataset has an extra feature column") {
-    val schema = spark.read
-      .option("header", "true")
-      .csv("examples/smalldata/prostate/prostate.csv")
-      .withColumn("EXTRA", lit("extra"))
-      .schema
-    val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo")
-    val rdd = sc.parallelize(Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6", "8")))
-    val testingDF = spark.createDataFrame(rdd, schema)
+  test("Testing dataset having an extra column should give the same prediction") {
+    val rdd = sc.parallelize(
+      Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6"), Row("16", "0", "73", "1", "2", "1", "2.6", "0", "5")))
+    val recordWithoutAdditionalColumn = spark.createDataFrame(rdd, prostateTestData.schema)
+    val recordWithAdditionalColumn = recordWithoutAdditionalColumn.withColumn("extraCol", lit("8"))
 
-    val predictionsDF = mojo.transform(testingDF)
+    val prediction = prostateMojoPipeline.transform(recordWithoutAdditionalColumn).select(PredictionCol).collect()
+    val predictionWithAdditionalColumn =
+      prostateMojoPipeline.transform(recordWithAdditionalColumn).select(PredictionCol).collect()
 
-    // materialize the frame to see that it is passing
-    predictionsDF.collect()
+    prediction(0) shouldEqual predictionWithAdditionalColumn(0)
+    prediction(1) shouldEqual predictionWithAdditionalColumn(1)
+    prediction(0) shouldNot equal(prediction(1))
+    predictionWithAdditionalColumn(0) shouldNot equal(predictionWithAdditionalColumn(1))
   }
 
-  /**
-    * The purpose of this test is to simply pass and don't throw NullPointerException
-    */
+  test("Testing dataset with column order mixed should give the same prediction") {
+    val rdd = sc.parallelize(
+      Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6"), Row("16", "0", "73", "1", "2", "1", "2.6", "0", "5")))
+    val record = spark.createDataFrame(rdd, prostateTestData.schema)
+    val recordWithDifferentColumnOrder = record.selectExpr(record.columns.reverse: _*).toDF()
+    record.columns shouldNot equal(recordWithDifferentColumnOrder.columns)
+    record.columns.sorted shouldEqual recordWithDifferentColumnOrder.columns.sorted
+
+    val prediction = prostateMojoPipeline.transform(record).select(PredictionCol).collect()
+    val predictionWithDifferentColumnOrder =
+      prostateMojoPipeline.transform(recordWithDifferentColumnOrder).select(PredictionCol).collect()
+
+    prediction(0) shouldEqual predictionWithDifferentColumnOrder(0)
+    prediction(1) shouldEqual predictionWithDifferentColumnOrder(1)
+    prediction(0) shouldNot equal(prediction(1))
+    predictionWithDifferentColumnOrder(0) shouldNot equal(predictionWithDifferentColumnOrder(1))
+  }
+
+  test("Testing dataset having an extra column and column order mixed should give the same prediction") {
+    val rdd = sc.parallelize(
+      Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6"), Row("16", "0", "73", "1", "2", "1", "2.6", "0", "5")))
+    val record = spark.createDataFrame(rdd, prostateTestData.schema)
+    val recordWithDifferentColumnOrderAndAdditionalColumn =
+      record.withColumn("extraCol", lit("8")).selectExpr(record.columns.reverse: _*).toDF()
+
+    val prediction = prostateMojoPipeline.transform(record).select(PredictionCol).collect()
+    val predictionWithAdditionalColumn =
+      prostateMojoPipeline
+        .transform(recordWithDifferentColumnOrderAndAdditionalColumn)
+        .select(PredictionCol)
+        .collect()
+
+    prediction(0) shouldEqual predictionWithAdditionalColumn(0)
+    prediction(1) shouldEqual predictionWithAdditionalColumn(1)
+    prediction(0) shouldNot equal(prediction(1))
+    predictionWithAdditionalColumn(0) shouldNot equal(predictionWithAdditionalColumn(1))
+
+  }
+
   test("Prediction with null as row element") {
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
-    // Test mojo
-    val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo")
     val rdd = sc.parallelize(Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", null)))
-    val df2 = spark.createDataFrame(rdd, df.first().schema)
-    val preds = mojo.transform(df2)
-    // materialize the frame to see that it is passing
-    preds.collect()
+    val df2 = spark.createDataFrame(rdd, prostateTestData.first().schema)
+    val preds = prostateMojoPipeline.transform(df2)
+    noException should be thrownBy preds.collect()
   }
 
   test("Date column conversion from Spark to Mojo") {
@@ -221,78 +191,40 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val sparkDf =
       spark.createDataFrame(sc.parallelize(data).map(Row(_)), StructType(Seq(StructField("date", DataTypes.DateType))))
 
-    val r = sparkDf.first()
-    val dt = MojoDateTime.parse(r.getDate(0).toString)
+    val dt = MojoDateTime.parse(sparkDf.first().getDate(0).toString)
 
-    assert(dt.getYear == 2016)
-    assert(dt.getMonth == 9)
-    assert(dt.getDay == 30)
-    assert(dt.getHour == 0)
-    assert(dt.getMinute == 0)
-    assert(dt.getSecond == 0)
+    dt.getYear shouldEqual 2016
+    dt.getMonth shouldEqual 9
+    dt.getDay shouldEqual 30
+    dt.getHour shouldEqual 0
+    dt.getMinute shouldEqual 0
+    dt.getSecond shouldEqual 0
   }
 
   test("Timestamp column conversion from Spark to Mojo") {
     val ts = new Timestamp(1526891676)
 
-    val data = List(ts)
-
     val sparkDf = spark.createDataFrame(
-      sc.parallelize(data).map(Row(_)),
+      sc.parallelize(List(ts)).map(Row(_)),
       StructType(Seq(StructField("timestamp", DataTypes.TimestampType))))
 
-    val r = sparkDf.first()
-    val dt = MojoDateTime.parse(r.getTimestamp(0).toString)
+    val dt = MojoDateTime.parse(sparkDf.first().getTimestamp(0).toString)
 
-    assert(dt.getYear == ts.toLocalDateTime.getYear)
-    assert(dt.getMonth == ts.toLocalDateTime.getMonth.getValue)
-    assert(dt.getDay == ts.toLocalDateTime.getDayOfMonth)
-    assert(dt.getHour == ts.toLocalDateTime.getHour)
-    assert(dt.getMinute == ts.toLocalDateTime.getMinute)
-    assert(dt.getSecond == ts.toLocalDateTime.getSecond)
+    dt.getYear shouldEqual ts.toLocalDateTime.getYear
+    dt.getMonth shouldEqual ts.toLocalDateTime.getMonth.getValue
+    dt.getDay shouldEqual ts.toLocalDateTime.getDayOfMonth
+    dt.getHour shouldEqual ts.toLocalDateTime.getHour
+    dt.getMinute shouldEqual ts.toLocalDateTime.getMinute
+    dt.getSecond shouldEqual ts.toLocalDateTime.getSecond
   }
 
-  private def assertPredictedValues(preds: Array[Row]): Unit = {
-    assert(preds(0).getSeq[Double](0).head == 65.36339431549945)
-    assert(preds(1).getSeq[Double](0).head == 64.98931238070139)
-    assert(preds(2).getSeq[Double](0).head == 64.95047899851251)
-    assert(preds(3).getSeq[Double](0).head == 65.78738866816514)
-    assert(preds(4).getSeq[Double](0).head == 66.11292243968764)
-  }
-
-  private def assertPredictedValuesForNamedCols(preds: Array[Row]): Unit = {
-    assert(preds(0).getDouble(0) == 65.36339431549945)
-    assert(preds(1).getDouble(0) == 64.98931238070139)
-    assert(preds(2).getDouble(0) == 64.95047899851251)
-    assert(preds(3).getDouble(0) == 65.78738866816514)
-    assert(preds(4).getDouble(0) == 66.11292243968764)
-  }
-
-  private def testTransformAndTransformSchemaAreAligned(mojoSettings: H2OMOJOSettings): Unit = {
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
-    val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
-      "prostate_pipeline.mojo",
-      mojoSettings)
-
-    val outputSchema = mojo.transform(df).schema
-    val transformedSchema = mojo.transformSchema(df.schema)
-
-    assert(transformedSchema === outputSchema)
-  }
-
-  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is disabled") {
-    val settings = H2OMOJOSettings(namedMojoOutputColumns = false)
-    testTransformAndTransformSchemaAreAligned(settings)
-  }
-
-  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is enabled") {
-    val settings = H2OMOJOSettings()
-    testTransformAndTransformSchemaAreAligned(settings)
+  test("Transform and transformSchema methods are aligned") {
+    val outputSchema = prostateMojoPipeline.transform(prostateTestData).schema
+    val transformedSchema = prostateMojoPipeline.transformSchema(prostateTestData.schema)
+    transformedSchema shouldEqual outputSchema
   }
 
   test("Mojo pipeline can expose contribution (SHAP) values") {
-
     val mojoSettings = H2OMOJOSettings(withContributions = true)
     val pipeline = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("daiMojoShapley/pipeline.mojo"),
@@ -301,50 +233,47 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
 
     val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
     val predictionsAndContributions = pipeline.transform(df)
-    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.*")
-
-    val featureColumns = 1
-    val predictionColumns = 4
+    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.*").cache()
+    val featureColumns = 4
+    val classes = 3
     val bias = 1
-    val contributionColumnsNo = predictionColumns * (featureColumns + bias)
+    val contributionColumnsNo = classes * (featureColumns + bias)
 
     onlyContributions.columns should have length contributionColumnsNo
     forAll(onlyContributions.columns) { _ should startWith("contrib_") }
 
-    assertContributionValues(onlyContributions.take(1))
+    val rows = onlyContributions.take(2)
+    val firstRow = rows(0)
+    firstRow.getDouble(0) shouldBe 2.556562795555615
+    firstRow.getDouble(1) shouldBe -1.8716305396517994
+    firstRow.getDouble(2) shouldBe 5.894809161198736
+    firstRow.getDouble(3) shouldBe -0.5265544725232273
+    firstRow.getDouble(4) shouldBe 0.482689546
+    val secondRow = rows(1)
+    secondRow.getDouble(0) shouldBe 1.9396974779396057
+    secondRow.getDouble(1) shouldBe -3.986468029321516
+    secondRow.getDouble(2) shouldBe 6.374321717618108
+    secondRow.getDouble(3) shouldBe -0.006928643424840761
+    secondRow.getDouble(4) shouldBe 0.482689546
   }
 
-  private def assertContributionValues(contributions: Array[Row]): Unit = {
-    contributions(0).getDouble(0) shouldBe 0.0
-    contributions(0).getDouble(1) shouldBe -2.3025851249694824
-    contributions(0).getDouble(2) shouldBe 0.0
-    contributions(0).getDouble(3) shouldBe -1.3470736742019653
-    contributions(0).getDouble(4) shouldBe 0.0
-    contributions(0).getDouble(5) shouldBe -2.263364315032959
-    contributions(0).getDouble(6) shouldBe 0.0
-    contributions(0).getDouble(7) shouldBe -0.6236211061477661
-  }
-
-  test("Mojo pipeline outputs named contribution values even if namedMojoOutputColumns was set to false") {
-
-    val mojoSettings = H2OMOJOSettings(withContributions = true, namedMojoOutputColumns = false)
+  test("Mojo pipeline can expose internal contribution (SHAP) values") {
+    val mojoSettings = H2OMOJOSettings(withInternalContributions = true)
     val pipeline = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapley/pipeline.mojo"),
-      "pipeline.mojo",
+      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapleyInternal/pipeline.mojo"),
+      "pipeline.internal.mojo",
       mojoSettings)
 
-    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapley/example.csv")
+    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapleyInternal/example.csv")
     val predictionsAndContributions = pipeline.transform(df)
-
-    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getContributionsCol()}.*")
-
-    val featureColumns = 1
-    val predictionColumns = 4
-    val bias = 1
-    val contributionColumnsNo = predictionColumns * (featureColumns + bias)
+    val onlyContributions = predictionsAndContributions.select(s"${pipeline.getInternalContributionsCol()}.*")
+    val contributionColumnsNo = 115
 
     onlyContributions.columns should have length contributionColumnsNo
     forAll(onlyContributions.columns) { _ should startWith("contrib_") }
+
+    val contributions = onlyContributions.take(2)
+    contributions(0).toSeq should not equal contributions(1).toSeq
   }
 
   test("Transform and transformSchema methods are aligned when (SHAP) contributions are enabled") {
@@ -359,5 +288,45 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     val transformedSchema = pipeline.transformSchema(df.schema)
 
     transformedSchema should equal(outputSchema)
+  }
+
+  test("Transform and transformSchema methods are aligned when (SHAP) internal contributions are enabled") {
+    val mojoSettings = H2OMOJOSettings(withInternalContributions = true)
+    val pipeline = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("daiMojoShapleyInternal/pipeline.mojo"),
+      "pipeline.internal.mojo",
+      mojoSettings)
+
+    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiMojoShapleyInternal/example.csv")
+    val outputSchema = pipeline.transform(df).schema
+    val transformedSchema = pipeline.transformSchema(df.schema)
+
+    transformedSchema should equal(outputSchema)
+  }
+
+  test(
+    "Transform and transformSchema methods generates extra sub columns to prediction column if prediction intervals enabled") {
+    val mojoSettings = H2OMOJOSettings(withPredictionInterval = true)
+    val pipeline = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("daiPredictionInterval/pipeline.mojo"),
+      "prediction.interval.mojo",
+      mojoSettings)
+
+    val df = spark.read.option("header", "true").csv("ml/src/test/resources/daiPredictionInterval/example.csv")
+    val outputSchema = pipeline.transform(df).schema
+    val transformedSchema = pipeline.transformSchema(df.schema)
+
+    val prediction = pipeline.transform(df).select("prediction.*")
+
+    transformedSchema should equal(outputSchema)
+    prediction.columns.length shouldBe 3
+    prediction.columns.contains("secret_Pressure3pm") shouldBe true
+    prediction.columns.contains("secret_Pressure3pm.lower") shouldBe true
+    prediction.columns.contains("secret_Pressure3pm.upper") shouldBe true
+
+    val expectedCount = prediction.count()
+    prediction.select("secret_Pressure3pm").distinct().count() shouldBe expectedCount
+    prediction.select("`secret_Pressure3pm.lower`").distinct().count() shouldBe expectedCount
+    prediction.select("`secret_Pressure3pm.upper`").distinct().count() shouldBe expectedCount
   }
 }

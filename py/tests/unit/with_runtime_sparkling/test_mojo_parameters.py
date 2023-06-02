@@ -15,7 +15,7 @@
 #
 
 from pysparkling.ml import H2OGBM, H2ODRF, H2OXGBoost, H2OGLM, H2OGAM, H2OCoxPH
-from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OIsolationForest
+from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OIsolationForest, H2OExtendedIsolationForest
 from pysparkling.ml import H2OAutoEncoder, H2OPCA, H2OGLRM, H2ORuleFit, H2OWord2Vec
 
 def testGBMParameters(prostateDataset):
@@ -53,9 +53,10 @@ def testGLMParameters(prostateDataset):
 def testGAMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
     algorithm = H2OGAM(seed=1, labelCol="CAPSULE", gamCols=[["PSA"], ["AGE"]], numKnots=[5, 5], lambdaValue=[0.5],
-                       featuresCols=features, bs=[1, 1], scale=[0.5, 0.5], splineOrders=[-1, -1])
+                       featuresCols=features, bs=[1, 1], scale=[0.5, 0.5], splineOrders=[-1, -1],
+                       splinesNonNegative=[True, False])
     model = algorithm.fit(prostateDataset)
-    compareParameterValues(algorithm, model, ["getFeaturesCols"])
+    compareParameterValues(algorithm, model, ["getFeaturesCols", "getSplinesNonNegative"])
 
 
 def testDeepLearningParameters(prostateDataset):
@@ -73,6 +74,12 @@ def testKmeansParameters(prostateDataset):
 
 
 def testIsolationForestParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OIsolationForest(seed=1, sampleRate=0.5, featuresCols=features)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
+
+def testExtendedIsolationForestParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
     algorithm = H2OIsolationForest(seed=1, sampleRate=0.5, featuresCols=features)
     model = algorithm.fit(prostateDataset)

@@ -39,7 +39,7 @@ object AlgorithmTemplate
     val imports = Seq(
       "warnings.warn",
       "pyspark.keyword_only",
-      "ai.h2o.sparkling.Initializer",
+      "ai.h2o.sparkling.Initializer.Initializer",
       "ai.h2o.sparkling.ml.Utils.Utils",
       s"$namespace.$algorithmType.$algorithmType") ++
       (if (constructorMethods) Seq(s"ai.h2o.sparkling.ml.models.$mojoClassName.$mojoClassName") else Seq.empty) ++

@@ -62,3 +62,40 @@ def testAuthFailsWhenUsernamePasswordNotSpecified(spark):
     conf.setPassword("pass")
     context = H2OContext.getOrCreate(conf)
     context.stop()
+
+
+def createPamLoginFile():
+    with open('build/login.conf', 'w') as f:
+        f.write('pamloginmodule {\n')
+        f.write('     de.codedo.jaas.PamLoginModule required\n')
+        f.write('     service = common-auth;\n')
+        f.write('};\n')
+
+@pytest.mark.skip(reason="still unstable, to be fixed and unignored next release (SW-2779)")
+def testPamAuthWithCorrectCredentials(spark):
+    createPamLoginFile()
+    conf = createH2OConf()
+    conf.setPamLoginEnabled()
+    conf.setCloudName("test-cluster")
+    conf.setClusterInfoFile("build/notify_file.txt")
+    conf.setLoginConf("build/login.conf")
+    conf.setUserName("jenkins")
+    conf.setPassword("jenkins")
+    context = H2OContext.getOrCreate(conf)
+    context.stop()
+
+@pytest.mark.skip(reason="still unstable, to be fixed and unignored next release (SW-2779)")
+def testPamAuthWithWrongCredentials(spark):
+    createPamLoginFile()
+    conf = createH2OConf()
+    conf.setPamLoginEnabled()
+    conf.setCloudName("test-cluster")
+    conf.setClusterInfoFile("build/notify_file.txt")
+    conf.setLoginConf("build/login.conf")
+    conf.setUserName("jenkins")
+    conf.setPassword("wrong_password")
+
+    with pytest.raises(Exception):
+        H2OContext.getOrCreate(conf)
+    assert specificNumberOfYarnApps(1)
+    killAllYarnApps()

@@ -156,7 +156,7 @@ object.
 Predictions Format
 ~~~~~~~~~~~~~~~~~~
 
-When the option ``namedMojoOutputColumns`` is enabled on ``H2OMOJOSettings``, the ``predictionCol`` contains sub-columns with
+The ``predictionCol`` contains sub-columns with
 names corresponding to the columns Driverless AI identified as output columns. For example, if Driverless API MOJO
 pipeline contains one output column `AGE` ( for example regression problem), the prediction column contains another sub-column
 named `AGE`. If The MOJO pipeline contains multiple output columns, such as `VALID.0` and `VALID.1` (for example classification problems),
@@ -170,13 +170,55 @@ the prediction column contains an array of size 2 containing predicted probabili
 
 By default, this option is enabled.
 
+Overriding MOJO library
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Both full distribution and the scoring package include MOJO2 Runtime Implementation (``ai.h2o:mojo2-runtime-impl``) so you don't have to worry about it.
+We try to update it to the newest possible version when releasing Sparkling Water, however in some cases you might want to override the dependency yourself.
+
+To do that add the MOJO2 jar to the jars list **before** the Sparkling Water scoring jar:
+
+.. content-tabs::
+
+    .. tab-container:: Scala
+        :title: Scala
+
+        .. code:: bash
+
+            ./bin/spark-shell --jars license.sig,mojo2-runtime-impl-2.7.5.jar,jars/sparkling-water-assembly-scoring_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
+
+        .. code:: bash
+
+            ./bin/sparkling-shell --jars license.sig,mojo2-runtime-impl-2.7.5.jar,jars/sparkling-water-assembly-scoring_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
+
+    .. tab-container:: Python
+        :title: Python
+
+        .. code:: bash
+
+            SUBST_PYTHON_PATH_WORKAROUND./bin/pyspark --jars license.sig,mojo2-runtime-impl-2.7.5.jar --py-files py/h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
+
+        .. code:: bash
+
+            ./bin/pysparkling --jars license.sig,mojo2-runtime-impl-2.7.5.jar
+
+As mentioned above, in local Spark mode, please use ``--driver-class-path``.
+
+
 Customizing the MOJO Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can configure the output and format of predictions via the H2OMOJOSettings. The available options are
 
 - ``predictionCol`` - Specifies the name of the generated prediction column. The default value is `prediction`.
-- ``namedMojoOutputColumns`` - Enables or disables named output columns. By default, it is enabled.
+- ``withContributions`` - If enabled, it appends the `contributions` column to the input dataset.
+  The column contains sub-columns with Shapley values for the original features from the dataset. By default, this option is disabled.
+- ``withInternalContributions`` -  If enabled, it appends the `internal_contributions` column to the input dataset.
+  The column contains sub-columns with Shapley values for the transformed features entering the models inside MOJO pipeline.
+  By default, this option is disabled.
+- ``withPredictionInterval`` -  If enabled, it appends additional columns with prediction intervals under the prediction column.
+  By default, this option is disabled.
+- ``scoringBulkSize`` - A number of records passed at once to the underlying mojo2 runtime library.
 
 Troubleshooting
 ~~~~~~~~~~~~~~~

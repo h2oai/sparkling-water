@@ -46,12 +46,6 @@ class H2OAlgorithmMOJOParams(H2OBaseMOJOParams):
         "Name of feature columns",
         H2OTypeConverters.toListString())
 
-    namedMojoOutputColumns = Param(
-        Params._dummy(),
-        "namedMojoOutputColumns",
-        "Mojo Output is not stored in the array but in the properly named columns",
-        H2OTypeConverters.toBoolean())
-
     withLeafNodeAssignments = Param(
         Params._dummy(),
         "withLeafNodeAssignments",
@@ -78,11 +72,6 @@ class H2OAlgorithmMOJOParams(H2OBaseMOJOParams):
 
     def getFeaturesCols(self):
         return self.getOrDefault(self.featuresCols)
-
-    def getNamedMojoOutputColumns(self):
-        warnings.warn("The method will be removed without replacement in the version 3.40."
-        "Named output columns will be always used.", DeprecationWarning)
-        return self.getOrDefault(self.namedMojoOutputColumns)
 
     def getWithLeafNodeAssignments(self):
         return self.getOrDefault(self.withLeafNodeAssignments)

@@ -401,7 +401,7 @@ modified via the \texttt{H2OMOJOSettings} object.
 
 \subsection{Predictions Format}
 
-When the option \texttt{namedMojoOutputColumns} is enabled on\\ \texttt{H2OMOJOSettings}, the \texttt{predictionCol} contains sub-columns with
+The \texttt{predictionCol} contains sub-columns with
 names corresponding to the columns Driverless AI identified as output columns. For example, if Driverless API MOJO
 pipeline contains one output column \texttt{AGE} ( for example regression problem), the prediction column contains another sub-column
 named \texttt{AGE}. If The MOJO pipeline contains multiple output columns, such as \texttt{VALID.0} and \texttt{VALID.1} (for example classification problems),
@@ -423,7 +423,6 @@ We can configure the output and format of predictions via the H2OMOJOSettings. T
     \item \texttt{predictionCol} - Specifies the name of the generated prediction column. The default value is \texttt{prediction}.
     \item \texttt{convertUnknownCategoricalLevelsToNa} - Enables or disables conversion of unseen categoricals to NAs. By default, it is disabled.
     \item \texttt{convertInvalidNumbersToNa} - Enables or disables conversion of invalid numbers to NAs. By default, it is disabled.
-    \item \texttt{namedMojoOutputColumns} - Enables or disables named output columns. By default, it is enabled.
 \end{itemize}
 
 

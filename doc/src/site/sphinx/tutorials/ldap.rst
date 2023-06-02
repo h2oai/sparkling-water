@@ -1,3 +1,5 @@
+.. _ldap:
+
 Enabling LDAP
 -------------
 
@@ -94,3 +96,9 @@ You can see that in the case of PySparkling, you need to also specify the userna
 
 Later when accessing Flow, you will be asked for the username and password of the user you specified in the configuration
 property `spark.ext.h2o.user.name` or via the method `setUserName`.
+
+Proxy only mode
+~~~~~~~~~~~~~~~
+
+In various deployment scenarios it might be required to make the Flow UI accessible only to the cluster owner, without specifying the password in the configuration beforehand.
+In those cases please see :ref:`proxy_only_auth`

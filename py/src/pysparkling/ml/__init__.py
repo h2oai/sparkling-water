@@ -33,7 +33,8 @@ __all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost
            "H2ODRFMOJOModel", "H2OIsolationForestMOJOModel", "H2OWord2Vec", "H2OWord2VecMOJOModel", "H2OAutoEncoder",
            "H2OAutoEncoderMOJOModel", "H2OPCA", "H2OPCAMOJOModel", "H2OGLRM", "H2OGLRMMOJOModel", "H2ORuleFit",
            "H2ORuleFitClassifier", "H2ORuleFitRegressor", "H2ORuleFitMOJOModel", "H2OStackedEnsemble",
-           "H2OStackedEnsembleMOJOModel", "H2ORegressionMetrics", "H2OBinomialMetrics", "H2OMultinomialMetrics"]
+           "H2OStackedEnsembleMOJOModel", "H2ORegressionMetrics", "H2OBinomialMetrics", "H2OMultinomialMetrics",
+           "H2OExtendedIsolationForest"]
 
 from pysparkling.initializer import Initializer
 

@@ -3,8 +3,16 @@
 Train DRF Model in Sparkling Water
 ----------------------------------
 
-Sparkling Water provides API for H2O DRF in Scala and Python.
-The following sections describe how to train the DRF model in Sparkling Water in both languages. See also :ref:`parameters_H2ODRF`
+Introduction
+~~~~~~~~~~~~
+
+Distributed Random Forest (DRF) is a powerful classification and regression tool. When given a set of data, DRF generates a forest of classification or regression trees, rather than a single classification or regression tree.
+For more more comprehensive description see `H2O-3 DRF documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/data-science/drf.html>`__.
+
+Example
+~~~~~~~
+
+The following section describes how to train the Distributed Random Forest model in Sparkling Water in Scala & Python following the same example as H2O-3 documentation mentioned above. See also :ref:`parameters_H2ODRF`
 and :ref:`model_details_H2ODRFMOJOModel`.
 
 .. content-tabs::
@@ -31,17 +39,33 @@ and :ref:`model_details_H2ODRFMOJOModel`.
         .. code:: scala
 
             import org.apache.spark.SparkFiles
-            spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
-            val rawSparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
-            val sparkDF = rawSparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
+            val datasetUrl = "https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/cars_20mpg.csv"
+            spark.sparkContext.addFile(datasetUrl) //for example purposes, on a real cluster it's better to load directly from distributed storage
+            val sparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("cars_20mpg.csv"))
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
-        Train the model. You can configure all the available DRF arguments using provided setters, such as the label column.
+        Set the predictors and response columns
+
+        .. code:: scala
+
+            val predictors = Array("displacement", "power", "weight", "acceleration", "year")
+            val response = "economy_20mpg"
+
+        Build and train the model. You can configure all the available DRF arguments using provided setters, such as the label column.
 
         .. code:: scala
 
             import ai.h2o.sparkling.ml.algos.H2ODRF
-            val estimator = new H2ODRF().setLabelCol("CAPSULE")
+            val estimator = new H2ODRF()
+                  .setNtrees(10)
+                  .setMaxDepth(5)
+                  .setMinRows(10)
+                  .setCalibrateModel(true)
+                  .setCalibrationDataFrame(testingDF)
+                  .setBinomialDoubleTrees(true)
+                  .setFeaturesCols(predictors)
+                  .setLabelCol(response)
+                  .setColumnsToCategorical(response) //set the response as a factor, please see the comment below
             val model = estimator.fit(trainingDF)
 
         By default, the ``H2ODRF`` algorithm distinguishes between a classification and regression problem based on the type of
@@ -49,6 +73,13 @@ and :ref:`model_details_H2ODRFMOJOModel`.
         If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
         column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2ODRFClassifier``
         or ``ai.h2o.sparkling.ml.algos.regression.H2ODRFRegressor`` instead.
+
+        Eval performance
+
+        .. code:: scala
+
+            val metrics = model.getTrainingMetrics()
+            println(metrics)
 
         Run Predictions
 
@@ -80,23 +111,45 @@ and :ref:`model_details_H2ODRFMOJOModel`.
         .. code:: python
 
             import h2o
-            frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
+            frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/cars_20mpg.csv")
             sparkDF = hc.asSparkFrame(frame)
-            sparkDF = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
             [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
+
+        Set the predictors and response columns
+
+        .. code:: python
+
+            predictors = ["displacement", "power","weight","acceleration","year"]
+            response = "economy_20mpg"
 
         Train the model. You can configure all the available DRF arguments using provided setters or constructor parameters, such as the label column.
 
         .. code:: python
 
             from pysparkling.ml import H2ODRF
-            estimator = H2ODRF(labelCol = "CAPSULE")
+            estimator = H2ODRF(
+                            ntrees = 10,
+                            maxDepth = 5,
+                            minRows = 10,
+                            calibrateModel = True,
+                            calibrationDataFrame = testingDF,
+                            binomialDoubleTrees = True,
+                            featuresCols = predictors,
+                            labelCol = response,
+                            columnsToCategorical = [response])
             model = estimator.fit(trainingDF)
 
         By default, the ``H2ODRF`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
         If the label column is a numeric column, a regression model will be trained. If you don't want to be worried about
         column data types, you can explicitly identify the problem by using ``H2ODRFClassifier`` or ``H2ODRFRegressor`` instead.
+
+        Eval performance
+
+        .. code:: python
+
+            metrics = model.getTrainingMetrics()
+            print(metrics)
 
         Run Predictions
 

@@ -1,6 +1,355 @@
 Change Log
 ==========
 
+v3.40.0.4-1 (2023-05-05)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.4-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.4-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.4-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.4-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.4-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.4-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.4-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.4-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.4-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.4-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.4-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.4-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2784 <https://0xdata.atlassian.net/browse/SW-2784>`__ - Upgrade H2O to 3.40.0.4
+
+v3.40.0.3-1 (2023-05-02)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.3-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.3-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.3-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.3-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.3-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.3-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.3-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.3-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.3-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2783 <https://0xdata.atlassian.net/browse/SW-2783>`__ - Upgrade H2O to 3.40.0.3
+   -  `SW-2782 <https://0xdata.atlassian.net/browse/SW-2782>`__ - Fix Snyk scans
+   -  `SW-2781 <https://0xdata.atlassian.net/browse/SW-2781>`__ - AES encrypted ldap bind password jetty login module
+
+-  Task
+
+   -  `SW-2740 <https://0xdata.atlassian.net/browse/SW-2740>`__ - Upgrade Gradle to version 7.6
+
+v3.40.0.2-1 (2023-03-21)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.2-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.2-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.2-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.2-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.2-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.2-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.2-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.2-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.2-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2780 <https://0xdata.atlassian.net/browse/SW-2780>`__ - Temporary ignoring of pam unstable tests
+   -  `SW-2778 <https://0xdata.atlassian.net/browse/SW-2778>`__ - Upgrade to H2O 3.40.0.2
+   -  `SW-2776 <https://0xdata.atlassian.net/browse/SW-2776>`__ - Improve DAI Mojo tests
+   -  `SW-2775 <https://0xdata.atlassian.net/browse/SW-2775>`__ - Refresh README
+
+v3.40.0.1-1 (2023-02-24)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.40.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.40.0.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.40.0.1-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.1-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.40.0.1-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.1-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.40.0.1-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.1-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.40.0.1-1-3.3/index.html>`__
+
+-  Bug
+
+   -  `SW-2774 <https://0xdata.atlassian.net/browse/SW-2774>`__ -  Bug in writing CV mojos (loop index not used)
+   -  `SW-2694 <https://0xdata.atlassian.net/browse/SW-2694>`__ - Integration test suite sometimes fails
+
+-  New Feature
+
+   -  `SW-2773 <https://0xdata.atlassian.net/browse/SW-2773>`__ - Add  "proxy only" authentication mode
+
+-  Improvement
+
+   -  `SW-2771 <https://0xdata.atlassian.net/browse/SW-2771>`__ - Uprade to H2O 3.40.0.1
+   -  `SW-2770 <https://0xdata.atlassian.net/browse/SW-2770>`__ - Add Support for Python 3.9
+   -  `SW-2769 <https://0xdata.atlassian.net/browse/SW-2769>`__ -  Remove namedMojoOutputColumns from API
+   -  `SW-2763 <https://0xdata.atlassian.net/browse/SW-2763>`__ - Update Spark in Docker Images to 3.2.3
+   -  `SW-2757 <https://0xdata.atlassian.net/browse/SW-2757>`__ - Update Spark in Docker Images to 3.3.2
+
+-  Engineering Story
+
+   -  `SW-2768 <https://0xdata.atlassian.net/browse/SW-2768>`__ - Deprecate Support for Apache  Spark 2.3
+   -  `SW-2767 <https://0xdata.atlassian.net/browse/SW-2767>`__ - Fix DBC tests
+   -  `SW-2753 <https://0xdata.atlassian.net/browse/SW-2753>`__ - Upgrade Sparkling Water Snapshot Version to 3.40.0.1-1-SNAPSHOT
+
+v3.38.0.4-1 (2023-01-06)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.4-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.4-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.4-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.4-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.4-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.4-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.4-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.4-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.4-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.4-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.4-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.4-1-3.3/index.html>`__
+
+-  Engineering Story
+
+   -  `SW-2766 <https://0xdata.atlassian.net/browse/SW-2766>`__ - Use Java 11 in Jenkins CI
+
+-  Improvement
+
+   -  `SW-2765 <https://0xdata.atlassian.net/browse/SW-2765>`__ - Upgrade to H2O 3.38.0.4
+
+-  Bug
+
+   -  `SW-2764 <https://0xdata.atlassian.net/browse/SW-2764>`__ - Remove Transient Dependency to numpy during H2OContext.getOrCreate() in pysparkling
+   -  `SW-2762 <https://0xdata.atlassian.net/browse/SW-2762>`__ - Fix Authorization of Cluster Owner
+
+v3.38.0.3-1 (2022-11-24)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.3-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.3-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.3-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.3-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.3-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.3-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.3-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.3-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.3-1-3.3/index.html>`__
+
+-  Engineering Story
+
+   -  `SW-2761 <https://0xdata.atlassian.net/browse/SW-2761>`__ - Remove Outdated Roadmap
+
+-  Improvement
+
+   -  `SW-2760 <https://0xdata.atlassian.net/browse/SW-2760>`__ - Upgrade to H2O 3.38.0.3
+   -  `SW-2759 <https://0xdata.atlassian.net/browse/SW-2759>`__ - Adding prediction interval option to MOJOs in H2OMOJOSettings when using pysparkling
+
+-  New Feature
+
+   -  `SW-2758 <https://0xdata.atlassian.net/browse/SW-2758>`__ - Improvement in overall scoring performance for DAI mojo's 
+   -  `SW-2755 <https://0xdata.atlassian.net/browse/SW-2755>`__ - Add PAM Authentication
+
+v3.38.0.2-1 (2022-11-01)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.2-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.2-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.2-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.2-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.2-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.2-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.2-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.2-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.2-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2756 <https://0xdata.atlassian.net/browse/SW-2756>`__ - Upgrade to H2O 3.38.0.2
+
+-  New Feature
+
+   -  `SW-2754 <https://0xdata.atlassian.net/browse/SW-2754>`__ - Expose splinesNonNegative parameter on H2OGAM
+
+-  Bug
+
+   -  `SW-2732 <https://0xdata.atlassian.net/browse/SW-2732>`__ - SW cannot be started in Windows environment
+
+v3.38.0.1-1 (2022-09-22)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.38.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.38.0.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.38.0.1-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.1-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.38.0.1-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.1-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.38.0.1-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.1-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.38.0.1-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2751 <https://0xdata.atlassian.net/browse/SW-2751>`__ - Remove Deprecated Parameters on H2ODeepLearning
+   -  `SW-2750 <https://0xdata.atlassian.net/browse/SW-2750>`__ - Upgrade to H2O 3.38.0.1
+   -  `SW-2714 <https://0xdata.atlassian.net/browse/SW-2714>`__ - Improve ipv6 handling
+   -  `SW-2199 <https://0xdata.atlassian.net/browse/SW-2199>`__ - Remove code related to H2OClient from SW codebase
+
+-  New Feature
+
+   -  `SW-2749 <https://0xdata.atlassian.net/browse/SW-2749>`__ - Add Ability to Calculate Contributions for Transformed Features On H2OMOJOPipelineModel
+   -  `SW-2737 <https://0xdata.atlassian.net/browse/SW-2737>`__ - Add Extended Isolation Forest to SW API
+
+-  Engineering Story
+
+   -  `SW-2746 <https://0xdata.atlassian.net/browse/SW-2746>`__ - Fix GBM MOJO Test in Python
+   -  `SW-2745 <https://0xdata.atlassian.net/browse/SW-2745>`__ - Remove Support for Spark 2.2
+   -  `SW-2739 <https://0xdata.atlassian.net/browse/SW-2739>`__ - Update Number of Parameters in GBM MOJO Test
+   -  `SW-2675 <https://0xdata.atlassian.net/browse/SW-2675>`__ - Upgrade Sparkling Water Snapshot Version to 3.38.0.1-1-SNAPSHOT
+
+-  Bug
+
+   -  `SW-2734 <https://0xdata.atlassian.net/browse/SW-2734>`__ - Fix Time Conversion Tests in Python API
+
+v3.36.1.5-1 (2022-09-16)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.5-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.5-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.5-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.5-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.5-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.5-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.5-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.5-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.5-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.5-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.5-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.5-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.36.1.5-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.36.1.5-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2748 <https://0xdata.atlassian.net/browse/SW-2748>`__ - Upgrade to H2O 3.36.1.5
+
+-  Engineering Story
+
+   -  `SW-2738 <https://0xdata.atlassian.net/browse/SW-2738>`__ - Use Dedicated Credentials for Accessing S3
+   -  `SW-2674 <https://0xdata.atlassian.net/browse/SW-2674>`__ - Refactor ChicagoCrimeApp Example
+
+-  Bug
+
+   -  `SW-2736 <https://0xdata.atlassian.net/browse/SW-2736>`__ - Frame Metadata Retrieval Downloads Unnecessary Imformation
+
+-  Docs
+
+   -  `SW-2711 <https://0xdata.atlassian.net/browse/SW-2711>`__ - Change DRF tutorial to be on par with h2o-3
+   -  `SW-2710 <https://0xdata.atlassian.net/browse/SW-2710>`__ - Change KMeans tutorial to be on par with h2o-3
+   -  `SW-2709 <https://0xdata.atlassian.net/browse/SW-2709>`__ - Change DeepLearning tutorial to be on par with h2o-3
+
+v3.36.1.4-1 (2022-08-04)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.4-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.4-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.4-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.4-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.4-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.4-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.4-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.4-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.4-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.4-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.4-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.4-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.36.1.4-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.36.1.4-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2735 <https://0xdata.atlassian.net/browse/SW-2735>`__ - Upgrade to H2O 3.36.1.4
+
+-  Docs
+
+   -  `SW-2731 <https://0xdata.atlassian.net/browse/SW-2731>`__ - Dedicated Jenkins Worker Profile for K8s tests
+   -  `SW-2730 <https://0xdata.atlassian.net/browse/SW-2730>`__ - Remove False Statement from Sparkling Water Documentation
+   -  `SW-2728 <https://0xdata.atlassian.net/browse/SW-2728>`__ - Improve Tutorial for Working with Binary Models
+   -  `SW-2727 <https://0xdata.atlassian.net/browse/SW-2727>`__ - Document Saving MOJO Models to Local File System
+
+-  Engineering Story
+
+   -  `SW-2729 <https://0xdata.atlassian.net/browse/SW-2729>`__ - Update Spark in Docker Images to 3.2.2
+   -  `SW-2726 <https://0xdata.atlassian.net/browse/SW-2726>`__ - Migrate Jenkins CI under Account Dedicated to OSS
+
+v3.36.1.3-1 (2022-07-11)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.3-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.3-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.3-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.3-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.3-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.3-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.3-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.3-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.3-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.36.1.3-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.36.1.3-1-3.3/index.html>`__
+
+-  Improvement
+
+   -  `SW-2725 <https://0xdata.atlassian.net/browse/SW-2725>`__ - Upgrade to H2O 3.36.1.3
+   -  `SW-2712 <https://0xdata.atlassian.net/browse/SW-2712>`__ - Increase the number of builds kept in Jenkin's build history
+   -  `SW-2630 <https://0xdata.atlassian.net/browse/SW-2630>`__ - Rewrite and Improve K8s Tests 
+
+-  Engineering Story
+
+   -  `SW-2724 <https://0xdata.atlassian.net/browse/SW-2724>`__ - Fix Docker Image Publishing to DockerHub
+   -  `SW-2719 <https://0xdata.atlassian.net/browse/SW-2719>`__ - Fix Building of RSparkling Docker Images
+
+-  Bug
+
+   -  `SW-2722 <https://0xdata.atlassian.net/browse/SW-2722>`__ - Fix Failing Test on External Backend
+
+-  New Feature
+
+   -  `SW-2721 <https://0xdata.atlassian.net/browse/SW-2721>`__ - Add Support for Spark 3.3
+
+-  Docs
+
+   -  `SW-2720 <https://0xdata.atlassian.net/browse/SW-2720>`__ - Invalid Python Code Examples
+
+v3.36.1.2-1 (2022-05-30)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.2-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.2-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.2-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.2-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.2-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.2-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.2-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.2-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.2-1-3.2/index.html>`__
+
+-  Bug
+
+   -  `SW-2718 <https://0xdata.atlassian.net/browse/SW-2718>`__ - Pysparkling with DAI mojo producing same contributions for all rows
+   -  `SW-2707 <https://0xdata.atlassian.net/browse/SW-2707>`__ - H2OPipelineMOJOModel Reports Deprecation Warning for Every Line of Code
+   -  `SW-2706 <https://0xdata.atlassian.net/browse/SW-2706>`__ - Code Generation of R and Python Configuration Classes Should Consider Overloaded Methods
+
+-  Improvement
+
+   -  `SW-2717 <https://0xdata.atlassian.net/browse/SW-2717>`__ - Upgrade H2O to 3.36.1.2
+   -  `SW-2716 <https://0xdata.atlassian.net/browse/SW-2716>`__ - Upgrade MOJO runtime to 2.7.8
+
+-  Engineering Story
+
+   -  `SW-2715 <https://0xdata.atlassian.net/browse/SW-2715>`__ - Remove PySpark Integration Test
+   -  `SW-2713 <https://0xdata.atlassian.net/browse/SW-2713>`__ - Fix Failing R Tests
+
+v3.36.1.1-1 (2022-04-20)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.36.1.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.36.1.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.36.1.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.36.1.1-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.1-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.36.1.1-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.1-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.36.1.1-1-3.2/index.html>`__
+
+-  Improvement
+
+   -  `SW-2705 <https://0xdata.atlassian.net/browse/SW-2705>`__ - Upgrade H2O to 3.36.1.1
+   -  `SW-2682 <https://0xdata.atlassian.net/browse/SW-2682>`__ - Peformance improvement: do constant check & row count in one iteration
+
+-  Docs
+
+   -  `SW-2704 <https://0xdata.atlassian.net/browse/SW-2704>`__ - Change GAM tutorial to be on par with h2o-3
+   -  `SW-2703 <https://0xdata.atlassian.net/browse/SW-2703>`__ - Add GLM tutorial and expose coefficients
+   -  `SW-2651 <https://0xdata.atlassian.net/browse/SW-2651>`__ - Dockument Ability to Override Mojo Runtime lib in SW
+
+-  Engineering Story
+
+   -  `SW-2702 <https://0xdata.atlassian.net/browse/SW-2702>`__ - Upgrade Scala on Builds for Spark 3.0 and 3.1 to 2.12.15
+   -  `SW-2700 <https://0xdata.atlassian.net/browse/SW-2700>`__ - Add spline_orders to Tests Covering Parameter Propagation to H2OGAMMOJOModel
+   -  `SW-2699 <https://0xdata.atlassian.net/browse/SW-2699>`__ - Fix Failing AutoML Test
+   -  `SW-2698 <https://0xdata.atlassian.net/browse/SW-2698>`__ - Update Spark in Docker Images to 3.1.3
+
+-  New Feature
+
+   -  `SW-2701 <https://0xdata.atlassian.net/browse/SW-2701>`__ - Add Ability to Specify Number of Cores with Automatic External Backend on K8s 
+   -  `SW-1184 <https://0xdata.atlassian.net/browse/SW-1184>`__ - Add H2O Stacked Ensembles to Algo API
+
 v3.36.0.4-1 (2022-04-01)
 ------------------------
 Downloads:

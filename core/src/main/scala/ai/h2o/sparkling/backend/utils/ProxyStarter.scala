@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.backend.utils
 
 import java.net._
-
 import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkEnv
@@ -29,6 +28,8 @@ import water.init.NetworkInit
 import water.webserver.H2OHttpViewImpl
 import water.webserver.jetty9.SparklingWaterJettyHelper
 
+import scala.util.{Failure, Success, Try}
+
 private[sparkling] object ProxyStarter extends Logging {
   private var server: Server = _
   def startFlowProxy(hc: H2OContext, conf: H2OConf): URI = {
@@ -37,7 +38,7 @@ private[sparkling] object ProxyStarter extends Logging {
       try {
         val config = NetworkInit.webServerConfig(confToH2OArgs(conf))
         val h2oHttpView = new H2OHttpViewImpl(config)
-        val helper = new SparklingWaterJettyHelper(hc, conf, h2oHttpView)
+        val helper = new SparklingWaterJettyHelper(hc, conf, conf.getCredentials(), h2oHttpView)
         port = findNextFreeFlowPort(conf.clientWebPort, port)
         server = helper.startServer(port)
         return new URI(
@@ -55,10 +56,11 @@ private[sparkling] object ProxyStarter extends Logging {
     args.jks_pass = conf.jksPass.orNull
     args.jks_alias = conf.jksAlias.orNull
     args.login_conf = conf.loginConf.orNull
-    args.user_name = conf.userName.orNull
+    args.user_name = conf.userName.getOrElse(System.getProperty("user.name"))
     args.context_path = conf.contextPath.orNull
     args.hash_login = conf.hashLogin
     args.ldap_login = conf.ldapLogin
+    args.pam_login = conf.pamLogin
     args.kerberos_login = conf.kerberosLogin
     args.embedded = true
     args
@@ -102,18 +104,18 @@ private[sparkling] object ProxyStarter extends Logging {
   }
 
   private def isTcpPortAvailable(port: Int): Boolean = {
-    scala.util
-      .Try {
-        val serverSocket = new ServerSocket()
-        serverSocket.setReuseAddress(false)
-        val host = SparkEnv.get.blockManager.blockManagerId.host
-        logInfo(s"Trying to bind on $host:$port using 0.0.0.0 ip address")
-        val socketAddress = new InetSocketAddress("0.0.0.0", port)
-        serverSocket.bind(socketAddress, 1)
-        serverSocket.close()
-        true
-      }
-      .getOrElse(false)
+    val tryBinding = Try {
+      val serverSocket = new ServerSocket()
+      serverSocket.setReuseAddress(false)
+      logInfo(s"Trying to bind on port $port using wildcard ip address")
+      val socketAddress = new InetSocketAddress(port)
+      serverSocket.bind(socketAddress, 1)
+      serverSocket.close()
+    }
+    tryBinding match {
+      case Failure(e) => log.trace(s"could not bind the port $port", e); false
+      case Success(_) => true
+    }
   }
 
   private def findNextFreeFlowPort(clientWebPort: Int, clientBasePort: Int): Int = {

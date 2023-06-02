@@ -37,15 +37,10 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
   protected final val withContributions = new BooleanParam(
     this,
     "withContributions",
-    "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values.")
+    "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values of original features.")
 
   protected final val featuresCols: StringArrayParam =
     new StringArrayParam(this, "featuresCols", "Name of feature columns")
-
-  protected final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(
-    this,
-    "namedMojoOutputColumns",
-    "Mojo Output is not stored in the array but in the properly named columns")
 
   protected final val withLeafNodeAssignments =
     new BooleanParam(this, "withLeafNodeAssignments", "Enables or disables computation of leaf node assignments.")
@@ -61,7 +56,6 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
     detailedPredictionCol -> H2OMOJOSettings.default.detailedPredictionCol,
     withContributions -> H2OMOJOSettings.default.withContributions,
     featuresCols -> Array.empty[String],
-    namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns,
     withLeafNodeAssignments -> H2OMOJOSettings.default.withLeafNodeAssignments,
     withStageResults -> H2OMOJOSettings.default.withStageResults)
 
@@ -75,9 +69,6 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
   def getWithContributions(): Boolean = $(withContributions)
 
   def getFeaturesCols(): Array[String] = $(featuresCols)
-
-  @DeprecatedMethod(version = "3.40")
-  def getNamedMojoOutputColumns(): Boolean = $(namedMojoOutputColumns)
 
   def getWithLeafNodeAssignments(): Boolean = $(withLeafNodeAssignments)
 

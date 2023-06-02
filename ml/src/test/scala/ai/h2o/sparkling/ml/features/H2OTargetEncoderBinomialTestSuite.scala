@@ -99,9 +99,6 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       val model = pipeline.fit(trainingDataset)
       val transformedTestingDataset = model.transform(testingDataset)
 
-      expectedTestingDataset.show(100, false)
-      transformedTestingDataset.show(100, false)
-
       TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
     }
 

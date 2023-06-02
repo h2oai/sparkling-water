@@ -15,9 +15,8 @@
 # limitations under the License.
 #
 
-from pyspark.sql import SparkSession
-from pyspark.sql.dataframe import DataFrame
 from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModelFactory
+from ai.h2o.sparkling.H2ODataFrameConverters import H2ODataFrameConverters
 
 
 class H2OAutoMLExtras:
@@ -26,7 +25,7 @@ class H2OAutoMLExtras:
         if len(extraColumns) == 1 and isinstance(extraColumns[0], list):
             extraColumns = extraColumns[0]
         leaderboard_java = self._java_obj.getLeaderboard(extraColumns)
-        return DataFrame(leaderboard_java, SparkSession.builder.getOrCreate()._wrapped)
+        return H2ODataFrameConverters.scalaToPythonDataFrame(leaderboard_java)
 
     def getAllModels(self):
         javaModels = self._java_obj.getAllModels()

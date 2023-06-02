@@ -3,6 +3,11 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
+From 3.40 to 3.42
+-----------------
+
+- The support for Apache Spark 2.3.x has been removed.
+
 From 3.38 to 3.40
 -----------------
 
@@ -10,12 +15,21 @@ From 3.38 to 3.40
   on ``H2OAlgorithmCommonParams`` have been removed without replacement. The behaviour will stay the same as it was
   for "true" value which was the default value in the past.
 
+- The parameter ``spark.ext.h2o.external.k8s.svc.timeout" and methods`` and methods ``externalK8sServiceTimeout``,
+  ``setExternalK8sServiceTimeout`` on ``ExternalBackendConf`` have been removed without replacement.
+
 From 3.36 to 3.38
 -----------------
 
 - org.apache.spark.h2o.H2OConf has been replaced by ai.h2o.sparkling.H2OConf
 
 - org.apache.spark.h2o.H2OContext has been replaced by ai.h2o.sparkling.H2OContext
+
+- The legacy and unstable way of communication with H2O cluster from Spark driver called 'H2O client' was removed.
+  H2O client was a virtual H2O node running on the Spark driver which communicated with the cluster via
+  the same protocol as H2O nodes used among themselves. The sparkling water option ``spark.ext.h2o.rest.api.based.client``
+  has no effect any more and Sparkling Water will always communicate with H2O cluster via REST API. Scala/Java users
+  can't use H2O-3 api anymore. The functionality of H2O-3 cluster must be accessed via Sparkling Water Scala API.
 
 - The support for Apache Spark 2.2.x has been removed.
 

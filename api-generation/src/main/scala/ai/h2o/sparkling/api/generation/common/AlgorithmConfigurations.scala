@@ -17,32 +17,38 @@
 
 package ai.h2o.sparkling.api.generation.common
 
-import java.util
-
 import hex.coxph.CoxPHModel.CoxPHParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.gam.GAMModel.GAMParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.kmeans.KMeansModel.KMeansParameters
-import hex.schemas.CoxPHV3.CoxPHParametersV3
 import hex.rulefit.RuleFitModel.RuleFitParameters
 import hex.schemas.CoxPHModelV3.CoxPHModelOutputV3
+import hex.schemas.CoxPHV3.CoxPHParametersV3
 import hex.schemas.DRFModelV3.DRFModelOutputV3
 import hex.schemas.DeepLearningModelV3.DeepLearningModelOutputV3
+import hex.schemas.DeepLearningV3.{DeepLearningParametersV3 => DLParamsV3}
+import hex.schemas.ExtendedIsolationForestModelV3.ExtendedIsolationForestModelOutputV3
 import hex.schemas.GAMModelV3.GAMModelOutputV3
 import hex.schemas.GBMModelV3.GBMModelOutputV3
 import hex.schemas.GLMModelV3.GLMModelOutputV3
 import hex.schemas.IsolationForestModelV3.IsolationForestModelOutputV3
+import hex.schemas.IsolationForestV3.{IsolationForestParametersV3 => IFParamsV3}
+import hex.schemas.ExtendedIsolationForestV3.{ExtendedIsolationForestParametersV3 => ExtIFParamsV3}
 import hex.schemas.KMeansModelV3.KMeansModelOutputV3
+import hex.schemas.KMeansV3.{KMeansParametersV3 => KMeansParamsV3}
 import hex.schemas.RuleFitModelV3.RuleFitModelOutputV3
 import hex.schemas.RuleFitV3.RuleFitParametersV3
 import hex.schemas.XGBoostModelV3.XGBoostModelOutputV3
-import hex.schemas.{DRFV3, DeepLearningV3, GAMV3, GBMV3, GLMV3, IsolationForestV3, KMeansV3, XGBoostV3}
+import hex.schemas.XGBoostV3.{XGBoostParametersV3 => XGBParamsV3}
+import hex.schemas.{DRFV3, GAMV3, GBMV3, GLMV3}
 import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.gbm.GBMModel.GBMParameters
-import hex.tree.isofor.IsolationForestModel.IsolationForestParameters
-import hex.tree.xgboost.XGBoostModel
+import hex.tree.isofor.IsolationForestModel.{IsolationForestParameters => IFParameters}
+import hex.tree.isoforextended.ExtendedIsolationForestModel.{ExtendedIsolationForestParameters => ExtIFParams}
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
+
+import java.util
 
 object AlgorithmConfigurations {
 
@@ -59,7 +65,6 @@ object AlgorithmConfigurations {
     "featuresCols" -> Array.empty[String],
     "predictionCol" -> "prediction",
     "detailedPredictionCol" -> "detailed_prediction",
-    "namedMojoOutputColumns" -> true,
     "withContributions" -> false,
     "withLeafNodeAssignments" -> false,
     "withStageResults" -> false) ++ defaultValuesOfCommonParameters
@@ -83,9 +88,6 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
     val betaConstraints = ExplicitField("beta_constraints", "HasBetaConstraints", null)
     val userPoints = ExplicitField("user_points", "HasUserPoints", null)
     val randomCols = ExplicitField("random_columns", "HasRandomCols", null)
-    val userX = ExplicitField("user_x", "HasUserX", null)
-    val userY = ExplicitField("user_y", "HasUserY", null)
-    val lossByColNames = ExplicitField("loss_by_col_idx", "HasLossByColNames", null, Some("lossByColNames"))
     val gamCols = ExplicitField("gam_columns", "HasGamCols", null, None, Some("HasGamColsOnMOJO"))
     val validationLabelCol = ExplicitField("validation_response_column", "HasValidationLabelCol", "label")
     val interactionPairs = ExplicitField("interaction_pairs", "HasInteractionPairs", null)
@@ -97,7 +99,8 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
     val drfFields = Seq(calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
     val coxPHFields = Seq(ignoredCols, interactionPairs)
-    val ifFields = Seq(calibrationDataFrame, validationLabelCol)
+    val ifFields = Seq(ignoredCols, calibrationDataFrame, validationLabelCol)
+    val extIfFields = Seq(ignoredCols)
 
     val ruleFitFields = Seq(ExplicitField("offset_column", "HasUnsupportedOffsetCol", null), ignoredCols)
 
@@ -106,31 +109,10 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
       ExplicitField("initial_weights", "HasInitialWeights", null),
       ignoredCols)
 
-    type DLParamsV3 = DeepLearningV3.DeepLearningParametersV3
-    type IFParamsV3 = IsolationForestV3.IsolationForestParametersV3
-    type XGBParamsV3 = XGBoostV3.XGBoostParametersV3
-    type KMeansParamsV3 = KMeansV3.KMeansParametersV3
-
     val explicitDefaultValues =
       Map[String, Any]("max_w2" -> 3.402823e38f, "response_column" -> "label", "model_id" -> null, "lambda" -> null)
 
     val noDeprecation = Seq.empty
-
-    val dlDeprecations = Seq(
-      DeprecatedField(
-        "variable_importances",
-        "HasDeprecatedVariableImportances",
-        "variableImportances",
-        "3.38",
-        Some("calculateFeatureImportances"),
-        Some("HasDeprecatedVariableImportancesOnMOJO")),
-      DeprecatedField(
-        "autoencoder",
-        "HasDeprecatedAutoencoder",
-        "autoencoder",
-        "3.38",
-        None,
-        Some("HasDeprecatedAutoencoderOnMOJO")))
 
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField])](
       ("H2OXGBoostParams", classOf[XGBParamsV3], classOf[XGBoostParameters], xgboostFields, noDeprecation),
@@ -138,11 +120,12 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
       ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], drfFields, noDeprecation),
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields, noDeprecation),
       ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields, noDeprecation),
-      ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, dlDeprecations),
+      ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, noDeprecation),
       ("H2ORuleFitParams", classOf[RuleFitParametersV3], classOf[RuleFitParameters], ruleFitFields, noDeprecation),
       ("H2OKMeansParams", classOf[KMeansParamsV3], classOf[KMeansParameters], kmeansFields, noDeprecation),
       ("H2OCoxPHParams", classOf[CoxPHParametersV3], classOf[CoxPHParameters], coxPHFields, noDeprecation),
-      ("H2OIsolationForestParams", classOf[IFParamsV3], classOf[IsolationForestParameters], ifFields, noDeprecation))
+      ("H2OIsolationForestParams", classOf[IFParamsV3], classOf[IFParameters], ifFields, noDeprecation),
+      ("H2OExtendedIsolationForestParams", classOf[ExtIFParamsV3], classOf[ExtIFParams], extIfFields, noDeprecation))
 
     for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields, deprecatedFields) <- algorithmParameters)
       yield ParameterSubstitutionContext(
@@ -171,8 +154,6 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
     val unsupervised = "H2OUnsupervisedAlgorithm"
     val treeUnsupervised = "H2OTreeBasedUnsupervisedAlgorithm"
 
-    type IFParameters = IsolationForestParameters
-
     val algorithms = Seq[(String, Class[_], String, Seq[String], Option[String])](
       ("H2OXGBoost", classOf[XGBoostParameters], treeSupervised, Seq(withDistribution), None),
       ("H2OGBM", classOf[GBMParameters], treeSupervised, Seq(withDistribution), None),
@@ -183,7 +164,8 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
       ("H2ORuleFit", classOf[RuleFitParameters], supervised, Seq(withDistribution), None),
       ("H2OKMeans", classOf[KMeansParameters], unsupervised, Seq("H2OKMeansExtras"), Some("H2OClusteringMetrics")),
       ("H2OCoxPH", classOf[CoxPHParameters], supervised, Seq.empty, Some("H2ORegressionCoxPHMetrics")),
-      ("H2OIsolationForest", classOf[IFParameters], treeUnsupervised, Seq.empty, Some("H2OAnomalyMetrics")))
+      ("H2OIsolationForest", classOf[IFParameters], treeUnsupervised, Seq.empty, Some("H2OAnomalyMetrics")),
+      ("H2OExtendedIsolationForest", classOf[ExtIFParams], treeUnsupervised, Seq.empty, Some("H2OAnomalyMetrics")))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents, metricsClass) <- algorithms)
       yield AlgorithmSubstitutionContext(
@@ -226,7 +208,8 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
       ("H2ORuleFitModelOutputs", classOf[RuleFitModelOutputV3]),
       ("H2OKMeansModelOutputs", classOf[KMeansModelOutputV3]),
       ("H2OCoxPHModelOutputs", classOf[CoxPHModelOutputV3]),
-      ("H2OIsolationForestModelOutputs", classOf[IsolationForestModelOutputV3]))
+      ("H2OIsolationForestModelOutputs", classOf[IsolationForestModelOutputV3]),
+      ("H2OExtendedIsolationForestModelOutputs", classOf[ExtendedIsolationForestModelOutputV3]))
 
     for ((outputEntityName, h2oParametersClass: Class[_]) <- modelOutputs)
       yield ModelOutputSubstitutionContext(

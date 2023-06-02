@@ -30,6 +30,7 @@ from ai.h2o.sparkling.ml.models.H2OAutoEncoderMOJOModel import H2OAutoEncoderMOJ
 from ai.h2o.sparkling.ml.models.H2OWord2VecMOJOModel import H2OWord2VecMOJOModel
 from ai.h2o.sparkling.ml.models.H2OKMeansMOJOModel import H2OKMeansMOJOModel
 from ai.h2o.sparkling.ml.models.H2OIsolationForestMOJOModel import H2OIsolationForestMOJOModel
+from ai.h2o.sparkling.ml.models.H2OExtendedIsolationForestMOJOModel import H2OExtendedIsolationForestMOJOModel
 from ai.h2o.sparkling.ml.models.H2OMOJOPipelineModel import H2OMOJOPipelineModel
 from ai.h2o.sparkling.ml.models.H2OBinaryModel import H2OBinaryModel
 from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OTreeBasedSupervisedMOJOModel

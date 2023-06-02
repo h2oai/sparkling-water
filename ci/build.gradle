@@ -30,21 +30,49 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 |   rm -f terraform.zip
                """.stripMargin()
 
+  environmentVariable("PATH","/usr/lib/jvm/java-8-oracle/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+
+  // Update to R 4.2
   runCommand """\\
+                apt install software-properties-common -y && \\
+                apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \\
+                add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu xenial-cran40/' && \\
+                apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub && \\
+                apt update && \\
+                apt install r-base -y && \\
+                R -e 'update.packages(ask = FALSE, checkBuilt = TRUE)' && \\
+                R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")'
+                """
+
+  runCommand """\\
+                apt-get install libharfbuzz-dev libfribidi-dev && \\
                 R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("dbplyr", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")'
                 """
+
   user("jenkins")
   getAllFullSparkVersions().each { version ->
-    runCommand """\\
+    if (version > "3.3") {
+      runCommand """\\
                     cd /home/jenkins && \\
-                    wget http://archive.apache.org/dist/spark/spark-${version}/spark-${version}-bin-hadoop2.7.tgz  && \\
+                    wget http://archive.apache.org/dist/spark/spark-${version}/spark-${version}-bin-hadoop2.tgz && \\
+                    mv spark-${version}-bin-hadoop2.tgz  spark-${version}-bin-hadoop2.7.tgz && \\
                     mkdir -p spark-${version}-bin-hadoop2.7 &&  \\
                     tar zxvf spark-${version}-bin-hadoop2.7.tgz -C spark-${version}-bin-hadoop2.7 --strip-components 1 && \\
                     rm -rf spark-${version}-bin-hadoop2.7.tgz
                     """
+    } else {
+      runCommand """\\
+                    cd /home/jenkins && \\
+                    wget http://archive.apache.org/dist/spark/spark-${version}/spark-${version}-bin-hadoop2.7.tgz && \\
+                    mkdir -p spark-${version}-bin-hadoop2.7 &&  \\
+                    tar zxvf spark-${version}-bin-hadoop2.7.tgz -C spark-${version}-bin-hadoop2.7 --strip-components 1 && \\
+                    rm -rf spark-${version}-bin-hadoop2.7.tgz
+                    """
+    }
+
     if (version.startsWith("2.4")) {
       runCommand "sed -i 's/openjdk:8-jdk-slim/openjdk:8-jdk-slim-buster/g' /home/jenkins/spark-${version}-bin-hadoop2.7/kubernetes/dockerfiles/spark/Dockerfile"
     }
@@ -67,7 +95,10 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                bash /home/jenkins/miniconda.sh -b -p /home/jenkins/miniconda && \\
                rm /home/jenkins/miniconda.sh
                 """
-  environmentVariable("PATH", "\"/home/jenkins/miniconda/bin:\${PATH}\"")
+
+  environmentVariable("PATH", "/home/jenkins/miniconda/bin:/usr/lib/jvm/java-8-oracle/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+  environmentVariable("JAVA_HOME", "/usr/lib/jvm/java-8-oracle")
+
   runCommand """\\
                 conda install anaconda-client conda-build conda-verify -y && \\
                 conda update conda -y && \\
@@ -113,6 +144,42 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   user("jenkins")
 
   runCommand "pip install awscli --upgrade --user"
+
+  // get docker GPG keys, update sources and install docker
+  runCommand """\\
+                cd /home/jenkins && \\
+                sudo mkdir -p /etc/apt/keyrings && \\
+                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \\
+                echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu xenial stable" | \\
+                  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \\
+                sudo apt-get update && \\
+                sudo apt-get install -y docker-ce docker-ce-cli containerd.io 
+             """
+
+  // install kubectl
+  runCommand """\\
+                cd /home/jenkins && \\
+                curl -LOv "https://dl.k8s.io/release/`curl -L -s https://dl.k8s.io/release/stable.txt`/bin/linux/amd64/kubectl" && \\
+                sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \\
+                rm kubectl
+             """
+
+  // install minikube
+  runCommand """\\
+                cd /home/jenkins && \\
+                curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && \\
+                sudo install minikube-linux-amd64 /usr/local/bin/minikube && \\
+                rm minikube-linux-amd64
+             """
+
+  // install aws cli
+  runCommand """\\
+                cd /home/jenkins && \\
+                curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \\
+                unzip awscliv2.zip -d awscliv2 && \\
+                sudo ./awscliv2/aws/install -i /usr/local/aws-cli -b /usr/local/bin && \\
+                rm -rf awscliv2
+             """
 }
 
 def getAllFullSparkVersions() {

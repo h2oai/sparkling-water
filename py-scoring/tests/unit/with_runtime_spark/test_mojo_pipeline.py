@@ -25,31 +25,6 @@ from pyspark.ml import Pipeline, PipelineModel
 from pysparkling.ml import H2OMOJOPipelineModel, H2OMOJOSettings
 
 
-def test_h2o_mojo_pipeline_predictions(prostateDataset):
-    # Try loading the Mojo and prediction on it without starting H2O Context
-    path = "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo")
-    settings = H2OMOJOSettings(namedMojoOutputColumns=False)
-    mojo = H2OMOJOPipelineModel.createFromMojo(path, settings)
-
-    preds = mojo.transform(prostateDataset).repartition(1)
-
-    normalSelection = preds.select("prediction.preds").take(5)
-
-    assert normalSelection[0][0][0] == 65.36339431549945
-    assert normalSelection[1][0][0] == 64.98931238070139
-    assert normalSelection[2][0][0] == 64.95047899851251
-    assert normalSelection[3][0][0] == 65.78738866816514
-    assert normalSelection[4][0][0] == 66.11292243968764
-
-    udfSelection = preds.select(mojo.selectPredictionUDF("AGE")).take(5)
-
-    assert udfSelection[0][0] == 65.36339431549945
-    assert udfSelection[1][0] == 64.98931238070139
-    assert udfSelection[2][0] == 64.95047899851251
-    assert udfSelection[3][0] == 65.78738866816514
-    assert udfSelection[4][0] == 66.11292243968764
-
-
 def test_h2o_mojo_pipeline_predictions_with_named_cols(prostateDataset):
     # Try loading the Mojo and prediction on it without starting H2O Context
     mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -126,22 +101,66 @@ def testMojoPipelineProtoBackendWithoutError(spark):
     prediction.collect()
 
 
-def test_h2o_mojo_pipeline_contributions(spark):
-    test_folder = "daiMojoShapley"
-    mojo_path = "file://" + os.path.abspath("../ml/src/test/resources/" + test_folder + "/pipeline.mojo")
-    data_path = "file://" + os.path.abspath("../ml/src/test/resources/" + test_folder + "/example.csv")
+def getMojoPath(testFolder):
+    return "file://" + os.path.abspath("../ml/src/test/resources/" + testFolder + "/pipeline.mojo")
+
+
+def getDataPath(testFolder):
+    return "file://" + os.path.abspath("../ml/src/test/resources/" + testFolder + "/example.csv")
+
+
+def testMojoPipelineContributions(spark):
+    testFolder = "daiMojoShapley"
+    mojoPath = getMojoPath(testFolder)
+    dataPath = getDataPath(testFolder)
 
     # request pipeline to provide contribution (SHAP) values
     settings = H2OMOJOSettings(withContributions=True)
-    mojo = H2OMOJOPipelineModel.createFromMojo(mojo_path, settings)
+    mojo = H2OMOJOPipelineModel.createFromMojo(mojoPath, settings)
 
-    df = spark.read.csv(data_path, header=True, inferSchema=True)
+    df = spark.read.csv(dataPath, header=True, inferSchema=True)
     contributions = mojo.transform(df).select("contributions.*")
 
-    feature_columns = 1
-    prediction_columns = 4
+    featureColumns = 4
+    classes = 3
     bias = 1
-    contribution_columns = prediction_columns * (feature_columns + bias)
+    contribution_columns = classes * (featureColumns + bias)
 
     assert contribution_columns == len(contributions.columns)
     assert all(c.startswith("contrib_") for c in contributions.columns)
+
+
+def testMojoPipelineInternalContributions(spark):
+    testFolder = "daiMojoShapleyInternal"
+    mojoPath = getMojoPath(testFolder)
+    dataPath = getDataPath(testFolder)
+
+    # request pipeline to provide internal contribution (SHAP) values
+    settings = H2OMOJOSettings(withInternalContributions=True)
+    mojo = H2OMOJOPipelineModel.createFromMojo(mojoPath, settings)
+
+    df = spark.read.csv(dataPath, header=True, inferSchema=True)
+    contributions = mojo.transform(df).select("internal_contributions.*")
+
+    contribution_columns = 115
+
+    assert contribution_columns == len(contributions.columns)
+    assert all(c.startswith("contrib_") for c in contributions.columns)
+
+
+def testMojoPipelinePredictionInterval(spark):
+    testFolder = "daiPredictionInterval"
+    mojoPath = getMojoPath(testFolder)
+    dataPath = getDataPath(testFolder)
+
+    settings = H2OMOJOSettings(withPredictionInterval=True)
+    mojo = H2OMOJOPipelineModel.createFromMojo(mojoPath, settings)
+
+    df = spark.read.csv(dataPath, header=True, inferSchema=True)
+    predictionDF = mojo.transform(df).select("prediction.*")
+
+    assert len(predictionDF.columns) == 3
+    expectedCount = predictionDF.count()
+    assert predictionDF.select("secret_Pressure3pm").distinct().count() == expectedCount
+    assert predictionDF.select("`secret_Pressure3pm.lower`").distinct().count() == expectedCount
+    assert predictionDF.select("`secret_Pressure3pm.upper`").distinct().count() == expectedCount

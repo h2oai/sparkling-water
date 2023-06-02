@@ -281,6 +281,7 @@ The list of specific MOJO models:
 - ``H2ODeepLearningMOJOModel``
 - ``H2OKMeansMOJOModel``
 - ``H2OIsolationForestMOJOModel``
+- ``H2OExtendedIsolationForestMOJOModel``
 - ``H2OCoxPHMOJOModel``
 - ``H2OTargetEncoderMOJOModel``
 - ``H2OAutoEncoderMOJOModel``
@@ -288,14 +289,14 @@ The list of specific MOJO models:
 Exporting the loaded MOJO model using Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To export the MOJO model, call ``model.write.save(path)``. In case of Hadoop enabled system, the command by default
-uses HDFS.
+To export the MOJO model, call ``model.write.save("/some/path")``. In case of a Hadoop-enabled system, the command by default
+uses HDFS. To reference a path on the local file system of the Spark driver, the path must be prefixed with ``file://`` when HDFS is enabled.
 
 Importing the previously exported MOJO model from Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To import the MOJO model, call ``H2OMOJOModel.read.load(path)``. In case of Hadoop enabled system, the command by default
-uses HDFS.
+To import the MOJO model, call ``H2OMOJOModel.read.load("/some/path")``. In case of a Hadoop-enabled system, the command by default
+uses HDFS. To reference a path on the local file system of the Spark driver, the path must be prefixed with ``file://`` when HDFS is enabled.
 
 Accessing additional prediction details
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

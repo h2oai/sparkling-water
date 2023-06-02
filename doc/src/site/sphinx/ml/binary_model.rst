@@ -57,7 +57,7 @@ The binary model class contains methods used to work with binary models.
         .. code:: python
 
             from pysparkling.ml import H2OXGBoostClassifier
-            estimator = H2OXGBoost(labelCol = "CAPSULE", keepBinaryModels = True)
+            estimator = H2OXGBoostClassifier(labelCol = "CAPSULE", keepBinaryModels = True)
             mojoModel = estimator.fit(sparkDF)
 
 To obtain the binary model once the model training has finished, run:
@@ -69,16 +69,34 @@ To obtain the binary model once the model training has finished, run:
 
         .. code:: scala
 
-            estimator.getBinaryModel()
+            val binaryModel = estimator.getBinaryModel()
 
     .. tab-container:: Python
         :title: Python
 
         .. code:: python
 
-            estimator.getBinaryModel()
+            binaryModel = estimator.getBinaryModel()
 
-You can store the model on disk as:
+Utilization of Binary Model in H2O-3 API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following scoring example demonstrates how a binary model trained with the SW API can be utilized with the H2O-3 API:
+
+.. content-tabs::
+
+    .. tab-container:: Python
+        :title: Python
+
+        .. code:: python
+
+            h2oBinaryModel = h2o.get_model(binaryModel.modelId)
+            h2oBinaryModel.predict(test_data=frame)
+
+Save Binary Model to File System
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example demonstrates how a binary model can be stored on a file system:
 
 .. content-tabs::
 
@@ -98,9 +116,10 @@ You can store the model on disk as:
             binaryModel = estimator.getBinaryModel()
             binaryModel.write("/tmp/binary.model")
 
-The loaded end exported models are always equal to each other.
+In case of a Hadoop-enabled system, the command by default uses HDFS. To reference a path on the local file system of
+the Spark driver, the path must be prefixed with ``file://`` when HDFS is enabled.
 
-Load existing binary Model
+Load Existing Binary Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Before you start, please make sure that your ``H2OContext`` is running as we need H2O to be running.

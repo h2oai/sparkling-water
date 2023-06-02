@@ -644,6 +644,34 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     mojo.getCrossValidationModelsScoringHistory().length shouldBe 0
   }
 
+  test("getCoefficients is exposed for trained GLM model") {
+    val model = new H2OGLM()
+      .setSeed(1)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+      .setLambdaValue(Array(0))
+      .setComputePValues(true)
+      .fit(prostateDataFrame)
+
+    val coefficients = model.getCoefficients()
+    coefficients.columns should contain theSameElementsAs Array(
+      "names",
+      "Coefficients",
+      "Std. Error",
+      "z value",
+      "p value",
+      "Standardized Coefficients")
+    coefficients.select("names").as[String].collect() should contain theSameElementsAs Array(
+      "Intercept",
+      "CAPSULE",
+      "RACE",
+      "DPROS",
+      "DCAPS",
+      "PSA",
+      "VOL",
+      "GLEASON")
+  }
+
   {
     def numberOfFolds = 3
 
@@ -668,7 +696,6 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
       result.schema shouldEqual cvResult.schema
       result.count() shouldEqual cvResult.count()
-      cvResult.show(truncate = false)
     }
 
     test("Cross validation models can provide training and validation metrics") {
@@ -743,6 +770,12 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       val cvModels = model.getCrossValidationModels()
 
       cvModels should be(null)
+    }
+
+    test("All cross validation models are saved [SW-2774]") {
+      val cvModels = model.getCrossValidationModels()
+
+      cvModels.map(_.uid).distinct shouldNot have size 1
     }
   }
 

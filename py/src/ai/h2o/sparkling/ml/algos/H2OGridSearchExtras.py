@@ -16,8 +16,7 @@
 #
 
 from ai.h2o.sparkling.ml.models import H2OMOJOModel
-from pyspark.sql import SparkSession
-from pyspark.sql.dataframe import DataFrame
+from ai.h2o.sparkling.H2ODataFrameConverters import H2ODataFrameConverters
 
 
 class H2OGridSearchExtras:
@@ -27,10 +26,8 @@ class H2OGridSearchExtras:
 
     def getGridModelsParams(self):
         jdf = self._java_obj.getGridModelsParams()
-        sqlContext = SparkSession.builder.getOrCreate()._wrapped
-        return DataFrame(jdf, sqlContext)
+        return H2ODataFrameConverters.scalaToPythonDataFrame(jdf)
 
     def getGridModelsMetrics(self):
         jdf = self._java_obj.getGridModelsMetrics()
-        sqlContext = SparkSession.builder.getOrCreate()._wrapped
-        return DataFrame(jdf, sqlContext)
+        return H2ODataFrameConverters.scalaToPythonDataFrame(jdf)

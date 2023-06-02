@@ -29,7 +29,10 @@ object ModelMetricsTemplate
 
     val parentEntities = substitutionContext.parentEntities.diff(Seq("H2OMetrics", "H2OGLMMetrics"))
 
-    val imports = Seq("pyspark.ml.param.*", "ai.h2o.sparkling.ml.params.H2OTypeConverters.H2OTypeConverters") ++
+    val imports = Seq(
+      "pyspark.ml.param.*",
+      "ai.h2o.sparkling.ml.params.H2OTypeConverters.H2OTypeConverters",
+      "ai.h2o.sparkling.H2ODataFrameConverters.H2ODataFrameConverters") ++
       parentEntities.map(parent => s"ai.h2o.sparkling.ml.metrics.$parent.$parent")
 
     val entitySubstitutionContext =
@@ -60,8 +63,8 @@ object ModelMetricsTemplate
   private def generateValueConversion(metric: Metric): String = metric.dataType match {
     case x if x.isPrimitive => "value"
     case x if x.getSimpleName == "String" => "value"
-    case x if x.getSimpleName == "TwoDimTableV3" => "H2OTypeConverters.scalaToPythonDataFrame(value)"
-    case x if x.getSimpleName == "ConfusionMatrixV3" => "H2OTypeConverters.scalaToPythonDataFrame(value)"
+    case x if x.getSimpleName == "TwoDimTableV3" => "H2ODataFrameConverters.scalaToPythonDataFrame(value)"
+    case x if x.getSimpleName == "ConfusionMatrixV3" => "H2ODataFrameConverters.scalaToPythonDataFrame(value)"
   }
 
   private def resolveComment(metric: Metric): String = {

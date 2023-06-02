@@ -58,113 +58,111 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     algo.fit(trainingDataset)
   }
 
-  // Support for Spark 2.1 will be removed in SW 3.34. Tests are ignored due to a bug in Vector comparison in Spark 2.1:
-  // https://issues.apache.org/jira/browse/SPARK-19425
-  if (!createSparkSession().version.startsWith("2.1")) {
+  test("The standalone PCA model produces different results for various input rows.") {
+    val scored = standaloneModel.transform(testingDataset)
+    val rows = scored.take(2)
 
-    test("The standalone PCA model produces different results for various input rows.") {
-      val scored = standaloneModel.transform(testingDataset)
-      val rows = scored.take(2)
+    val first = rows(0).getAs[DenseVector]("Output").values.toSeq
+    val second = rows(1).getAs[DenseVector]("Output").values.toSeq
 
-      val first = rows(0).getAs[DenseVector]("Output").values.toSeq
-      val second = rows(1).getAs[DenseVector]("Output").values.toSeq
+    first.length should be(3)
+    second.length should be(3)
+    first should not equal second
+  }
 
-      first.length should be(3)
-      second.length should be(3)
-      first should not equal second
+  test("The standalone PCA model can provide scoring history") {
+    val expectedColumns = Array("Timestamp", "Duration", "Iterations", "err", "Principal Component #")
+
+    val scoringHistoryDF = standaloneModel.getScoringHistory()
+
+    scoringHistoryDF.count() shouldBe >(10L)
+    scoringHistoryDF.columns shouldEqual expectedColumns
+  }
+
+  test("PCA model can be loaded from a file") {
+    val mojoName: String = "pca_prostate.mojo"
+    val mojoStream = this.getClass.getClassLoader.getResourceAsStream(mojoName)
+    val mojo = H2OPCAMOJOModel.createFromMojo(mojoStream, mojoName)
+    mojo.setOutputCol("Output")
+
+    val expected = standaloneModel.transform(testingDataset)
+    val result = mojo.transform(testingDataset)
+
+    TestUtils.assertDataFramesAreIdentical(expected, result)
+  }
+
+  test("The PCA model is able to transform dataset after it's saved and loaded") {
+    val pca = new H2OPCA()
+      .setSeed(1)
+      .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setK(5)
+      .setImputeMissing(true)
+      .setSplitRatio(0.8)
+
+    val pipeline = new Pipeline().setStages(Array(pca))
+
+    val model = pipeline.fit(trainingDataset)
+    val expectedTestingDataset = model.transform(testingDataset)
+    val path = "build/ml/pca_save_load"
+    model.write.overwrite().save(path)
+    val loadedModel = PipelineModel.load(path)
+    val transformedTestingDataset = loadedModel.transform(testingDataset)
+
+    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+  }
+
+  test(
+    "A pipeline with a PCA model sourcing data from multiple columns transforms testing dataset without an exception") {
+    val pca = new H2OPCA()
+      .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setK(4)
+      .setImputeMissing(true)
+      .setSeed(42)
+
+    val gbm = new H2OGBM()
+      .setFeaturesCol(pca.getOutputCol())
+      .setLabelCol("CAPSULE")
+      .setSeed(42)
+
+    val pipeline = new Pipeline().setStages(Array(pca, gbm))
+
+    val model = pipeline.fit(trainingDataset)
+    val numberOfPredictionsDF = model.transform(testingDataset).groupBy("prediction").count()
+    val rows = numberOfPredictionsDF.collect()
+    rows should have size 2
+    rows.foreach { row =>
+      assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
     }
+  }
 
-    test("The standalone PCA model can provide scoring history") {
-      val expectedColumns = Array("Timestamp", "Duration", "Iterations", "err", "Principal Component #")
+  test("A pipeline with a PCA model sourcing data from vector column transforms testing dataset without an exception") {
+    val autoEncoder = new H2OAutoEncoder()
+      .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setHidden(Array(100))
+      .setSeed(42)
+      .setReproducible(true)
 
-      val scoringHistoryDF = standaloneModel.getScoringHistory()
+    val pca = new H2OPCA()
+      .setInputCols(autoEncoder.getOutputCol())
+      .setK(3)
+      .setImputeMissing(true)
+      .setSeed(42)
 
-      scoringHistoryDF.count() shouldBe >(10L)
-      scoringHistoryDF.columns shouldEqual expectedColumns
-    }
+    val gbm = new H2OGBM()
+      .setFeaturesCol(pca.getOutputCol())
+      .setLabelCol("CAPSULE")
+      .setSeed(42)
 
-    test("PCA model can be loaded from a file") {
-      val mojoName: String = "pca_prostate.mojo"
-      val mojoStream = this.getClass.getClassLoader.getResourceAsStream(mojoName)
-      val mojo = H2OPCAMOJOModel.createFromMojo(mojoStream, mojoName)
-      mojo.setOutputCol("Output")
+    val pipeline = new Pipeline().setStages(Array(autoEncoder, pca, gbm))
 
-      val expected = standaloneModel.transform(testingDataset)
-      val result = mojo.transform(testingDataset)
+    val model = pipeline.fit(trainingDataset)
 
-      TestUtils.assertDataFramesAreIdentical(expected, result)
-    }
+    val numberOfPredictionsDF = model.transform(testingDataset).groupBy("prediction").count()
+    val rows = numberOfPredictionsDF.collect()
 
-    test("The PCA model is able to transform dataset after it's saved and loaded") {
-      val pca = new H2OPCA()
-        .setSeed(1)
-        .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-        .setK(5)
-        .setImputeMissing(true)
-        .setSplitRatio(0.8)
-
-      val pipeline = new Pipeline().setStages(Array(pca))
-
-      val model = pipeline.fit(trainingDataset)
-      val expectedTestingDataset = model.transform(testingDataset)
-      val path = "build/ml/pca_save_load"
-      model.write.overwrite().save(path)
-      val loadedModel = PipelineModel.load(path)
-      val transformedTestingDataset = loadedModel.transform(testingDataset)
-
-      TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
-    }
-
-    test(
-      "A pipeline with a PCA model sourcing data from multiple columns transforms testing dataset without an exception") {
-      val pca = new H2OPCA()
-        .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-        .setK(4)
-        .setImputeMissing(true)
-        .setSeed(42)
-
-      val gbm = new H2OGBM()
-        .setFeaturesCol(pca.getOutputCol())
-        .setLabelCol("CAPSULE")
-        .setSeed(42)
-
-      val pipeline = new Pipeline().setStages(Array(pca, gbm))
-
-      val model = pipeline.fit(trainingDataset)
-      val numberOfPredictionsDF = model.transform(testingDataset).groupBy("prediction").count()
-      val rows = numberOfPredictionsDF.collect()
-      numberOfPredictionsDF.count() shouldBe >=(2L)
-      rows.foreach { row =>
-        assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
-      }
-    }
-
-    test("A pipeline with a PCA model sourcing data from vector column transforms testing dataset without an exception") {
-      val autoEncoder = new H2OAutoEncoder()
-        .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-        .setHidden(Array(100))
-        .setSeed(42)
-
-      val pca = new H2OPCA()
-        .setInputCols(autoEncoder.getOutputCol())
-        .setK(3)
-        .setImputeMissing(true)
-        .setSeed(42)
-
-      val gbm = new H2OGBM()
-        .setFeaturesCol(pca.getOutputCol())
-        .setLabelCol("CAPSULE")
-        .setSeed(42)
-
-      val pipeline = new Pipeline().setStages(Array(autoEncoder, pca, gbm))
-
-      val model = pipeline.fit(trainingDataset)
-      val numberOfPredictionsDF = model.transform(testingDataset).groupBy("prediction").count()
-      val rows = numberOfPredictionsDF.collect()
-      numberOfPredictionsDF.count() shouldBe >=(2L)
-      rows.foreach { row =>
-        assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
-      }
+    rows should have size 2
+    rows.foreach { row =>
+      assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
     }
   }
 

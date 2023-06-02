@@ -8,11 +8,13 @@ Machine Learning
 
    sw_automl
    sw_gam
+   sw_glm
    sw_drf
    sw_grid
    sw_kmeans
    sw_xgboost
    sw_isolation_forest
+   sw_extended_isolation_forest
    sw_coxph
    sw_deep_learning
    sw_rule_fit

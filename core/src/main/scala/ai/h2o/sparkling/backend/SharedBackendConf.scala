@@ -67,7 +67,11 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def ldapLogin: Boolean = sparkConf.getBoolean(PROP_LDAP_LOGIN._1, PROP_LDAP_LOGIN._2)
 
+  def proxyLoginOnly: Boolean = sparkConf.getBoolean(PROP_PROXY_LOGIN_ONLY._1, PROP_PROXY_LOGIN_ONLY._2)
+
   def kerberosLogin: Boolean = sparkConf.getBoolean(PROP_KERBEROS_LOGIN._1, PROP_KERBEROS_LOGIN._2)
+
+  def pamLogin: Boolean = sparkConf.getBoolean(PROP_PAM_LOGIN._1, PROP_PAM_LOGIN._2)
 
   def loginConf: Option[String] = sparkConf.getOption(PROP_LOGIN_CONF._1)
 
@@ -230,9 +234,17 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def setLdapLoginDisabled(): H2OConf = set(PROP_LDAP_LOGIN._1, value = false)
 
+  def setProxyLoginOnlyEnabled(): H2OConf = set(PROP_PROXY_LOGIN_ONLY._1, value = true)
+
+  def setProxyLoginOnlyDisabled(): H2OConf = set(PROP_PROXY_LOGIN_ONLY._1, value = false)
+
   def setKerberosLoginEnabled(): H2OConf = set(PROP_KERBEROS_LOGIN._1, value = true)
 
   def setKerberosLoginDisabled(): H2OConf = set(PROP_KERBEROS_LOGIN._1, value = false)
+
+  def setPamLoginEnabled(): H2OConf = set(PROP_PAM_LOGIN._1, value = true)
+
+  def setPamLoginDisabled(): H2OConf = set(PROP_PAM_LOGIN._1, value = false)
 
   def setLoginConf(filePath: String): H2OConf = set(PROP_LOGIN_CONF._1, filePath)
 
@@ -373,10 +385,12 @@ object SharedBackendConf {
     "spark.ext.h2o.nthreads",
     -1,
     "setNthreads(Integer)",
-    """Limit for number of threads used by H2O, default ``-1`` means: Use value of ``spark.executor.cores`` in
-      |case this property is set. Otherwise use H2O's default
-      |value Runtime.getRuntime()
-      |.availableProcessors()""".stripMargin)
+    """Limit for number of threads used by H2O.
+      |Default ``-1`` using internal backend means: Use the value of ``spark.executor.cores`` if the property is set,
+      |otherwise use H2O's default value Runtime.getRuntime().availableProcessors().
+      |Default ``-1`` using automatically started external backend on Hadoop means:
+      |Use H2O's default value Runtime.getRuntime().availableProcessors()
+      |Default ``-1`` using automatically started external backend on Kubernetes means: Use just one cpu.""".stripMargin)
 
   val PROP_PROGRESS_BAR_ENABLED: BooleanOption = (
     "spark.ext.h2o.progressbar.enabled",
@@ -468,12 +482,26 @@ object SharedBackendConf {
       |setLdapLoginDisabled()""".stripMargin,
     "Enable LDAP login.")
 
+  val PROP_PROXY_LOGIN_ONLY: BooleanOption = (
+    "spark.ext.h2o.proxy.login.only",
+    false,
+    """setProxyLoginOnlyEnabled()
+      |setProxyLoginOnlyDisabled()""".stripMargin,
+    "Enable proxy only login for the chosen login method.")
+
   val PROP_KERBEROS_LOGIN: BooleanOption = (
     "spark.ext.h2o.kerberos.login",
     false,
     """setKerberosLoginEnabled()
       |setKerberosLoginDisabled()""".stripMargin,
     "Enable Kerberos login.")
+
+  val PROP_PAM_LOGIN: BooleanOption = (
+    "spark.ext.h2o.pam.login",
+    false,
+    """setPamLoginEnabled()
+      |setPamLoginDisabled()""".stripMargin,
+    "Enable PAM login. PAM has to be configured on the system where Spark driver is running.")
 
   val PROP_LOGIN_CONF: OptionOption =
     ("spark.ext.h2o.login.conf", None, "setLoginConf(String)", "Login configuration file.")

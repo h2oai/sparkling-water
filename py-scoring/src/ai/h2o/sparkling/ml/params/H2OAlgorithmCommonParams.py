@@ -32,11 +32,6 @@ class H2OAlgorithmCommonParams(H2OCommonParams, H2OAlgorithmMOJOParams):
     def setFeaturesCols(self, value):
         return self._set(featuresCols=value)
 
-    def setNamedMojoOutputColumns(self, value):
-        warnings.warn("The method will be removed without replacement in the version 3.40."
-                      "Named output columns will be always used.", DeprecationWarning)
-        return self._set(namedMojoOutputColumns=value)
-
     def setWithContributions(self, value):
         return self._set(withContributions=value)
 

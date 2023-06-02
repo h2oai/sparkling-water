@@ -24,6 +24,8 @@ import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkConf
 import org.apache.spark.expose.Logging
 
+import java.io.{File, FileWriter}
+
 /**
   * Configuration holder which is representing
   * properties passed from user to Sparkling Water.
@@ -43,6 +45,7 @@ class H2OConf(val sparkConf: SparkConf)
   /** Copy this object */
   override def clone: H2OConf = {
     val conf = new H2OConf(sparkConf)
+    conf.generatedCredentials = this.generatedCredentials
     conf.setAll(getAll)
     conf
   }
@@ -112,6 +115,54 @@ class H2OConf(val sparkConf: SparkConf)
     } else {
       "http"
     }
+  }
+
+  /** Credentials used for the communication between proxy and h2o leader node. */
+  private[sparkling] def getCredentials(): Option[H2OCredentials] = {
+    if (hashLogin) {
+      if (this.userName.isEmpty) {
+        throw new IllegalStateException(
+          "Hash login is enabled, but the configuration property 'spark.ext.h2o.user.name' is not set.")
+      }
+      if (this.password.isEmpty) {
+        throw new IllegalStateException(
+          "Hash login is enabled, but the configuration property 'spark.ext.h2o.password' is not set.")
+      }
+    }
+
+    if (this.proxyLoginOnly) {
+      Some(resolveGeneratedCredentials())
+    } else if (this.userName.isDefined && this.password.isDefined) {
+      val username = this.userName.get
+      val password = this.password.get
+      Some(new H2OCredentials(username, password))
+    } else {
+      None
+    }
+  }
+
+  private var generatedCredentials: H2OCredentials = null
+
+  private var generatedLoginConfFile: String = null
+
+  private[sparkling] def getGeneratedLoginConfFile(): Option[String] = Option(generatedLoginConfFile)
+
+  def resolveGeneratedCredentials(): H2OCredentials = {
+    if (generatedCredentials == null) {
+      val username = System.getProperty("user.name")
+      val password = water.network.SecurityUtils.passwordGenerator(16)
+      generatedCredentials = new H2OCredentials(username, password)
+      val content = generatedCredentials.toHashFileEntry()
+      val tmpFile = File.createTempFile("sparkling-water-", "-hash-login.conf")
+      tmpFile.deleteOnExit()
+      val writer = new FileWriter(tmpFile);
+      writer.write(content)
+      writer.flush()
+      writer.close()
+      generatedLoginConfFile = tmpFile.getAbsolutePath
+      SparkSessionUtils.active.sparkContext.addFile(generatedLoginConfFile)
+    }
+    generatedCredentials
   }
 }
 

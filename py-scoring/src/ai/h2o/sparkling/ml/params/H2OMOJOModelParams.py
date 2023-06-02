@@ -18,6 +18,7 @@
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
 from ai.h2o.sparkling.ml.models.H2OAlgorithmMOJOModelBase import H2OAlgorithmMOJOModelBase
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from ai.h2o.sparkling.H2ODataFrameConverters import H2ODataFrameConverters
 from ai.h2o.sparkling.ml.metrics.H2OMetricsFactory import H2OMetricsFactory
 from pyspark.ml.param import *
 
@@ -28,7 +29,7 @@ class H2OMOJOModelParams:
         return self._java_obj.getModelDetails()
 
     def getModelSummary(self):
-        return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getModelSummary())
+        return H2ODataFrameConverters.scalaToPythonDataFrame(self._java_obj.getModelSummary())
 
     def getDomainValues(self):
         return H2OTypeConverters.scalaMapStringDictStringToStringDictString(self._java_obj.getDomainValues())
@@ -94,7 +95,7 @@ class H2OMOJOModelParams:
         """
         :return: A data frame with information about performance of individual folds according to various model metrics.
         """
-        return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getCrossValidationMetricsSummary())
+        return H2ODataFrameConverters.scalaToPythonDataFrame(self._java_obj.getCrossValidationMetricsSummary())
 
     def getTrainingParams(self):
         return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getTrainingParams())
@@ -103,13 +104,13 @@ class H2OMOJOModelParams:
         return self._java_obj.getModelCategory()
 
     def getScoringHistory(self):
-        return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getScoringHistory())
+        return H2ODataFrameConverters.scalaToPythonDataFrame(self._java_obj.getScoringHistory())
 
     def getCrossValidationModelsScoringHistory(self):
-        return H2OTypeConverters.scalaDfArrayToPythonDfArray(self._java_obj.getCrossValidationModelsScoringHistory())
+        return H2ODataFrameConverters.scalaDfArrayToPythonDfArray(self._java_obj.getCrossValidationModelsScoringHistory())
 
     def getFeatureImportances(self):
-        return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getFeatureImportances())
+        return H2ODataFrameConverters.scalaToPythonDataFrame(self._java_obj.getFeatureImportances())
 
     def getStartTime(self):
         """:return: Start time in milliseconds"""
@@ -129,6 +130,9 @@ class H2OMOJOModelParams:
 
     def getMojoFileName(self):
         return self._java_obj.mojoFileName()
+
+    def getCoefficients(self):
+        return H2ODataFrameConverters.scalaToPythonDataFrame(self._java_obj.getCoefficients())
 
 
 class H2OAlgorithmMOJOModelParams(H2OMOJOModelParams, H2OAlgorithmMOJOModelBase):

@@ -19,7 +19,6 @@ package ai.h2o.sparkling.backend.utils
 
 import java.io.File
 import java.nio.file.Paths
-
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.{NodeDesc, SharedBackendConf}
 import org.apache.spark.expose.{Logging, Utils}
@@ -129,19 +128,27 @@ trait SharedBackendUtils extends Logging with Serializable {
     sc.listFiles().exists(new File(_).getName == fileName)
   }
 
-  def getH2OSecurityArgs(conf: H2OConf): Seq[String] =
-    new ArgumentBuilder()
+  def getH2OSecurityArgs(conf: H2OConf): Seq[String] = {
+    val builder = new ArgumentBuilder()
       .add("-jks", getDistributedFilePath(conf.jks))
       .add("-jks_pass", conf.jksPass)
       .add("-jks_alias", conf.jksAlias)
-      .addIf("-hash_login", conf.hashLogin)
-      .addIf("-ldap_login", conf.ldapLogin)
-      .addIf("-kerberos_login", conf.kerberosLogin)
+      .addIf("-hash_login", conf.hashLogin || conf.proxyLoginOnly)
+      .addIf("-pam_login", conf.pamLogin && !conf.proxyLoginOnly)
+      .addIf("-ldap_login", conf.ldapLogin && !conf.proxyLoginOnly)
+      .addIf("-kerberos_login", conf.kerberosLogin && !conf.proxyLoginOnly)
       .add("-user_name", conf.userName)
-      .add("-login_conf", getDistributedFilePath(conf.loginConf))
       .add("-internal_security_conf", getDistributedFilePath(conf.sslConf))
       .add("-allow_insecure_xgboost", conf.isInsecureXGBoostAllowed)
-      .buildArgs()
+
+    if (conf.proxyLoginOnly) {
+      builder.add("-login_conf", getDistributedFilePath(conf.getGeneratedLoginConfFile()))
+    } else {
+      builder.add("-login_conf", getDistributedFilePath(conf.loginConf))
+    }
+
+    builder.buildArgs()
+  }
 
   /**
     * Get H2O arguments which are passed to every node - regular node, client node
@@ -151,7 +158,6 @@ trait SharedBackendUtils extends Logging with Serializable {
     */
   def getH2OCommonArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
-      .add(H2OClientUtils.getH2OCommonArgsWhenClientBased(conf), H2OClientUtils.isH2OClientBased(conf))
       .add("-internal_security_conf_rel_paths")
       .add("-name", conf.cloudName.get)
       .add("-port_offset", conf.internalPortOffset)

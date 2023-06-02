@@ -102,7 +102,7 @@ object ParametersTemplate
   private def generateDefaultValues(parameters: Seq[Parameter], explicitDefaultValues: Map[String, Any]): String = {
     parameters
       .map { parameter =>
-        val defaultValue = if (parameter.dataType.isEnum) {
+        val defaultValue = if (parameter.dataType.isEnum && parameter.defaultValue != null) {
           s"${parameter.dataType.getSimpleName}.${parameter.defaultValue}.name()"
         } else {
           stringify(explicitDefaultValues.getOrElse(parameter.h2oName, parameter.defaultValue))

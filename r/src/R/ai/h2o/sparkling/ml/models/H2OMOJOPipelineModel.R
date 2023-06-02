@@ -25,4 +25,13 @@ H2OMOJOPipelineModel.createFromMojo <- function(pathToMojo, settings = H2OMOJOSe
 
 #' @export H2OMOJOPipelineModel
 H2OMOJOPipelineModel <- setRefClass("H2OMOJOPipelineModel", contains = ("H2OAlgorithmMOJOModelBase"), methods = list(
+  getWithInternalContributions = function() {
+    invoke(.self$jmojo, "getWithInternalContributions")
+  },
+  getWithPredictionInterval = function() {
+    invoke(.self$jmojo, "getWithPredictionInterval")
+  },
+  getScoringBulkSize = function() {
+    invoke(.self$jmojo, "getScoringBulkSize")
+  }
 ))

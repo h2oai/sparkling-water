@@ -20,6 +20,11 @@ resource "aws_vpc" "main" {
 
   tags = {
     Name = "SparklingWaterTestInfra"
+    Owner = "oss-dev@h2o.ai"
+    Department = "Engineering"
+    Environment = "QA"
+    Project = "SparklingWater"
+    Scheduling = "AlwaysOn"
   }
 }
 
@@ -32,7 +37,12 @@ resource "aws_subnet" "main" {
   cidr_block = var.aws_subnet_cidr_block
   availability_zone = var.aws_availability_zone
   tags = {
-    name = "SparklingWaterTestInfraSubnet"
+    Name = "SparklingWaterTestInfraSubnet"
+    Owner = "oss-dev@h2o.ai"
+    Department = "Engineering"
+    Environment = "QA"
+    Project = "SparklingWater"
+    Scheduling = "AlwaysOn"
   }
 }
 
@@ -44,6 +54,11 @@ resource "aws_internet_gateway" "gw" {
 
   tags = {
     Name = "SparklingWaterTestInfraGateway"
+    Owner = "oss-dev@h2o.ai"
+    Department = "Engineering"
+    Environment = "QA"
+    Project = "SparklingWater"
+    Scheduling = "AlwaysOn"
   }
 }
 
@@ -76,6 +91,11 @@ resource "aws_vpc_dhcp_options" "main" {
     "AmazonProvidedDNS"]
   tags = {
     Name = "SparklingWaterTestInfraDHCPOptions"
+    Owner = "oss-dev@h2o.ai"
+    Department = "Engineering"
+    Environment = "QA"
+    Project = "SparklingWater"
+    Scheduling = "AlwaysOn"
   }
 }
 
