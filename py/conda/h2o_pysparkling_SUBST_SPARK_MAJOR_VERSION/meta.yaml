@@ -22,5 +22,5 @@ requirements:
 
 about:
   home: https://github.com/h2oai/sparkling-water.git
-  license: AGPL-3
+  license: GNU Affero General Public License v3
   license_family: AGPL
