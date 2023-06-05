@@ -22,7 +22,6 @@ import ai.h2o.sparkling.ml.models.{H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.junit.Ignore
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -100,7 +99,7 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
   }
 
-  ignore("test ordinal glm metric objects") { //TODO: ignoring only to unblock testing other stuff, investigate!!!
+  test("test ordinal glm metric objects") {
     val algo = createAlgorithm()
     val model = algo.fit(dataset)
     assertMetrics[H2OOrdinalMetrics](model)
