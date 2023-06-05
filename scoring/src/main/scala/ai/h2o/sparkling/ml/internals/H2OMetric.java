@@ -42,7 +42,8 @@ public enum H2OMetric {
   NumErr(false),
   NumCnt(true),
   CatErr(false),
-  CatCnt(true);
+  CatCnt(true),
+  Loglikelihood(true);
 
   public boolean higherTheBetter() {
     return higherTheBetter;
