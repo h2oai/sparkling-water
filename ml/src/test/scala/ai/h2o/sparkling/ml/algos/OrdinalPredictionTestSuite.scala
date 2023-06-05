@@ -99,7 +99,7 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
   }
 
-  test("test ordinal glm metric objects") { //TODO: ignoring only to unblock testing other stuff, investigate!!!
+  test("test ordinal glm metric objects") {
     val algo = createAlgorithm()
     val model = algo.fit(dataset)
     assertMetrics[H2OOrdinalMetrics](model)
