@@ -53,10 +53,6 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
   private lazy val expectedTestingDataset =
     loadDataFrameFromParquetAsResource("/target_encoder/testing_dataset_transformed_binomial.parquet").cache()
 
-  // Support for Spark 2.1 will be removed in SW 3.34. Tests are ignored due to a bug in Vector comparison in Spark 2.1:
-  // https://issues.apache.org/jira/browse/SPARK-19425
-  if (!createSparkSession().version.startsWith("2.1")) {
-
     test("A pipeline with a target encoder transform training and testing dataset without an exception") {
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
@@ -554,5 +550,4 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
 
       TestUtils.assertDataFramesAreIdentical(expected, transformedTestingDataset)
     }
-  }
 }
