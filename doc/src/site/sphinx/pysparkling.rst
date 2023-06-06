@@ -71,7 +71,7 @@ For example, to install PySparkling for Spark SUBST_SPARK_MAJOR_VERSION, the com
 Dependencies
 ------------
 
-Supported Python versions are Python 2.7 or Python 3+.
+Supported Python versions are Python SUBST_MIN_SUPPORTED_PYTHON+.
 
 The major dependency is Spark. Please make sure that your Python environment has functional Spark with all its
 dependencies.
@@ -80,7 +80,6 @@ dependencies.
 
   $ pip install requests
   $ pip install tabulate
-  $ pip install future
 
 These dependencies are installed automatically in case PySparkling is installed from PyPI.
 

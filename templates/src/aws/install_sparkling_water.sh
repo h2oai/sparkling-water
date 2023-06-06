@@ -15,7 +15,6 @@ sudo ln -sf /usr/local/bin/pip2.7 /usr/bin/pip
 # Install PySparkling Dependencies
 sudo python -m pip install -U requests
 sudo python -m pip install -U tabulate
-sudo python -m pip install -U future
 sudo python -m pip install -U six
 
 # Install Scikit Learn
