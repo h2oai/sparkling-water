@@ -19,7 +19,7 @@ In this tutorial we will use Dataproc image version 2.0-debian10 which has Spark
     --region $GCP_REGION \
     --image-version 2.0-debian10 \
     --num-workers 3 \
-    --properties='^#^dataproc:pip.packages=tabulate==0.8.3,requests==2.21.0,future==0.17.1'
+    --properties='^#^dataproc:pip.packages=tabulate==0.8.3,requests==2.21.0'
 
 .. content-tabs::
 

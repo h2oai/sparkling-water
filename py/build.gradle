@@ -35,7 +35,6 @@ python {
   pip "pytest:4.6.9" // For running tests
   pip "tabulate:0.8.3"
   pip "requests:2.21.0"
-  pip "future:0.17.1"
   pip "numpy:${numpyVersion}"
   pip "pyspark:${sparkVersion}"
   if (project.hasProperty("pythonEnvBasePath")) {
