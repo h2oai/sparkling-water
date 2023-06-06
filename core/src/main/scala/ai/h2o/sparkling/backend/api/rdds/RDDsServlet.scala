@@ -76,7 +76,7 @@ private[api] class RDDsServlet extends ServletBase {
     SparkSessionUtils.active.sparkContext.getPersistentRDDs.values.map(RDDInfo.fromRDD).toArray
   }
 
-  private def convertToH2OFrame[T](rdd: RDD[T], name: Option[String])(implicit ev: ClassTag[T]): H2OFrame = {
+  private def convertToH2OFrame(rdd: RDD[_], name: Option[String]): H2OFrame = {
     if (rdd.isEmpty()) {
       // transform empty Seq in order to create empty H2OFrame
       hc.asH2OFrame(sc.parallelize(Seq.empty[Int]), name)
