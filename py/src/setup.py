@@ -40,8 +40,7 @@ SUBST_PYTHON_VERSIONS
     # run-time dependencies
     install_requires=[
         'requests',
-        'tabulate',
-        'future'],
+        'tabulate'],
 
     # bundled binary packages
     package_data={'sparkling_water': ['*.jar'],
