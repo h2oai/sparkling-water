@@ -53,8 +53,6 @@ def testUsageOfPCAInAPipeline(prostateDataset):
     assert model.transform(prostateDataset).groupBy("prediction").count().count() > 1
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testPCAPipelineSerialization(prostateDataset):
     pca = H2OPCA(inputCols=["DPROS", "DCAPS", "RACE", "GLEASON", "VOL"],
                          outputCol="output",

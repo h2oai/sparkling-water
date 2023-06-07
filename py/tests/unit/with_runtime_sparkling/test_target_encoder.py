@@ -54,8 +54,6 @@ def assertTargetEncoderAndMOJOModelParamsAreEqual(expected, produced):
     assert expected.getNoiseSeed() == produced.getNoiseSeed()
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testTargetEncoderConstructorParametersGetPropagatedToLoadedMOJOModel(trainingDataset):
     targetEncoder = H2OTargetEncoder(foldCol="ID", labelCol="CAPSULE", inputCols=["RACE", "DPROS", "DCAPS"],
                                      outputCols=["RACE_out", "DPROS_out", "DCAPS_out"], holdoutStrategy="KFold",
@@ -71,8 +69,6 @@ def testTargetEncoderConstructorParametersGetPropagatedToLoadedMOJOModel(trainin
     assertTargetEncoderAndMOJOModelParamsAreEqual(targetEncoder, mojoModel)
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testTargetEncoderMOJOModelCouldBeSavedAndLoaded(trainingDataset, testingDataset):
     targetEncoder = H2OTargetEncoder(foldCol="ID", labelCol="CAPSULE", inputCols=["RACE", "DPROS", "DCAPS"],
                                      outputCols=["RACE_out", "DPROS_out", "DCAPS_out"])
@@ -87,8 +83,6 @@ def testTargetEncoderMOJOModelCouldBeSavedAndLoaded(trainingDataset, testingData
     unit_test_utils.assert_data_frames_are_identical(expected, result)
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testPipelineWithTargetEncoderIsSerializable():
     targetEncoder = H2OTargetEncoder(foldCol="ID", labelCol="CAPSULE", inputCols=["RACE", "DPROS", "DCAPS"],
                                      outputCols=["RACE_out", "DPROS_out", "DCAPS_out"], holdoutStrategy="KFold",
@@ -108,8 +102,6 @@ def testPipelineWithTargetEncoderIsSerializable():
     assert gbm.getFeaturesCols() == loadedGbm.getFeaturesCols()
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testTargetEncoderSetterParametersGetPropagatedToLoadedMOJOModel(trainingDataset):
     targetEncoder = H2OTargetEncoder() \
         .setFoldCol("ID") \
@@ -132,8 +124,6 @@ def testTargetEncoderSetterParametersGetPropagatedToLoadedMOJOModel(trainingData
     assertTargetEncoderAndMOJOModelParamsAreEqual(targetEncoder, mojoModel)
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testPipelineWithTargetEncoderTransformsTrainingAndTestingDatasetWithoutException(trainingDataset, testingDataset):
     targetEncoder = H2OTargetEncoder(labelCol="CAPSULE", inputCols=["RACE", "DPROS", "DCAPS"])
     gbm = H2OGBM(labelCol="CAPSULE")
@@ -144,8 +134,6 @@ def testPipelineWithTargetEncoderTransformsTrainingAndTestingDatasetWithoutExcep
     model.transform(testingDataset).collect()
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testProducedMOJOModelAndLoadedMOJOModelReturnsSameResult(trainingDataset, testingDataset):
     targetEncoder = H2OTargetEncoder(labelCol="CAPSULE", inputCols=[["RACE"], ["DPROS", "DCAPS"]])
     pipeline = Pipeline(stages=[targetEncoder])
@@ -160,8 +148,6 @@ def testProducedMOJOModelAndLoadedMOJOModelReturnsSameResult(trainingDataset, te
     unit_test_utils.assert_data_frames_are_identical(transformedByProducedModel, transformedByLoadedModel)
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testTargetEncoderModelWithDisabledNoiseAndTargetEncoderMOJOModelTransformTheTrainingDatasetSameWay(trainingDataset):
     targetEncoder = H2OTargetEncoder() \
         .setInputCols([["RACE"], ["DPROS", "DCAPS"]]) \
@@ -176,8 +162,6 @@ def testTargetEncoderModelWithDisabledNoiseAndTargetEncoderMOJOModelTransformThe
     unit_test_utils.assert_data_frames_are_identical(transformedByModel, transformedByMOJOModel)
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testTargetEncoderMOJOModelProduceSameResultsRegardlessSpecificationOfOutputCols(trainingDataset, testingDataset):
     def trainAndReturnTranformedTestingDataset(targetEncoder):
         targetEncoderModel = targetEncoder.fit(trainingDataset)
@@ -204,8 +188,6 @@ def testTargetEncoderMOJOModelProduceSameResultsRegardlessSpecificationOfOutputC
     unit_test_utils.assert_data_frames_are_identical(dataFrameDefaultOutputCols, dataFrameCustomOutputCols)
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testTargetEncoderModelProduceSameResultsRegardlessSpecificationOfOutputCols(trainingDataset, testingDataset):
     def trainAndReturnTranformedTestingDataset(targetEncoder):
         targetEncoderModel = targetEncoder.fit(trainingDataset)
@@ -232,8 +214,6 @@ def testTargetEncoderModelProduceSameResultsRegardlessSpecificationOfOutputCols(
     unit_test_utils.assert_data_frames_are_identical(dataFrameDefaultOutputCols, dataFrameCustomOutputCols)
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testTargetEncoderInPipelineAppliesNoiseOnTrainingDataset(trainingDataset):
     def createTargetEncoder():
         return H2OTargetEncoder() \
@@ -261,8 +241,6 @@ def testTargetEncoderInPipelineAppliesNoiseOnTrainingDataset(trainingDataset):
     Pipeline(stages=[createTargetEncoder(),AssertionEstimator()]).fit(trainingDataset)
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testAutoProblemTypeOnNumericTypeBehavesAsRegression(trainingDataset):
     dataset = trainingDataset.withColumn("CAPSULE", when(col("CAPSULE") == 1, 10).otherwise(5))
 
@@ -281,8 +259,6 @@ def testAutoProblemTypeOnNumericTypeBehavesAsRegression(trainingDataset):
     unit_test_utils.assert_data_frames_have_different_values(autoResult, classificationResult)
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testAutoProblemTypeOnStringTypeBehavesAsClassification(trainingDataset):
     dataset = trainingDataset.withColumn("CAPSULE", when(col("CAPSULE") == 1, 10).otherwise(5).cast("string"))
 
@@ -301,8 +277,6 @@ def testAutoProblemTypeOnStringTypeBehavesAsClassification(trainingDataset):
     unit_test_utils.assert_data_frames_are_identical(autoResult, classificationResult)
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testTargetEncoderSupportsEmptyListOfInputColumns(trainingDataset):
     targetEncoder = H2OTargetEncoder() \
         .setInputCols([]) \
@@ -317,8 +291,6 @@ def testTargetEncoderSupportsEmptyListOfInputColumns(trainingDataset):
     unit_test_utils.assert_data_frames_are_identical(trainingDataset, transformedByMOJOModel)
 
 
-@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
-Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testTargetEncoderMOJOModelWithEmptyColsCouldBeSavedAndLoaded(trainingDataset):
     targetEncoder = H2OTargetEncoder(labelCol="CAPSULE", inputCols=[], outputCols=[])
     model = targetEncoder.fit(trainingDataset)

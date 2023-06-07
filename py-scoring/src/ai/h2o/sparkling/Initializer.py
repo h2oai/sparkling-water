@@ -232,6 +232,6 @@ class Initializer(object):
 
         if sparkVersionFromPySpark == "2.3":
             warnings.warn("PySpark {} is deprecated and ".format(pyspark.__version__) +
-                      "the support will be removed in the Sparkling Water version 3.42.")
+                      "the support will be removed in the Sparkling Water version 3.44.")
 
         return version
