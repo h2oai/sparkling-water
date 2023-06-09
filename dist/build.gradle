@@ -26,6 +26,7 @@ def substituteBuildInfoFile(buildTimeMillis, buildTimeIso8601, buildTimeLocal) {
     .replaceAll("SUBST_SW_VERSION", version)
     .replaceAll("SUBST_LAST_COMMIT_HASH", getGitHash())
     .replaceAll("SUBST_H2O_NAME", getH2OMajorName())
+    .replaceAll("SUBST_MIN_SUPPORTED_PYTHON", supportedPythonVersions.split(" ")[0])
     .replaceAll("SUBST_H2O_VERSION", h2oMajorVersion)
     .replaceAll("SUBST_H2O_PROJECT_VERSION", h2oVersion)
     .replaceAll("SUBST_H2O_BRANCH_NAME", getH2OBranch(h2oMajorName))
