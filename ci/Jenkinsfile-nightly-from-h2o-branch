@@ -20,6 +20,7 @@ properties(
                                 ),
                                 booleanParam(name: 'uploadNightly', defaultValue: true, description: 'Upload Nightly Artifacts to S3'),
                                 booleanParam(name: 'uploadNightlyDockerImages', defaultValue: true, description: 'Upload nightly images to DockerHub'),
+                                booleanParam(name: 'gradleDebug', defaultValue: false, description: 'Run gradle build with debug enabled'),
                         ]
                 ),
                 buildDiscarder(logRotator(numToKeepStr: '30'))

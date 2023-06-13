@@ -13,6 +13,7 @@ properties(
                                 booleanParam(name: 'runRUnitTests', defaultValue: true, description: 'Run R unit tests'),
                                 booleanParam(name: 'runIntegTests', defaultValue: false, description: 'Run Scala integration tests'),
                                 booleanParam(name: 'runPyIntegTests', defaultValue: false, description: 'Run Python integration tests'),
+                                booleanParam(name: 'gradleDebug', defaultValue: false, description: 'Run gradle build with debug enabled'),
                                 choice(
                                         choices: 'both\ninternal\nexternal',
                                         description: "Choose in which mode to run tests",
