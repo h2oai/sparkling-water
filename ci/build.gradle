@@ -54,43 +54,34 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
 
   user("jenkins")
   getAllFullSparkVersions().each { version ->
-    if (version.startsWith('3.4')) { //todo very confusing, test only, change that!
-      runCommand """\\
-                    cd /home/jenkins && \\
-                    wget http://archive.apache.org/dist/spark/spark-${version}/spark-${version}-bin-hadoop3.tgz && \\
-                    mv spark-${version}-bin-hadoop3.tgz  spark-${version}-bin-hadoop2.7.tgz && \\
-                    mkdir -p spark-${version}-bin-hadoop2.7 &&  \\
-                    tar zxvf spark-${version}-bin-hadoop2.7.tgz -C spark-${version}-bin-hadoop2.7 --strip-components 1 && \\
-                    rm -rf spark-${version}-bin-hadoop2.7.tgz
-                    """
-    } else if (version > "3.3") {
-      runCommand """\\
-                    cd /home/jenkins && \\
-                    wget http://archive.apache.org/dist/spark/spark-${version}/spark-${version}-bin-hadoop2.tgz && \\
-                    mv spark-${version}-bin-hadoop2.tgz  spark-${version}-bin-hadoop2.7.tgz && \\
-                    mkdir -p spark-${version}-bin-hadoop2.7 &&  \\
-                    tar zxvf spark-${version}-bin-hadoop2.7.tgz -C spark-${version}-bin-hadoop2.7 --strip-components 1 && \\
-                    rm -rf spark-${version}-bin-hadoop2.7.tgz
-                    """
+    String tgzFileName
+    String jenkinsHome = "/home/jenkins"
+    String sparkFolder = "spark-${version}-bin"
+    String sparkPath = "${jenkinsHome}/${sparkFolder}"
+    if (version > '3.4') {
+      tgzFileName = "spark-${version}-bin-hadoop3.tgz"
+    } else if (version > '3.3') {
+      tgzFileName = "spark-${version}-bin-hadoop2.tgz"
     } else {
-      runCommand """\\
-                    cd /home/jenkins && \\
-                    wget http://archive.apache.org/dist/spark/spark-${version}/spark-${version}-bin-hadoop2.7.tgz && \\
-                    mkdir -p spark-${version}-bin-hadoop2.7 &&  \\
-                    tar zxvf spark-${version}-bin-hadoop2.7.tgz -C spark-${version}-bin-hadoop2.7 --strip-components 1 && \\
-                    rm -rf spark-${version}-bin-hadoop2.7.tgz
-                    """
+      tgzFileName = "spark-${version}-bin-hadoop2.7.tgz"
     }
+    runCommand """\\
+                    cd ${jenkinsHome} && \\
+                    wget http://archive.apache.org/dist/spark/spark-${version}/${tgzFileName} && \\
+                    mkdir -p ${sparkFolder} &&  \\
+                    tar zxvf ${tgzFileName} -C ${sparkFolder} --strip-components 1 && \\
+                    rm -rf ${tgzFileName}
+                    """
 
     if (version.startsWith("2.4")) {
-      runCommand "sed -i 's/openjdk:8-jdk-slim/openjdk:8-jdk-slim-buster/g' /home/jenkins/spark-${version}-bin-hadoop2.7/kubernetes/dockerfiles/spark/Dockerfile"
+      runCommand "sed -i 's/openjdk:8-jdk-slim/openjdk:8-jdk-slim-buster/g' ${sparkPath}/kubernetes/dockerfiles/spark/Dockerfile"
     }
     if (version.startsWith("3.0") || version.startsWith("3.1")) {
-      runCommand "sed -i 's/\\(apt-key[^)]*\\)/apt-key adv --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7'/g' /home/jenkins/spark-${version}-bin-hadoop2.7/kubernetes/dockerfiles/spark/bindings/R/Dockerfile"
+      runCommand "sed -i 's/\\(apt-key[^)]*\\)/apt-key adv --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7'/g' ${sparkPath}/kubernetes/dockerfiles/spark/bindings/R/Dockerfile"
     }
     def first = version.split("\\.")[0]
     def second = version.split("\\.")[1]
-    environmentVariable("SPARK_HOME_${first}_${second}", "/home/jenkins/spark-${version}-bin-hadoop2.7")
+    environmentVariable("SPARK_HOME_${first}_${second}", sparkPath)
   }
 
   def branchName = getGitBranch()
@@ -112,6 +103,8 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 conda install anaconda-client conda-build conda-verify -y && \\
                 conda update conda -y && \\
                 conda update anaconda-client conda-build conda-verify -y && \\
+                conda install -n base conda-libmamba-solver && \\
+                conda config --set solver libmamba && \\
                 conda config --add channels conda-forge && \\
                 conda init
                 """
