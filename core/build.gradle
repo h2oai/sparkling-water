@@ -174,4 +174,3 @@ bench {
 }
 
 defineStandardPublication().call()
-

@@ -82,4 +82,3 @@ artifacts {
 shadowJar.dependsOn generateLicenseReport
 build.dependsOn checkLicense
 build.dependsOn shadowJar
-

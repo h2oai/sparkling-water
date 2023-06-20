@@ -225,4 +225,3 @@ distPython.dependsOn generateMOJOApi
 
 build.dependsOn distPython
 test.dependsOn testPython
-

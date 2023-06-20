@@ -244,4 +244,3 @@ task downloadH2ODriverJar() {
     println(downloadH2ODriverJar(outputDir, hadoopDist, h2oMajorVersion, h2oBuild, h2oMajorName))
   }
 }
-

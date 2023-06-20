@@ -26,4 +26,3 @@ artifacts {
 task cleanBuildDir(type: Delete) {
   delete getBuildDir()
 }
-

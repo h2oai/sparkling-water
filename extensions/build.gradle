@@ -14,4 +14,3 @@ dependencies {
 }
 
 defineStandardPublication().call()
-

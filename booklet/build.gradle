@@ -58,4 +58,3 @@ task buildBooklet(dependsOn: generateConfiguration) {
     compileBooklet()
   }
 }
-

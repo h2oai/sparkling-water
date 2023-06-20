@@ -161,4 +161,3 @@ task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [":sparkling-water-asse
 }
 
 substituteTerraform.dependsOn build
-
