@@ -7,7 +7,7 @@ on:
       - 'RELEASE-[0-9]+.[0-9]+.[0-9]+.[0-9]+-[0-9]+'
     branches:
       - 'master'
-      - 'devops/snyk-integration'
+      - 'devops/snyk-optimization'
 
 jobs:
   snyk_scan_test:
@@ -33,7 +33,7 @@ jobs:
 
       - name: Snyk scan for Java dependencies
         if: steps.changed-files.outputs.any_changed == 'true'
-        run: snyk test --all-projects -d --fail-on=all
+        run: snyk test --all-projects -d --fail-on=all --configuration-matching='^\(compile\|runtime\)'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -61,7 +61,12 @@ jobs:
             echo ""
             echo "##### SCAN $file START #####"
             echo ""
-            snyk monitor --org=sparkling-water --remote-repo-url=sparkling-water/${{ steps.extract_ref.outputs.ref }} --file=$file --project-name=SPARKLING-WATER/sparkling-water/${{ steps.extract_ref.outputs.ref }}/$file -d
+            snyk monitor \
+              --org=sparkling-water \
+              --remote-repo-url=sparkling-water/${{ steps.extract_ref.outputs.ref }} \
+              --file=$file \
+              --project-name=SPARKLING-WATER/sparkling-water/${{ steps.extract_ref.outputs.ref }}/$file \
+              --configuration-matching='^\(compile\|runtime\)' -d
             echo "##### SCAN $file END #####"
           done
         env:

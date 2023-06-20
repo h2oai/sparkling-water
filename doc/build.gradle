@@ -169,3 +169,4 @@ docJar.dependsOn sourcesDocJar, deleteDocTrees
 site.dependsOn docJar
 
 defineStandardPublication().call()
+

@@ -25,3 +25,4 @@ task cleanR(type: Delete) {
 clean.dependsOn cleanR
 
 build.dependsOn distR
+

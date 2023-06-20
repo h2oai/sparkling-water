@@ -51,3 +51,4 @@ compileScala.dependsOn(generateApi)
 clean.dependsOn(cleanGeneratedApi)
 
 defineStandardPublication().call()
+

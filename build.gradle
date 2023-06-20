@@ -268,3 +268,4 @@ task publishToNexus {
     closeBucket(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), stagingId)
   }
 }
+

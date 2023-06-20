@@ -20,3 +20,4 @@ shadowJar {
 build.dependsOn shadowJar
 
 defineStandardPublication().call()
+

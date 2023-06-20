@@ -10,3 +10,4 @@ dependencies {
   testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
   testImplementation(project(":sparkling-water-core"))
 }
+

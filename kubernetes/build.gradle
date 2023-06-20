@@ -137,3 +137,4 @@ task copyScalaExtras(type: Copy) {
 }
 
 task prepareKubernetesFiles(dependsOn: [copyPythonExtras, copyRExtras, copyScalaExtras, buildDockerfiles])
+

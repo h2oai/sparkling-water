@@ -202,3 +202,4 @@ task dockerRepoLoginCommand {
     println("aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${registryId}.dkr.ecr.us-west-2.amazonaws.com")
   }
 }
+
