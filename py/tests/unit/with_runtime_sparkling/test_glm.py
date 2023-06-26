@@ -175,7 +175,9 @@ def testRandomColsArePropagatedToInternals(semiconductorDataset):
 def testRandomColsMustBeWithinTrainingDataset(semiconductorDataset):
     glm = createInitialGlmDefinitionForRandomCols()
     glm.setRandomCols(["someColumn"])
-    if pyspark.__version__ >= "3.3":
+    if pyspark.__version__ >= "3.4":
+        pattern = r".*A column or function parameter with name `someColumn` cannot be resolved.*"
+    elif pyspark.__version__ >= "3.3":
         pattern = r".*Column '.?someColumn.?' does not exist.*"
     else:
         pattern = r".*cannot resolve '.?someColumn.?' given input columns.*"
