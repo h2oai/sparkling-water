@@ -79,8 +79,8 @@ class RDDsServletTestSuite extends FunSuite with SharedH2OTestContext with RDDsR
 
   test("RDDsHandler.getRDD() method, querying non-existing RDD") {
     intercept[RestApiCommunicationException] {
-      // RDD with ID 777 does not exist
-      getRDD(777)
+      val nonExistentRddId = 777
+      getRDD(nonExistentRddId)
     }
   }
 }

@@ -35,7 +35,7 @@ node('mr-0xc10') {
         dir("ci/build/docker") {
             sh """
             docker pull $testingBaseImage
-            docker build --no-cache -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${nextVersion} -f Dockerfile .
+            docker build --no-cache -t 041740254655.dkr.ecr.us-west-2.amazonaws.com/opsh2oai/sparkling_water_tests:${nextVersion} -f Dockerfile .
            """
         }
     }

@@ -431,7 +431,7 @@ def publishDockerImages() {
                     params.commons.installDocker()
                     def version = getVersion(params)
                     def sparkVersion = getSparkVersion(params.spark)
-                    withEnv(["SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7"]) {
+                    withEnv(["SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin"]) {
                         params.commons.publishDockerImages(version) {
                             publishSparklingWaterDockerImage("scala", version, params.spark)
                             publishSparklingWaterDockerImage("r", version, params.spark)

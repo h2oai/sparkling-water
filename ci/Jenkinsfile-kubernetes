@@ -120,7 +120,7 @@ def getBuildAndTestStagesForSparkVersion(commons, props, sparkMajorVersion) {
                     def master = "k8s://" + getMinikubeMaster()
 
                     // Spark home within sparkling_water_tests image the code runs currently in, for a current sparkVersion
-                    def currentSparkHome = "/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7"
+                    def currentSparkHome = "/home/jenkins/spark-${sparkVersion}-bin"
 
                     // Spark home within a built sparkling-water:scala/python/r/external-backend-... image
                     def swImageSparkHome = "/opt/spark/"
@@ -167,7 +167,7 @@ def getBuildStage(sparkMajorVersion, props) {
         """
 
         def customEnv = [
-                "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
+                "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin",
         ]
 
         withEnv(customEnv) {
