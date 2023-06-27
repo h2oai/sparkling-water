@@ -41,6 +41,7 @@ import org.json4s.{JString, _}
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 
+import java.io.File
 import scala.collection.JavaConverters._
 
 /**
@@ -171,8 +172,8 @@ class H2OGridSearch(override val uid: String)
     if (algo.getKeepBinaryModels()) {
       gridBinaryModels = sortedGridModels.map {
         case (modelId, _) =>
-          val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
-          H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId))
+          val downloadedModel: File = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
+          H2OBinaryModel.read(downloadedModel.toURI.toURL.toString, Some(modelId))
       }
     } else {
       sortedGridModels.foreach { case (modelId, _) => H2OModel(modelId).tryDelete() }
