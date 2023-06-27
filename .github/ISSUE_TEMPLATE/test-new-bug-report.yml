@@ -1,0 +1,84 @@
+name: Issue report
+description: File an issue report
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this issue report!
+  - type: input
+    id: sw-version
+    attributes:
+      label: Sparkling Water Version
+      description: Sparkling Version used when observing the issue
+      placeholder: "ex. 3.42.0.1-1-3.3"
+    validations:
+      required: true
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue description
+      description: What happened and what was expected instead?
+      value: "Expected behavior:\n\nObserved behavior:\n"
+    validations:
+      required: true
+  - type: dropdown
+    id: lang
+    attributes:
+      label: Programming language used
+      options:
+        - Python
+        - Scala
+        - R
+    validations:
+      required: true
+  - type: input
+    id: lang-version
+    attributes:
+      label: Programming language version
+      description: Programming language version used when observing the issue
+      placeholder: "3.8"
+    validations:
+      required: true
+  - type: dropdown
+    id: env
+    attributes:
+      label: What environment are you running Sparkling Water on?
+      options:
+        - Cloud Managed Spark (like Databricks, AWS Glue)
+        - Hadoop (YARN)
+        - Kubernetes
+        - IBM Spectrum Conductor
+        - Standalone Spark
+        - Local Spark Cluster
+        - Other (described above)
+    validations:
+      required: true
+  - type: input
+    id: env-version
+    attributes:
+      label: Environment version info
+      description: Version of software chosen above (ex. Cloud runtime version, Hadoop version etc.), also OS if not obvious
+    validations:
+      required: true
+  - type: input
+    id: machine-specs
+    attributes:
+      label: Brief cluster specification
+      description: Please provide cluster machine description (node count, CPU, RAM etc.)
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output - driver log, executor log, any logs you see useful.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Code to reproduce the issue
+      description: Please copy and paste a code that will help us reproduce the issue.
+      render: python
+
