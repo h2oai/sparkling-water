@@ -67,7 +67,6 @@ function checkPythonPackages() {
     error=0
     checkPythonPackage "$packages" "requests"
     checkPythonPackage "$packages" "tabulate"
-    checkPythonPackage "$packages" "future" "0.4.0"
 
     if [ $error == -1 ]; then
         exit -1

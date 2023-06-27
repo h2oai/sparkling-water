@@ -505,7 +505,7 @@ object H2OContext extends Logging {
     if (isSparkVersionDeprecated) {
       logWarning(
         s"Apache Spark ${SparkSessionUtils.active.version} is deprecated and " +
-          "the support will be removed in the Sparkling Water version 3.42.")
+          "the support will be removed in the Sparkling Water version 3.44.")
     }
   }
 }
