@@ -77,6 +77,7 @@ def substituteIndexHtml(buildTimeLocal) {
     .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
     .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
     .replaceAll("SUBST_H2O_BRANCH_NAME", getH2OBranch(h2oMajorName))
+    .replaceAll("SUBST_MIN_SUPPORTED_PYTHON", supportedPythonVersions.split(" ")[0])
     .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
     .replaceAll("SUBST_BUILD_TIME_LOCAL", buildTimeLocal)
     .replaceAll("SUBST_MAVEN_REPO", getMavenRepoHtml())
