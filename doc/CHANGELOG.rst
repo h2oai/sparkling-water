@@ -1,6 +1,38 @@
 Change Log
 ==========
 
+v3.42.0.1-1 (2023-06-28)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.42.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.42.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.42.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.42.0.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.42.0.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.42.0.1-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.42.0.1-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.42.0.1-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.42.0.1-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.42.0.1-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.42.0.1-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.42.0.1-1-3.3/index.html>`__
+   - for Spark 3.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.4/3.42.0.1-1-3.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.4/3.42.0.1-1-3.4/index.html>`__
+
+-  Bug
+
+   -  `SW-2796 <https://0xdata.atlassian.net/browse/SW-2796>`__ - Upgrade H2O to 3.42.0.1
+   -  `SW-2785 <https://0xdata.atlassian.net/browse/SW-2785>`__ - Fix release process ignoring Nexus upload errors
+
+-  Improvement
+
+   -  `SW-2793 <https://0xdata.atlassian.net/browse/SW-2793>`__ - New issue template
+   -  `SW-2792 <https://0xdata.atlassian.net/browse/SW-2792>`__ - Extend Spark 2.3 support, remove Spark 2.1-2.2 leftovers
+   -  `SW-2772 <https://0xdata.atlassian.net/browse/SW-2772>`__ - Upgrade version to 3.40.1.1-1
+
+-  New Feature
+
+   -  `SW-2791 <https://0xdata.atlassian.net/browse/SW-2791>`__ - Spark 3.4 support
+
+-  Task
+
+   -  `SW-2790 <https://0xdata.atlassian.net/browse/SW-2790>`__ - Adjust to h2o-3 changes : loglikelihood metric, python build env
+   -  `SW-2789 <https://0xdata.atlassian.net/browse/SW-2789>`__ - Remove Python 2.7 support
+
 v3.40.0.4-1 (2023-05-05)
 ------------------------
 Downloads:
