@@ -246,37 +246,25 @@ clean.doFirst {
   delete file("metastore_db/")
 }
 
-static String waitForExitCode0AndReturnOutput(String scriptName, Process proc) {
-  int oneHour = 60 * 60 * 1000
-  proc.waitForOrKill(oneHour)
-  if (proc.exitValue() != 0) {
-    throw new IllegalStateException("Running script $scriptName failed! Output: ${proc.text}")
-  }
+def createStagingId(def username, def password) {
+  def proc = ['./createStagingId.sh', username, password].execute([], file("${rootDir.toString()}/gradle/publish"))
   return proc.text
 }
 
-String createStagingId(String username, String password) {
-  String script = './createStagingId.sh'
-  Process proc = [script, username, password].execute([], file("${rootDir.toString()}/gradle/publish"))
-  return waitForExitCode0AndReturnOutput(script, proc)
+def uploadFiles(def username, def password, def repoDir, def stagingId) {
+  def proc = ['./uploadToNexus.sh', username, password, repoDir, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+  proc.waitFor()
 }
 
-void uploadFiles(String username, String password, String repoDir, String stagingId) {
-  String script = './uploadToNexus.sh'
-  Process proc = [script, username, password, repoDir, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
-  waitForExitCode0AndReturnOutput(script, proc)
-}
-
-void closeBucket(String username, String password, String stagingId) {
-  String script = './closeBucket.sh'
-  Process proc = [script, username, password, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
-  waitForExitCode0AndReturnOutput(script, proc)
+def closeBucket(def username, def password, def stagingId) {
+  def proc = ['./closeBucket.sh', username, password, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+  proc.waitFor()
 }
 
 task publishToNexus {
   doLast {
-    String stagingId = createStagingId(project.findProperty('nexusUsername') as String, project.findProperty('nexusPassword') as String).replace('\n', '')
-    uploadFiles(project.findProperty('nexusUsername') as String, project.findProperty('nexusPassword') as String, "${rootDir}/dist/build/dist/maven/repo", stagingId)
-    closeBucket(project.findProperty('nexusUsername') as String, project.findProperty('nexusPassword') as String, stagingId)
+    def stagingId = createStagingId(project.findProperty('nexusUsername'), project.findProperty('nexusPassword')).replace('\n', '')
+    uploadFiles(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), "${rootDir}/dist/build/dist/maven/repo", stagingId)
+    closeBucket(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), stagingId)
   }
 }
