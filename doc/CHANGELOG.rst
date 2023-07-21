@@ -15,23 +15,23 @@ Downloads:
 
 -  Bug
 
-   -  `SW-2796 <https://0xdata.atlassian.net/browse/SW-2796>`__ - Upgrade H2O to 3.42.0.1
-   -  `SW-2785 <https://0xdata.atlassian.net/browse/SW-2785>`__ - Fix release process ignoring Nexus upload errors
+   -  `#5642 <https://github.com/h2oai/sparkling-water/issues/5642>`__ - Upgrade H2O to 3.42.0.1
+   -  `#5643 <https://github.com/h2oai/sparkling-water/issues/5643>`__ - Fix release process ignoring Nexus upload errors
 
 -  Improvement
 
-   -  `SW-2793 <https://0xdata.atlassian.net/browse/SW-2793>`__ - New issue template
-   -  `SW-2792 <https://0xdata.atlassian.net/browse/SW-2792>`__ - Extend Spark 2.3 support, remove Spark 2.1-2.2 leftovers
-   -  `SW-2772 <https://0xdata.atlassian.net/browse/SW-2772>`__ - Upgrade version to 3.40.1.1-1
+   -  `#5644 <https://github.com/h2oai/sparkling-water/issues/5644>`__ - New issue template
+   -  `#5631 <https://github.com/h2oai/sparkling-water/issues/5631>`__ - Extend Spark 2.3 support, remove Spark 2.1-2.2 leftovers
+   -  `#3028 <https://github.com/h2oai/sparkling-water/issues/3028>`__ - Upgrade version to 3.40.1.1-1
 
 -  New Feature
 
-   -  `SW-2791 <https://0xdata.atlassian.net/browse/SW-2791>`__ - Spark 3.4 support
+   -  `#5618 <https://github.com/h2oai/sparkling-water/issues/5618>`__ - Spark 3.4 support
 
 -  Task
 
-   -  `SW-2790 <https://0xdata.atlassian.net/browse/SW-2790>`__ - Adjust to h2o-3 changes : loglikelihood metric, python build env
-   -  `SW-2789 <https://0xdata.atlassian.net/browse/SW-2789>`__ - Remove Python 2.7 support
+   -  `#5628 <https://github.com/h2oai/sparkling-water/issues/5628>`__ - Adjust to h2o-3 changes : loglikelihood metric, python build env
+   -  `#5622 <https://github.com/h2oai/sparkling-water/issues/5622>`__ - Remove Python 2.7 support
 
 v3.40.0.4-1 (2023-05-05)
 ------------------------
