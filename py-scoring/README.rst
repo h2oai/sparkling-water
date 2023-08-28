@@ -7,6 +7,7 @@ This package contains just functionality for scoring with Sparkling Water, H2O-3
 
 Documentation describing scoring with H2O-3 MOJO models is located at:
 
+- For Spark 3.4 - https://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/deployment/load_mojo.html
 - For Spark 3.3 - https://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/deployment/load_mojo.html
 - For Spark 3.2 - https://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/deployment/load_mojo.html
 - For Spark 3.1 - https://docs.h2o.ai/sparkling-water/3.1/latest-stable/doc/deployment/load_mojo.html
@@ -17,6 +18,7 @@ Documentation describing scoring with H2O-3 MOJO models is located at:
 
 Documentation describing scoring with Driverless AI MOJO models is located at:
 
+- For Spark 3.4 - https://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/deployment/load_mojo_pipeline.html
 - For Spark 3.3 - https://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/deployment/load_mojo_pipeline.html
 - For Spark 3.2 - https://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/deployment/load_mojo_pipeline.html
 - For Spark 3.1 - https://docs.h2o.ai/sparkling-water/3.1/latest-stable/doc/deployment/load_mojo_pipeline.html
