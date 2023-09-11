@@ -114,6 +114,7 @@ task generateConfiguration(type: JavaExec, dependsOn: [cleanGeneratedConfigurati
 sphinx {
   if (System.getProperty("os.arch") == "aarch64") {
     //https://github.com/trustin/sphinx-binary/issues/10
+    //x86_64 will be handled by Rosetta 2 on a M1/M2 Mac
     binaryUrl = "https://github.com/trustin/sphinx-binary/releases/download/v0.8.2/sphinx.osx-x86_64"
   }
   environments = ["PYTHONWARNINGS" : ""]
