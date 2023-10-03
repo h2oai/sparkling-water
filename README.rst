@@ -18,8 +18,9 @@ Getting Started
 User Documentation
 ~~~~~~~~~~~~~~~~~~
 
-`Read the documentation for Spark 3.4 <http://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/index.html>`__ (or
-`3.3 <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/index.html>`__ ,
+`Read the documentation for Spark 3.5 <http://docs.h2o.ai/sparkling-water/3.5/latest-stable/doc/index.html>`__ (or
+`3.4 <http://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/index.html>`__ ,
+`3.3 <http://docs.h2o.ai/sparkling-water/3.3/latest-stable/doc/index.html>`__ ,
 `3.2 <http://docs.h2o.ai/sparkling-water/3.2/latest-stable/doc/index.html>`__ ,
 `3.1 <http://docs.h2o.ai/sparkling-water/3.1/latest-stable/doc/index.html>`__,
 `3.0 <http://docs.h2o.ai/sparkling-water/3.0/latest-stable/doc/index.html>`__,
@@ -29,7 +30,8 @@ User Documentation
 Download Binaries
 ~~~~~~~~~~~~~~~~~
 
-`Download the latest version for Spark 3.4 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.4/latest.html>`__ (or
+`Download the latest version for Spark 3.5 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.5/latest.html>`__ (or
+`3.4 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.4/latest.html>`__,
 `3.3 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/latest.html>`__,
 `3.2 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/latest.html>`__,
 `3.1 <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/latest.html>`__,
@@ -95,20 +97,20 @@ Use Sparkling Water with PySpark
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sparkling Water can be also used directly from PySpark and the integration is called PySparkling.
 
-See `PySparkling README <http://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/pysparkling.html>`__ to learn about PySparkling.
+See `PySparkling README <http://docs.h2o.ai/sparkling-water/3.5/latest-stable/doc/pysparkling.html>`__ to learn about PySparkling.
 
 Use Sparkling Water via Spark Packages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To see how Sparkling Water can be used as Spark package, please see `Use as Spark Package <http://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/tutorials/use_as_spark_package.html>`__.
+To see how Sparkling Water can be used as Spark package, please see `Use as Spark Package <http://docs.h2o.ai/sparkling-water/3.5/latest-stable/doc/tutorials/use_as_spark_package.html>`__.
 
 Use Sparkling Water in Windows environments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-See `Windows Tutorial <http://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/tutorials/run_on_windows.html>`__ to learn how to use Sparkling Water in Windows environments.
+See `Windows Tutorial <http://docs.h2o.ai/sparkling-water/3.5/latest-stable/doc/tutorials/run_on_windows.html>`__ to learn how to use Sparkling Water in Windows environments.
 
 Sparkling Water examples
 ~~~~~~~~~~~~~~~~~~~~~~~~
-To see how to run examples for Sparkling Water, please see `Running Examples <http://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/devel/running_examples.html>`__.
+To see how to run examples for Sparkling Water, please see `Running Examples <http://docs.h2o.ai/sparkling-water/3.5/latest-stable/doc/devel/running_examples.html>`__.
 
 Maven packages
 ~~~~~~~~~~~~~~
@@ -140,26 +142,26 @@ backend. The backend can be specified before creation of the
 ``H2OContext``.
 
 For more details regarding the internal or external backend, please see
-`Backends <http://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/deployment/backends.html>`__.
+`Backends <http://docs.h2o.ai/sparkling-water/3.5/latest-stable/doc/deployment/backends.html>`__.
 
 --------------
 
 FAQ
 ---
 
-List of all Frequently Asked Questions is available at `FAQ <http://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/FAQ.html>`__.
+List of all Frequently Asked Questions is available at `FAQ <http://docs.h2o.ai/sparkling-water/3.5/latest-stable/doc/FAQ.html>`__.
 
 --------------
 
 Development
 -----------
 
-Complete development documentation is available at `Development Documentation <http://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/devel/devel.html>`__.
+Complete development documentation is available at `Development Documentation <http://docs.h2o.ai/sparkling-water/3.5/latest-stable/doc/devel/devel.html>`__.
 
 Build Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~
 
-To see how to build Sparkling Water, please see `Build Sparkling Water <http://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/devel/build.html>`__.
+To see how to build Sparkling Water, please see `Build Sparkling Water <http://docs.h2o.ai/sparkling-water/3.5/latest-stable/doc/devel/build.html>`__.
 
 Develop applications with Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -226,7 +228,7 @@ We also respond to questions tagged with sparkling-water and h2o tags on the `St
 Change Logs
 ~~~~~~~~~~~
 
-Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/CHANGELOG.html>`__.
+Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/3.5/latest-stable/doc/CHANGELOG.html>`__.
 
 ---------------
 

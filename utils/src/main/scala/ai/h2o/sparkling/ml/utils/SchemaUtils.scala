@@ -17,9 +17,9 @@
 
 package ai.h2o.sparkling.ml.utils
 
+import ai.h2o.sparkling.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.ml.attribute.AttributeGroup
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types._
