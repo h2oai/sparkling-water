@@ -1,0 +1,23 @@
+String jdk8CompatibilityOption = "-XX:+IgnoreUnrecognizedVMOptions"
+List<String> openJavaModules = [
+        "java.base/java.lang",
+        "java.base/java.lang.invoke",
+        "java.base/java.lang.reflect",
+        "java.base/java.io",
+        "java.base/java.net",
+        "java.base/java.nio",
+        "java.base/java.util",
+        "java.base/java.util.concurrent",
+        "java.base/java.util.concurrent.atomic",
+        "java.base/sun.nio.ch",
+        "java.base/sun.nio.cs",
+        "java.base/sun.security.action",
+        "java.base/sun.util.calendar",
+        "java.security.jgss/sun.security.krb5"
+]
+
+List<String> defaultJavaModuleRunOptions =
+        [jdk8CompatibilityOption] + openJavaModules.collect { module -> "--add-opens=${module}=ALL-UNNAMED " }
+
+ext.defaultJavaModuleRunOptions = defaultJavaModuleRunOptions
+ext.openJavaModules = openJavaModules

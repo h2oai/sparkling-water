@@ -12,6 +12,9 @@ jar {
 
 shadowJar {
   archiveClassifier = null
+  manifest {
+    attributes 'Add-Opens': openJavaModules.join(" ")
+  }
 }
 
 defineShadowPublication().call()

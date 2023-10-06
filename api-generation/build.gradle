@@ -15,6 +15,9 @@ dependencies {
 
 shadowJar {
   mergeServiceFiles()
+  manifest {
+    attributes 'Add-Opens': openJavaModules.join(" ")
+  }
 }
 
 build.dependsOn shadowJar

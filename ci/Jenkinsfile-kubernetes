@@ -119,7 +119,7 @@ def getBuildAndTestStagesForSparkVersion(commons, props, sparkMajorVersion) {
                     def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
                     def master = "k8s://" + getMinikubeMaster()
 
-                    // Spark home within sparkling_water_tests image the code runs currently in, for a current sparkVersion
+                    // Spark home within sparkling_water_tests_jdk17 image the code runs currently in, for a current sparkVersion
                     def currentSparkHome = "/home/jenkins/spark-${sparkVersion}-bin"
 
                     // Spark home within a built sparkling-water:scala/python/r/external-backend-... image
@@ -652,7 +652,7 @@ def testPythonExternalBackendAutoClientMode(master, version, swImageSparkHome) {
 def withSparklingWaterMinikubeImage(commons, code) {
     def repoUrl = commons.getAWSDockerRepo()
     commons.withAWSDocker {
-        def image = "${repoUrl}/opsh2oai/sparkling_water_tests:" + commons.getDockerImageVersion()
+        def image = "${repoUrl}/opsh2oai/sparkling_water_tests_jdk17:" + commons.getDockerImageVersion()
         def dockerOptions = "--init --privileged --network=host -v /var/run/docker.sock:/var/run/docker.sock"
         groovy.lang.Closure initCode = {
             sh "activate_java_8"

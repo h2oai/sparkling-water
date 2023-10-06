@@ -63,7 +63,7 @@ def withDocker(image, groovy.lang.Closure code, String dockerOptions = "", groov
 def withSparklingWaterDockerImage(code) {
     def repoUrl = getAWSDockerRepo()
     withAWSDocker {
-        def image = "${repoUrl}/opsh2oai/sparkling_water_tests:" + getDockerImageVersion()
+        def image = "${repoUrl}/opsh2oai/sparkling_water_tests_jdk17:" + getDockerImageVersion()
         def dockerOptions = "--init --privileged"
         groovy.lang.Closure initCode = {
             sh "activate_java_8"

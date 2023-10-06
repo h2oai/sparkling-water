@@ -18,6 +18,9 @@ shadowJar {
   mergeServiceFiles()
 
   archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
+  manifest {
+    attributes 'Add-Opens': openJavaModules.join(" ")
+  }
 }
 
 artifacts {

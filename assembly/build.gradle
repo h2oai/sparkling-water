@@ -66,6 +66,10 @@ shadowJar {
   from "$project.buildDir/reports/" include '**/*'
   exclude 'www/flow/packs/test-*/**'
 
+  manifest {
+    attributes 'Add-Opens': openJavaModules.join(" ")
+  }
+
   archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
 }
 
