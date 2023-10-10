@@ -3,9 +3,10 @@
 if [[ "$#" -ne 1 ]] || [[ "$1" != "scala" && "$1" != "python" && "$1" != "r"  && "$1" != "external-backend" ]]; then
   echo "This script expects exactly one argument which specifies type of image to be build."
   echo "The possible values are: scala, r, python, external-backend"
-  exit -1
+  exit 1
 fi
 
+set -e # fail on error
 
 # Current dir
 TOPDIR=$(cd "$(dirname "$0")/.." || exit; pwd)
