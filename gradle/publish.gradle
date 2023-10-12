@@ -31,8 +31,8 @@ def getPomSpecification() {
             developerConnection = 'scm:git:git@github.com:h2oai/sparkling-water.git'
         }
         issueManagement {
-            system = 'Jira'
-            url = 'http://jira.h2o.ai'
+            system = 'Github'
+            url = 'https://github.com/h2oai/sparkling-water/issues/new/choose'
         }
         developers {
             developer {
