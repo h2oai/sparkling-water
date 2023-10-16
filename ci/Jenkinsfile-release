@@ -284,7 +284,8 @@ def publishToPipy() {
                                . ~/miniconda/etc/profile.d/conda.sh
                                conda activate sw_env_python3.6
                                python setup.py sdist
-                               twine upload dist/* -u $PIPY_USERNAME -p $PIPY_PASSWORD
+                               cd dist
+                               twine upload *.tar.gz -u $PIPY_USERNAME -p $PIPY_PASSWORD
                                conda deactivate
                                """
                         }
