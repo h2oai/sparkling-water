@@ -132,9 +132,10 @@ def copyPySetup() {
       include 'setup.py'
     }
     filter {
-      it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion.replace(".", "_"))
+      it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
         .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
         .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
+        .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
         .replaceAll("SUBST_PYTHON_VERSIONS", convertSupportedPythonVersionsToPyPiDefinitions(supportedPythonVersions))
     }
     from("$projectDir") {
