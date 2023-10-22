@@ -27,8 +27,9 @@ python {
   if (project.hasProperty("pythonPath")) {
     pythonPath project.findProperty("pythonPath").toString()
   }
-  def pythonMajorVersion = getPythonVersion().substring(0, 1)
-  def numpyVersion = numpyVersions.get(pythonMajorVersion)
+  String pythonVersion = getPythonVersion()
+  String pythonVersionWithoutPatchPart = pythonVersion.substring(0, pythonVersion.lastIndexOf('.'))
+  def numpyVersion = numpyVersions.get(pythonVersionWithoutPatchPart, numpyVersions.get("default"))
 
   pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
   pip "pytest:4.6.9" // For running tests
@@ -36,9 +37,9 @@ python {
   pip "pyspark:${sparkVersion}"
   if (project.hasProperty("pythonEnvBasePath")) {
     // for CI as we use pre-cached environment
-    envPath "${project.findProperty("pythonEnvBasePath")}/${getPythonVersion()}/${sparkVersion}"
+    envPath "${project.findProperty("pythonEnvBasePath")}/${pythonVersion}/${sparkVersion}"
   } else {
-    envPath "${rootDir}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
+    envPath "${rootDir}/.gradle/python/${pythonVersion}/${sparkVersion}"
   }
 }
 

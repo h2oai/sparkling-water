@@ -29,7 +29,7 @@ python {
     pythonPath project.findProperty("pythonPath").toString()
   }
   def pythonMajorVersion = getPythonVersion().substring(0, 1)
-  def numpyVersion = numpyVersions.get(pythonMajorVersion)
+  def numpyVersion = numpyVersions.get(pythonMajorVersion, numpyVersions.get("default"))
 
   pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
   pip "pytest:4.6.9" // For running tests
