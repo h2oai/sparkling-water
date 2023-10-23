@@ -32,7 +32,7 @@ python {
   String numpyVersion = numpyVersions.get(pythonVersionWithoutPatchPart, numpyVersions.get("default"))
 
   pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
-  pip "pytest:4.6.9" // For running tests
+  pip "pytest:6.2.5"
   pip "tabulate:0.8.3"
   pip "requests:2.21.0"
   pip "numpy:${numpyVersion}"
