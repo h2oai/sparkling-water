@@ -79,6 +79,9 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
     if (version.startsWith("3.0") || version.startsWith("3.1")) {
       runCommand "sed -i 's/\\(apt-key[^)]*\\)/apt-key adv --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7'/g' ${sparkPath}/kubernetes/dockerfiles/spark/bindings/R/Dockerfile"
     }
+    if (version > "3.4") { //downgrade back to openjdk as we do not support JDK 17 (yet)
+      runCommand "sed -i 's/eclipse-temurin/openjdk/g' ${sparkPath}/kubernetes/dockerfiles/spark/Dockerfile"
+    }
     def first = version.split("\\.")[0]
     def second = version.split("\\.")[1]
     environmentVariable("SPARK_HOME_${first}_${second}", sparkPath)
@@ -161,7 +164,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   // install kubectl
   runCommand """\\
                 cd /home/jenkins && \\
-                curl -LOv "https://dl.k8s.io/release/`curl -L -s https://dl.k8s.io/release/stable.txt`/bin/linux/amd64/kubectl" && \\
+                curl -LOvk "https://dl.k8s.io/release/`curl -Lsk https://dl.k8s.io/release/stable.txt`/bin/linux/amd64/kubectl" && \\
                 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \\
                 rm kubectl
              """
