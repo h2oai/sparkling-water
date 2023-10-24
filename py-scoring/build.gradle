@@ -31,7 +31,7 @@ python {
   String pythonVersionWithoutPatchPart = pythonVersion.substring(0, pythonVersion.lastIndexOf('.'))
   String numpyVersion = numpyVersions.get(pythonVersionWithoutPatchPart, numpyVersions.get("default"))
 
-  pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
+  pip "pytz:2023.3.post1" // Needed in Integration tests, but not PySparkling dependency
   pip "pytest:6.2.5"
   pip "numpy:${numpyVersion}"
   pip "pyspark:${sparkVersion}"
