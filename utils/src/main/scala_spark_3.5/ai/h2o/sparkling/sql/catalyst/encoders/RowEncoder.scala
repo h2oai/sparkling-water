@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.sql.catalyst.encoders
 
+import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 import org.apache.spark.sql.catalyst.encoders.RowEncoder.encoderFor
 import org.apache.spark.sql.types.StructType
 
@@ -25,6 +26,6 @@ import org.apache.spark.sql.types.StructType
   * But some older versions do not have it, hence we use different code for older/newer Spark versions.
   */
 object RowEncoder {
-  def apply(schema: StructType) = encoderFor(schema)
+  def apply(schema: StructType) = ExpressionEncoder(encoderFor(schema))
 
 }
