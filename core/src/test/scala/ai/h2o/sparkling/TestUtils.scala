@@ -16,13 +16,11 @@
  */
 package ai.h2o.sparkling
 
+import ai.h2o.sparkling.sql.catalyst.encoders.RowEncoder
 import java.io.File
-import java.nio.file.Files
 import java.sql.Timestamp
-
 import org.apache.spark.mllib
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.encoders.{ExpressionEncoder, RowEncoder}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions.{lit, rand}
 import org.apache.spark.sql.types._
@@ -130,7 +128,7 @@ object TestUtils extends Matchers {
       spark: SparkSession,
       schemaHolder: SchemaHolder,
       settings: GenerateDataFrameSettings): DataFrame = {
-    implicit val encoder: ExpressionEncoder[Row] = RowEncoder(schemaHolder.schema)
+    implicit val encoder = RowEncoder(schemaHolder.schema)
     val numberOfPartitions = Math.max(1, settings.numberOfRows / settings.rowsPerPartition)
     spark
       .range(settings.numberOfRows)

@@ -17,21 +17,21 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.io._
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.api.{MojoPipelineService, PipelineConfig}
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.frame.MojoFrame
 import ai.h2o.sparkling.ml.params.{H2OAlgorithmMOJOParams, H2OBaseMOJOParams, HasFeatureTypesOnMOJO}
-import org.apache.spark.ml.param._
-import org.apache.spark.sql._
+import ai.h2o.sparkling.sql.catalyst.encoders.RowEncoder
 import com.google.common.collect.Iterators
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Model
-import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.ml.param._
+import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
+import java.io._
 import scala.collection.JavaConverters._
 
 class H2OMOJOPipelineModel(override val uid: String)
