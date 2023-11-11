@@ -253,13 +253,13 @@ def createStagingId(def username, def password) {
 
 def uploadFiles(def username, def password, def repoDir, def stagingId) {
   def proc = ['./uploadToNexus.sh'
-  , username, password, repoDir, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+    , username, password, repoDir, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
   proc.waitFor()
 }
 
 def closeBucket(def username, def password, def stagingId) {
   def proc = ['./closeBucket.sh'
-  , username, password, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+    , username, password, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
   proc.waitFor()
 }
 
