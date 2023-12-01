@@ -32,12 +32,12 @@ task createExternalBackendDockerfile(type: Dockerfile) {
   }
   copyFile("sparkling-water-assembly-extensions_${scalaBaseVersion}-${version}-all.jar", "/opt/h2oai/h2o-3/")
   defaultCommand(
-    "java",
-    "-cp",
-    "/opt/h2oai/h2o-3/sparkling-water-assembly-extensions_${scalaBaseVersion}-${version}-all.jar:/opt/h2oai/h2o-3/h2o.jar",
-    "-XX:+UseContainerSupport",
-    "-XX:MaxRAMPercentage=50",
-    "water.H2OApp")
+          "java",
+          "-cp",
+          "/opt/h2oai/h2o-3/sparkling-water-assembly-extensions_${scalaBaseVersion}-${version}-all.jar:/opt/h2oai/h2o-3/h2o.jar",
+          "-XX:+UseContainerSupport",
+          "-XX:MaxRAMPercentage=50",
+          "water.H2OApp")
 }
 
 task createScalaDockerfile(type: Dockerfile) {
@@ -63,7 +63,7 @@ task createRDockerfile(type: Dockerfile) {
   runCommand """
                 R -e 'install.packages(c(
                 "xml2","openssl", "httr", "bitops", "RCurl", "jsonlite", "testthat",
-                "lifecycle", "pillar", "tibble", "tidyselect", "vctrs", "dbplyr", "sparklyr"),
+                "lifecycle", "pillar", "vctrs", "tidyselect", "tidyr", "tibble", "purrr", "dplyr", "dbplyr", "sparklyr"),
                 repos = "http://cran.us.r-project.org")'
                 """.stripIndent().replace("\n", "")
   copyFile("h2o.tar.gz", "/opt/spark/R/lib/h2o.tar.gz")
