@@ -60,17 +60,12 @@ task createRDockerfile(type: Dockerfile) {
   } else {
     runCommand "apk add libc-dev linux-headers g++ libxml2-dev"
   }
-  runCommand """\\
-                R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("openssl", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("bitops", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("jsonlite", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("dbplyr", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
-                """
+  runCommand """
+                R -e 'install.packages(c(
+                "xml2","openssl", "httr", "bitops", "RCurl", "jsonlite", "testthat",
+                "lifecycle", "pillar", "tibble", "tidyselect", "vctrs", "dbplyr", "sparklyr"),
+                repos = "http://cran.us.r-project.org")'
+                """.stripIndent().replace("\n", "")
   copyFile("h2o.tar.gz", "/opt/spark/R/lib/h2o.tar.gz")
   runCommand "cd /opt/spark/R/lib && R CMD INSTALL h2o.tar.gz"
   copyFile("rsparkling_${version}.tar.gz", "/opt/spark/R/lib/rsparkling_${version}.tar.gz")
