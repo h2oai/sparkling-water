@@ -188,7 +188,7 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
 
   def setExternalExtraJars(commaSeparatedPaths: String): H2OConf = set(PROP_EXTERNAL_EXTRA_JARS._1, commaSeparatedPaths)
 
-  def setExternalExtraJars(paths: java.util.ArrayList[String]): H2OConf = setExternalExtraJars(paths.asScala)
+  def setExternalExtraJars(paths: java.util.ArrayList[String]): H2OConf = setExternalExtraJars(paths.asScala.toList)
 
   def setExternalExtraJars(paths: Seq[String]): H2OConf = setExternalExtraJars(paths.mkString(","))
 

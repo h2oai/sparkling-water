@@ -53,9 +53,9 @@ class NullableStringArrayArrayParam(parent: Params, name: String, doc: String, i
       case JNull =>
         null
       case JArray(values) =>
-        val bytes = values.map {
+        val bytes: Array[Byte] = values.map {
           case JInt(x) =>
-            x.byteValue()
+            x.byteValue
           case _ =>
             throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
         }.toArray

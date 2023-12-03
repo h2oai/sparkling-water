@@ -67,7 +67,7 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: Option
       val hc = H2OContext.ensure(
         "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
       val temporaryColumn = getClass.getSimpleName + "_temporary_id"
-      val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
+      val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id())
       val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
       val distinctInputCols = getInputCols().flatten.distinct
       val relevantColumns = distinctInputCols ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))

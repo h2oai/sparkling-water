@@ -24,7 +24,7 @@ import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.{H2OConf, H2OContext}
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.expose.Utils
-import org.apache.spark.h2o.backends.internal.InternalH2OBackend._
+import org.apache.spark.h2o.backends.internal.InternalH2OBackend.{distributeFlatFile, getLeaderNode, lockCloud, registerEndpoints, registerNewExecutorListener, startH2OWorkers, startSingleH2OWorker, tearDownEndpoints, waitForClusterSize}
 import org.apache.spark.internal.Logging
 import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}

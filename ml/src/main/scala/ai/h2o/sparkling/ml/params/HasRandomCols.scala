@@ -35,7 +35,7 @@ trait HasRandomCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
       null
     } else {
       val frameColumns = trainingFrame.columnNames
-      val indices = randomColumnNames.map(frameColumns.indexOf)
+      val indices = randomColumnNames.map(col => frameColumns.indexOf(col))
       indices
     }
 

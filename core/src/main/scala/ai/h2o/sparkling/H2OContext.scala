@@ -123,7 +123,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
       cloudV3.compiled_on)
     val h2oClusterInfo = H2OClusterInfo(
       s"$flowIp:$flowPort",
-      visibleFlowURL,
+      visibleFlowURL(),
       cloudV3.cloud_healthy,
       cloudV3.internal_security_enabled,
       nodes.map(_.ipPort()),
@@ -305,7 +305,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
          |  ${nodes.mkString("\n  ")}
          |  ------------------------
          |
-         |  Open H2O Flow in browser: ${getFlowUIHint}
+         |  Open H2O Flow in browser: ${getFlowUIHint()}
          |
     """.stripMargin
     val sparkYarnAppId = if (sparkContext.master.toLowerCase.startsWith("yarn")) {
@@ -475,8 +475,8 @@ object H2OContext extends Logging {
 
   private def logStartingInfo(conf: H2OConf): Unit = {
     logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
-    val unsupportedSuffix = if (getFirstUnsupportedSWVersion.isDefined) " (unsupported)" else ""
-    val deprecationSuffix = if (isSparkVersionDeprecated) " (deprecated)" else ""
+    val unsupportedSuffix = if (getFirstUnsupportedSWVersion().isDefined) " (unsupported)" else ""
+    val deprecationSuffix = if (isSparkVersionDeprecated()) " (deprecated)" else ""
     logInfo("Spark version: " + SparkSessionUtils.active.version + unsupportedSuffix + deprecationSuffix)
     logInfo("Integrated H2O version: " + BuildInfo.H2OVersion)
     logInfo("The following Spark configuration is used: \n    " + conf.getAll.mkString("\n    "))
@@ -502,7 +502,7 @@ object H2OContext extends Logging {
         s"Apache Spark ${SparkSessionUtils.active.version} is unsupported" +
           s"since the Sparkling Water version ${unsupportedSWVersion.get}.")
     }
-    if (isSparkVersionDeprecated) {
+    if (isSparkVersionDeprecated()) {
       logWarning(
         s"Apache Spark ${SparkSessionUtils.active.version} is deprecated and " +
           "the support will be removed in the Sparkling Water version 3.44.")

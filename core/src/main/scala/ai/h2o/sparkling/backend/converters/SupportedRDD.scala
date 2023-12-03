@@ -191,7 +191,7 @@ private[this] object SupportedRDD {
     override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
       val spark = SparkSessionUtils.active
       import spark.implicits._
-      SparkDataFrameConverter.toH2OFrame(hc, rdd.map(v => Tuple1(v)).toDF, frameKeyName)
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.map(v => Tuple1(v)).toDF(), frameKeyName)
     }
   }
 
@@ -199,7 +199,7 @@ private[this] object SupportedRDD {
     override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
       val spark = SparkSessionUtils.active
       import spark.implicits._
-      SparkDataFrameConverter.toH2OFrame(hc, rdd.map(v => Tuple1(v)).toDF, frameKeyName)
+      SparkDataFrameConverter.toH2OFrame(hc, rdd.map(v => Tuple1(v)).toDF(), frameKeyName)
     }
   }
 }
