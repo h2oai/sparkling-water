@@ -21,6 +21,7 @@ from ai.h2o.sparkling.ml.models.H2OMOJOSettings import H2OMOJOSettings
 from ai.h2o.sparkling.ml.models.H2OXGBoostMOJOModel import H2OXGBoostMOJOModel
 from ai.h2o.sparkling.ml.models.H2OGBMMOJOModel import H2OGBMMOJOModel
 from ai.h2o.sparkling.ml.models.H2ODRFMOJOModel import H2ODRFMOJOModel
+from ai.h2o.sparkling.ml.models.H2OUpliftDRFMOJOModel import H2OUpliftDRFMOJOModel
 from ai.h2o.sparkling.ml.models.H2OGLMMOJOModel import H2OGLMMOJOModel
 from ai.h2o.sparkling.ml.models.H2OGAMMOJOModel import H2OGAMMOJOModel
 from ai.h2o.sparkling.ml.models.H2OPCAMOJOModel import H2OPCAMOJOModel

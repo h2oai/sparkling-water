@@ -64,6 +64,9 @@ def irisDatasetPath():
 def airlinesDatasetPath():
     return "file://" + os.path.abspath("../examples/smalldata/airlines/allyears2k_headers.csv")
 
+@pytest.fixture(scope="module")
+def criteoDatasetPath():
+    return "file://" + os.path.abspath("../examples/smalldata/uplift/criteo_uplift_1k.csv")
 
 @pytest.fixture(scope="module")
 def carsDatasetPath():
@@ -88,6 +91,11 @@ def prostateDataset(spark, prostateDatasetPath):
 @pytest.fixture(scope="module")
 def airlinesDataset(spark, airlinesDatasetPath):
     return spark.read.csv(airlinesDatasetPath, header=True, inferSchema=True)
+
+@pytest.fixture(scope="module")
+def criteoDataset(spark, criteoDatasetPath):
+    return spark.read.csv(criteoDatasetPath, header=True, inferSchema=True)
+
 
 @pytest.fixture(scope="module")
 def semiconductorDataset(spark, semiconductorDatasetPath):

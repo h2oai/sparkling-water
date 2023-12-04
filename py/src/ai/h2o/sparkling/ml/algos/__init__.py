@@ -24,6 +24,7 @@ from ai.h2o.sparkling.ml.algos.H2OGAM import H2OGAM
 from ai.h2o.sparkling.ml.algos.H2OGridSearch import H2OGridSearch
 from ai.h2o.sparkling.ml.algos.H2OAutoML import H2OAutoML
 from ai.h2o.sparkling.ml.algos.H2ODRF import H2ODRF
+from ai.h2o.sparkling.ml.algos.H2OUpliftDRF import H2OUpliftDRF
 from ai.h2o.sparkling.ml.algos.H2OCoxPH import H2OCoxPH
 from ai.h2o.sparkling.ml.algos.H2OIsolationForest import H2OIsolationForest
 from ai.h2o.sparkling.ml.algos.H2OExtendedIsolationForest import H2OExtendedIsolationForest

@@ -29,16 +29,18 @@ import hex.schemas.DRFModelV3.DRFModelOutputV3
 import hex.schemas.DeepLearningModelV3.DeepLearningModelOutputV3
 import hex.schemas.DeepLearningV3.{DeepLearningParametersV3 => DLParamsV3}
 import hex.schemas.ExtendedIsolationForestModelV3.ExtendedIsolationForestModelOutputV3
+import hex.schemas.ExtendedIsolationForestV3.{ExtendedIsolationForestParametersV3 => ExtIFParamsV3}
 import hex.schemas.GAMModelV3.GAMModelOutputV3
 import hex.schemas.GBMModelV3.GBMModelOutputV3
 import hex.schemas.GLMModelV3.GLMModelOutputV3
 import hex.schemas.IsolationForestModelV3.IsolationForestModelOutputV3
 import hex.schemas.IsolationForestV3.{IsolationForestParametersV3 => IFParamsV3}
-import hex.schemas.ExtendedIsolationForestV3.{ExtendedIsolationForestParametersV3 => ExtIFParamsV3}
 import hex.schemas.KMeansModelV3.KMeansModelOutputV3
 import hex.schemas.KMeansV3.{KMeansParametersV3 => KMeansParamsV3}
 import hex.schemas.RuleFitModelV3.RuleFitModelOutputV3
 import hex.schemas.RuleFitV3.RuleFitParametersV3
+import hex.schemas.UpliftDRFModelV3.UpliftDRFModelOutputV3
+import hex.schemas.UpliftDRFV3.{UpliftDRFParametersV3 => UpliftParams}
 import hex.schemas.XGBoostModelV3.XGBoostModelOutputV3
 import hex.schemas.XGBoostV3.{XGBoostParametersV3 => XGBParamsV3}
 import hex.schemas.{DRFV3, GAMV3, GBMV3, GLMV3}
@@ -46,6 +48,7 @@ import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.isofor.IsolationForestModel.{IsolationForestParameters => IFParameters}
 import hex.tree.isoforextended.ExtendedIsolationForestModel.{ExtendedIsolationForestParameters => ExtIFParams}
+import hex.tree.uplift.UpliftDRFModel.UpliftDRFParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 
 import java.util
@@ -97,6 +100,7 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
     val gamFields = Seq(ignoredCols, betaConstraints, gamCols)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val drfFields = Seq(calibrationDataFrame, ignoredCols)
+    val upliftDrfFields = Seq(ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
     val coxPHFields = Seq(ignoredCols, interactionPairs)
     val ifFields = Seq(ignoredCols, calibrationDataFrame, validationLabelCol)
@@ -118,6 +122,7 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
       ("H2OXGBoostParams", classOf[XGBParamsV3], classOf[XGBoostParameters], xgboostFields, noDeprecation),
       ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], gbmFields, noDeprecation),
       ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], drfFields, noDeprecation),
+      ("H2OUpliftDRFParams", classOf[UpliftParams], classOf[UpliftDRFParameters], upliftDrfFields, noDeprecation),
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields, noDeprecation),
       ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields, noDeprecation),
       ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, noDeprecation),
@@ -158,6 +163,7 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
       ("H2OXGBoost", classOf[XGBoostParameters], treeSupervised, Seq(withDistribution), None),
       ("H2OGBM", classOf[GBMParameters], treeSupervised, Seq(withDistribution), None),
       ("H2ODRF", classOf[DRFParameters], treeSupervised, Seq(withDistribution), None),
+      ("H2OUpliftDRF", classOf[UpliftDRFParameters], treeUnsupervised, Seq(withDistribution), None),
       ("H2OGLM", classOf[GLMParameters], cvSupervised, Seq(withFamily), Some("H2OGLMMetrics")),
       ("H2OGAM", classOf[GAMParameters], cvSupervised, Seq(withFamily), None),
       ("H2ODeepLearning", classOf[DeepLearningParameters], cvSupervised, Seq(withDistribution), None),
@@ -202,6 +208,7 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
       ("H2OXGBoostModelOutputs", classOf[XGBoostModelOutputV3]),
       ("H2OGBMModelOutputs", classOf[GBMModelOutputV3]),
       ("H2ODRFModelOutputs", classOf[DRFModelOutputV3]),
+      ("H2OUpliftDRFModelOutputs", classOf[UpliftDRFModelOutputV3]),
       ("H2OGLMModelOutputs", classOf[GLMModelOutputV3]),
       ("H2OGAMModelOutputs", classOf[GAMModelOutputV3]),
       ("H2ODeepLearningModelOutputs", classOf[DeepLearningModelOutputV3]),

@@ -22,7 +22,7 @@ package ai.h2o.sparkling.ml.internals
   */
 private[sparkling] object H2OModelCategory extends Enumeration {
   val Unknown, Binomial, Multinomial, Ordinal, Regression, HGLMRegression, Clustering, AutoEncoder, TargetEncoder,
-      DimReduction, WordEmbedding, CoxPH, AnomalyDetection = Value
+      DimReduction, WordEmbedding, CoxPH, AnomalyDetection, BinomialUplift = Value
 
   def fromString(modelCategory: String): Value = {
     values

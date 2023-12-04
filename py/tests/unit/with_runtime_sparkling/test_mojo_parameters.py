@@ -85,6 +85,11 @@ def testExtendedIsolationForestParameters(prostateDataset):
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 
+def testExtendedIsolationForestParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OIsolationForest(seed=1, sampleRate=0.5, featuresCols=features)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
 
 def testCoxPHParameters(heartDataset):
     features = ['age', 'year', 'surgery', 'transplant', 'start', 'stop']
