@@ -100,7 +100,10 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
     val gamFields = Seq(ignoredCols, betaConstraints, gamCols)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val drfFields = Seq(calibrationDataFrame, ignoredCols)
-    val upliftDrfFields = Seq(ignoredCols)
+    val upliftDrfFields = Seq(
+      ExplicitField("treatment_column", "HasTreatmentCol", "treatment"),
+      ExplicitField("response_column", "HasLabelCol", "label"),
+      ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
     val coxPHFields = Seq(ignoredCols, interactionPairs)
     val ifFields = Seq(ignoredCols, calibrationDataFrame, validationLabelCol)
@@ -163,7 +166,12 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
       ("H2OXGBoost", classOf[XGBoostParameters], treeSupervised, Seq(withDistribution), None),
       ("H2OGBM", classOf[GBMParameters], treeSupervised, Seq(withDistribution), None),
       ("H2ODRF", classOf[DRFParameters], treeSupervised, Seq(withDistribution), None),
-      ("H2OUpliftDRF", classOf[UpliftDRFParameters], treeUnsupervised, Seq(withDistribution), None),
+      (
+        "H2OUpliftDRF",
+        classOf[UpliftDRFParameters],
+        treeUnsupervised,
+        Seq(withDistribution, "H2OUpliftDRFExtras"),
+        None),
       ("H2OGLM", classOf[GLMParameters], cvSupervised, Seq(withFamily), Some("H2OGLMMetrics")),
       ("H2OGAM", classOf[GAMParameters], cvSupervised, Seq(withFamily), None),
       ("H2ODeepLearning", classOf[DeepLearningParameters], cvSupervised, Seq(withDistribution), None),

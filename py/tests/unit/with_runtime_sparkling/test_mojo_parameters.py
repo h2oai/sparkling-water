@@ -16,7 +16,7 @@
 
 from pysparkling.ml import H2OGBM, H2ODRF, H2OXGBoost, H2OGLM, H2OGAM, H2OCoxPH
 from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OIsolationForest, H2OExtendedIsolationForest
-from pysparkling.ml import H2OAutoEncoder, H2OPCA, H2OGLRM, H2ORuleFit, H2OWord2Vec
+from pysparkling.ml import H2OAutoEncoder, H2OPCA, H2OGLRM, H2ORuleFit, H2OWord2Vec, H2OUpliftDRF
 
 def testGBMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
@@ -85,10 +85,18 @@ def testExtendedIsolationForestParameters(prostateDataset):
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 
-def testExtendedIsolationForestParameters(prostateDataset):
-    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
-    algorithm = H2OIsolationForest(seed=1, sampleRate=0.5, featuresCols=features)
-    model = algorithm.fit(prostateDataset)
+def testUpliftDRFParameters(criteoDataset):
+    features = ['f1', 'f2', 'f3' , 'f4', 'f5', 'f6', 'f7', 'f8']
+    algorithm = H2OUpliftDRF(featuresCols=features,
+                             ntrees=10,
+                             maxDepth=5,
+                             treatmentCol="treatment",
+                             upliftMetric="KL",
+                             minRows=10,
+                             seed=1234,
+                             auucType="qini",
+                             labelCol="conversion")
+    model = algorithm.fit(criteoDataset)
     compareParameterValues(algorithm, model)
 
 def testCoxPHParameters(heartDataset):
@@ -151,6 +159,7 @@ def compareParameterValues(algorithm, model, ignored=[]):
     for method in methods:
         modelValue = getattr(model, method)()
         algorithmValue = getattr(algorithm, method)()
+        print("model: " + str(modelValue) + " algo: " + str(algorithmValue))
         assert(valuesAreEqual(algorithmValue, modelValue))
 
 

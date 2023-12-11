@@ -52,7 +52,7 @@ class H2OUpliftDRFTestSuite extends FunSuite with Matchers with SharedH2OTestCon
     .setSeed(1234)
     .setAuucType("qini")
     .setLabelCol(responseColumn)
-    .setFeaturesCols(predictorColumns :+ treatmentColumn :+ responseColumn)
+    .setFeaturesCols(predictorColumns)
 
   test("H2OUpliftDRF happy path") {
     val model = algo.fit(trainingDataset)

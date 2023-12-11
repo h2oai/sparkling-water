@@ -1,7 +1,7 @@
-.. _extended_isolation_forest:
+.. _uplift_drf:
 
 Train Distributed Uplift Random Forest (Uplift DRF) Model in Sparkling Water
---------------------------------------------------------
+----------------------------------------------------------------------------
 
 Introduction
 ~~~~~~~~~~~~
@@ -113,7 +113,9 @@ and :ref:`model_details_H2OUpliftDRFMOJOModel`.
 
             from pysparkling.ml import H2OUpliftDRF
 
-            predictors = ["f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "treatment", "conversion"]
+            treatmentColumn = "treatment"
+            responseColumn = "conversion"
+            predictors = ["f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", treatmentColumn, responseColumn]
 
             algo = H2OUpliftDRF(featuresCols=predictors,
                                 ntrees = 10,

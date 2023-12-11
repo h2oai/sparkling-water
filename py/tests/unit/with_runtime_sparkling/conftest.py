@@ -94,7 +94,12 @@ def airlinesDataset(spark, airlinesDatasetPath):
 
 @pytest.fixture(scope="module")
 def criteoDataset(spark, criteoDatasetPath):
-    return spark.read.csv(criteoDatasetPath, header=True, inferSchema=True)
+    dataset = spark.read.csv(criteoDatasetPath, header=True, inferSchema=True)
+    treatmentColumn = "treatment"
+    responseColumn = "conversion"
+    return (dataset
+            .withColumn(treatmentColumn, dataset[treatmentColumn].cast("string"))
+            .withColumn(responseColumn, dataset[responseColumn].cast("string")))
 
 
 @pytest.fixture(scope="module")
