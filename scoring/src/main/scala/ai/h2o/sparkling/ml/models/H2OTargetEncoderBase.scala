@@ -74,6 +74,6 @@ trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderMOJOParams
 
   private[sparkling] def createVectorColumn(df: DataFrame, name: String, sourceColumns: Array[String]): DataFrame = {
     val assembler = new VectorAssembler().setInputCols(sourceColumns).setOutputCol(name)
-    assembler.transform(df).drop(sourceColumns: _*)
+    assembler.transform(df).drop(sourceColumns.toIndexedSeq: _*)
   }
 }

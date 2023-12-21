@@ -78,6 +78,6 @@ trait H2OMOJOFlattenedInput {
     val relevantColumnNames = getRelevantColumnNames(flatDataFrame, inputs)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)
-    flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*)))
+    flatDataFrame.withColumn(outputColumnName, udf(struct(args.toIndexedSeq: _*)))
   }
 }

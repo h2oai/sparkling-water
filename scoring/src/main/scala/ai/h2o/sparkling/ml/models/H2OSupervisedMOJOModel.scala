@@ -57,14 +57,16 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OAlgorithmMOJOM
           if (!flatDataFrame.columns.contains(offsetColumn)) {
             throw new RuntimeException("Offset column must be present within the dataset!")
           }
-          flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), col(getOffsetCol()).cast(DoubleType)))
+          flatDataFrame.withColumn(
+            outputColumnName,
+            udf(struct(args.toIndexedSeq: _*), col(getOffsetCol()).cast(DoubleType)))
         } else {
           // Methods of EasyPredictModelWrapper for given prediction categories take offset as parameter.
           // `lit(0.0)` represents a column with zero values (offset disabled).
-          flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), lit(0.0)))
+          flatDataFrame.withColumn(outputColumnName, udf(struct(args.toIndexedSeq: _*), lit(0.0)))
         }
       case _ =>
-        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*)))
+        flatDataFrame.withColumn(outputColumnName, udf(struct(args.toIndexedSeq: _*)))
     }
   }
 }
