@@ -282,9 +282,9 @@ abstract class H2OMOJOModel
         // Propagation of offset to EasyPredictModelWrapper was introduced with H2OSupervisedMOJOModel.
         // `lit(0.0)` represents a column with zero values (offset disabled) to ensure backward-compatibility of
         // MOJO models.
-        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), lit(0.0)))
+        flatDataFrame.withColumn(outputColumnName, udf(struct(args.toIndexedSeq: _*), lit(0.0)))
       case _ =>
-        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*)))
+        flatDataFrame.withColumn(outputColumnName, udf(struct(args.toIndexedSeq: _*)))
     }
   }
 

@@ -143,7 +143,7 @@ object SchemaUtils {
 
   def flattenSchema(df: DataFrame): StructType = {
     val rowSchemas = rowsToRowSchemas(df)
-    val mergedSchema = mergeRowSchemas(rowSchemas)
+    val mergedSchema = mergeRowSchemas(rowSchemas).toList
     StructType(mergedSchema.map(_.field))
   }
 
@@ -221,13 +221,13 @@ object SchemaUtils {
     if (data != null) {
       dataType match {
         case BinaryType =>
-          flattenBinaryType(qualifiedName, ByteType, nullable, metadata, data, path)
+          flattenBinaryType(qualifiedName, ByteType, nullable, metadata, data, path).toList
         case MapType(_, valueType, containsNull) =>
-          flattenMapType(qualifiedName, valueType, containsNull || nullable, metadata, data, path)
+          flattenMapType(qualifiedName, valueType, containsNull || nullable, metadata, data, path).toList
         case ArrayType(elementType, containsNull) =>
-          flattenArrayType(qualifiedName, elementType, containsNull || nullable, metadata, data, path)
+          flattenArrayType(qualifiedName, elementType, containsNull || nullable, metadata, data, path).toList
         case StructType(fields) =>
-          flattenStructType(qualifiedName, nullable, metadata, fields, data, path)
+          flattenStructType(qualifiedName, nullable, metadata, fields, data, path).toList
         case dt =>
           FieldWithOrder(StructField(qualifiedName, dt, nullable, metadata), path.reverse) :: Nil
       }
@@ -317,7 +317,7 @@ object SchemaUtils {
       targetColPrefix: Option[String] = None,
       nullable: Boolean = false): Seq[(StructField, String)] = {
 
-    val flattened = schema.fields.flatMap { f =>
+    val flattened = schema.fields.toList.flatMap { f =>
       val escaped = if (f.name.contains(".")) "`" + f.name + "`" else f.name
       val colName = if (sourceColPrefix.isDefined) sourceColPrefix.get + "." + escaped else escaped
       val newName = if (targetColPrefix.isDefined) targetColPrefix.get + "." + f.name else f.name
@@ -402,7 +402,7 @@ object SchemaUtils {
           getCollectionSize(row, idx)
         }
       }
-      if (sizes.isEmpty) {
+      if (sizes.isEmpty()) {
         Array(0)
       } else {
         sizes.reduce((a, b) => a.indices.map(i => if (a(i) > b(i)) a(i) else b(i))).toArray

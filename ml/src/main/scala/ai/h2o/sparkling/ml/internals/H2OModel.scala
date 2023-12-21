@@ -54,7 +54,7 @@ private[sparkling] class H2OModel private (val modelId: String) extends RestComm
 
   private[sparkling] def tryDelete(): Unit =
     try {
-      getCrossValidationModels.foreach(_.foreach(_.tryDelete()))
+      getCrossValidationModels().foreach(_.foreach(_.tryDelete()))
       delete()
     } catch {
       case e: Throwable => logWarning(s"Unsuccessful try to delete model '${this.modelId}'", e)

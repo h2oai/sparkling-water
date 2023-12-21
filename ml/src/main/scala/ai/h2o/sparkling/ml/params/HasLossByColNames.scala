@@ -37,7 +37,7 @@ trait HasLossByColNames extends H2OAlgoParamsBase {
       null
     } else {
       val frameColumns = trainingFrame.columnNames
-      val indices = names.map(frameColumns.indexOf)
+      val indices = names.map(col => frameColumns.indexOf(col))
       indices
     }
 

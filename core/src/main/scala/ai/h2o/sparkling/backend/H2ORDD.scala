@@ -92,7 +92,7 @@ private[backend] class H2ORDD[A <: Product: TypeTag: ClassTag](val frame: H2OFra
   private def columnReaders(rcc: Reader) = {
     val readerMapByName = (rcc.OptionReaders ++ rcc.SimpleReaders).map {
       case (supportedType, reader) => supportedType.name -> reader
-    }
+    }.toMap
     productType.memberTypeNames.map(name => readerMapByName(name))
   }
 

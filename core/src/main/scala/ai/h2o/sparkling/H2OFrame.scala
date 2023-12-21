@@ -151,7 +151,7 @@ class H2OFrame private (
       this
     } else {
       val endpoint = getClusterEndpoint(conf)
-      val colIndices = columns.map(columnNames.indexOf)
+      val colIndices = columns.map(col => columnNames.indexOf(col))
       val newFrameId = s"${frameId}_subframe_${colIndices.mkString("_")}"
       val params = Map(
         "ast" -> MessageFormat.format(s"( assign {0} (cols {1} {2}))", newFrameId, frameId, stringifyArray(colIndices)))

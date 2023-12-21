@@ -162,7 +162,7 @@ private[this] object SupportedDataset {
       override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
         val spark = SparkSessionUtils.active
         import spark.implicits._
-        SparkDataFrameConverter.toH2OFrame(hc, dataset.map(v => Tuple1(v)).toDF, frameKeyName)
+        SparkDataFrameConverter.toH2OFrame(hc, dataset.map(v => Tuple1(v)).toDF(), frameKeyName)
       }
     }
 
@@ -171,7 +171,7 @@ private[this] object SupportedDataset {
       override def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
         val spark = SparkSessionUtils.active
         import spark.implicits._
-        SparkDataFrameConverter.toH2OFrame(hc, dataset.map(v => Tuple1(v)).toDF, frameKeyName)
+        SparkDataFrameConverter.toH2OFrame(hc, dataset.map(v => Tuple1(v)).toDF(), frameKeyName)
       }
     }
 }

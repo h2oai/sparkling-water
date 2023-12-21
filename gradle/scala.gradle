@@ -27,7 +27,9 @@ configurations
         }
 
 dependencies {
-    scalaCompilerPlugin "org.scalamacros:paradise_${scalaVersion}:2.1.1"
+    if (scalaVersion < '2.13') {
+        scalaCompilerPlugin "org.scalamacros:paradise_${scalaVersion}:2.1.1"
+    }
 }
 
 // Activate Zinc compiler and configure scalac
