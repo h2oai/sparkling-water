@@ -21,6 +21,12 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   destFile = outputFile
   from testingBaseImage
 
+  // switching to a newer Java version as the base image uses ancient 8u171
+  // we're copying JDK from another docker image
+  copyFile(new Dockerfile.CopyFile(testingJdkImageJavaPath, testingJdkImageJavaPath).withStage(testingJdkImage))
+  runCommand("rm -rf /usr/lib/jvm/java-8-oracle")
+  environmentVariable('JAVA_HOME', testingJdkImageJavaPath)
+
   runCommand "rm /etc/startup/70_start_slapd"
 
   // Install Terraform
@@ -29,8 +35,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 |   unzip terraform.zip -d /usr/local/bin/ && \\
                 |   rm -f terraform.zip
                """.stripMargin()
-
-  environmentVariable("PATH","/usr/lib/jvm/java-8-oracle/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+  environmentVariable("PATH","${testingJdkImageJavaPath}/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 
   // Update to R 4.2
   runCommand """\\
@@ -99,8 +104,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                rm /home/jenkins/miniconda.sh
                 """
 
-  environmentVariable("PATH", "/home/jenkins/miniconda/bin:/usr/lib/jvm/java-8-oracle/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
-  environmentVariable("JAVA_HOME", "/usr/lib/jvm/java-8-oracle")
+  environmentVariable("PATH", "/home/jenkins/miniconda/bin:\$PATH")
 
   runCommand """\\
                 conda install anaconda-client conda-build conda-verify -y && \\

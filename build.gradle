@@ -199,6 +199,12 @@ configure(subprojects) { project ->
   // All subprojects needs Spark support
   apply from: "$rootDir/gradle/spark.gradle"
 
+  // All tests need Java module system run options
+  apply from: "$rootDir/gradle/javaModuleSystem.gradle"
+  tasks.withType(Test).configureEach {
+    jvmArgs += project.defaultJavaModuleRunOptions
+  }
+
   if (project in docProjects) {
     apply plugin: 'java'
     apply plugin: 'kr.motd.sphinx'

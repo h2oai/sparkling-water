@@ -35,7 +35,7 @@ node('mr-0xc10') {
         dir("ci/build/docker") {
             sh """
             docker pull $testingBaseImage
-            docker build --no-cache -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${nextVersion} -f Dockerfile .
+            docker build --no-cache -t harbor.h2o.ai/opsh2oai/sparkling_water_tests_jdk17:${nextVersion} -f Dockerfile .
            """
         }
     }
@@ -44,8 +44,8 @@ node('mr-0xc10') {
         def repoUrl = commons.getAWSDockerRepo()
         commons.withAWSDocker {
             sh """
-            docker tag harbor.h2o.ai/opsh2oai/sparkling_water_tests:${nextVersion} $repoUrl/opsh2oai/sparkling_water_tests:${nextVersion}
-            docker push $repoUrl/opsh2oai/sparkling_water_tests:${nextVersion}
+            docker tag harbor.h2o.ai/opsh2oai/sparkling_water_tests_jdk17:${nextVersion} $repoUrl/opsh2oai/sparkling_water_tests_jdk17:${nextVersion}
+            docker push $repoUrl/opsh2oai/sparkling_water_tests_jdk17:${nextVersion}
             """
         }
     }
