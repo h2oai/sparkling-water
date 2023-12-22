@@ -32,12 +32,12 @@ task createExternalBackendDockerfile(type: Dockerfile) {
   }
   copyFile("sparkling-water-assembly-extensions_${scalaBaseVersion}-${version}-all.jar", "/opt/h2oai/h2o-3/")
   defaultCommand(
-          "java",
-          "-cp",
-          "/opt/h2oai/h2o-3/sparkling-water-assembly-extensions_${scalaBaseVersion}-${version}-all.jar:/opt/h2oai/h2o-3/h2o.jar",
-          "-XX:+UseContainerSupport",
-          "-XX:MaxRAMPercentage=50",
-          "water.H2OApp")
+    "java",
+    "-cp",
+    "/opt/h2oai/h2o-3/sparkling-water-assembly-extensions_${scalaBaseVersion}-${version}-all.jar:/opt/h2oai/h2o-3/h2o.jar",
+    "-XX:+UseContainerSupport",
+    "-XX:MaxRAMPercentage=50",
+    "water.H2OApp")
 }
 
 task createScalaDockerfile(type: Dockerfile) {
