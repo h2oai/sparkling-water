@@ -100,8 +100,9 @@ class SparklingWaterJettyHelper(
     if (conf.jksPass.isEmpty) {
       throw new RuntimeException("JKS is specified but JKS password is missing!")
     }
-    val sslFactory = new SslContextFactory(conf.jks.get)
+    val sslFactory = new SslContextFactory.Server()
     sslFactory.setKeyStorePassword(conf.jksPass.get)
+    sslFactory.setKeyStorePath(conf.jks.get)
     if (conf.jksAlias.isDefined) {
       sslFactory.setCertAlias(conf.jksAlias.get)
     }

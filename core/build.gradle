@@ -79,6 +79,13 @@ dependencies {
   api("ai.h2o:h2o-persist-gcs:${h2oVersion}")
   api("ai.h2o:h2o-jetty-9:${h2oVersion}")
   api("ai.h2o:h2o-webserver-iface:${h2oVersion}")
+  api "org.eclipse.jetty:jetty-server:${jettyVersion}"
+  api "org.eclipse.jetty:jetty-servlets:${jettyVersion}"
+  api "org.eclipse.jetty:jetty-jaas:${jettyVersion}"
+  api "org.eclipse.jetty:jetty-proxy:${jettyVersion}"
+  api "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
+  api "org.eclipse.jetty.websocket:websocket-api:${jettyVersion}"
+  api "org.eclipse.jetty.websocket:websocket-server:${jettyVersion}"
   api("ai.h2o:h2o-automl:${h2oVersion}")
   api("ai.h2o:h2o-ext-mojo-pipeline:${h2oVersion}")
 
