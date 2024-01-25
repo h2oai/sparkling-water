@@ -30,6 +30,6 @@ trait MetricResolver {
           val (swFieldName, swMetricName) = MetricNameConverter.convertFromH2OToSW(field.getName)
           Metric(swFieldName, swMetricName, field.getName, field.getType, field.getAnnotation(classOf[API]).help())
         }
-    parameters
+    parameters.toSeq
   }
 }

@@ -35,7 +35,7 @@ object SparkSessionUtils extends Logging {
   }
 
   def createSparkSession(conf: SparkConf, forceHive: Boolean = false): SparkSession = {
-    val builder = SparkSession.builder.config(conf)
+    val builder = SparkSession.builder().config(conf)
     if (conf.get(CATALOG_IMPLEMENTATION.key, "hive").toLowerCase == "hive" || forceHive) {
       if (ExposeUtils.hiveClassesArePresent || forceHive) {
         builder.enableHiveSupport()

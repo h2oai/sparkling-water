@@ -23,6 +23,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
 import water.fvec.Vec
 
+import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 
 /**
@@ -46,7 +47,7 @@ private[sparkling] object SupportedTypes extends Enumeration {
     def name: NameOfType = toString
   }
 
-  implicit val mirror = runtimeMirror(getClass.getClassLoader)
+  implicit val mirror: universe.Mirror = runtimeMirror(getClass.getClassLoader)
 
   def typeForClass[T](clazz: Class[T])(implicit runtimeMirror: Mirror) = runtimeMirror.classSymbol(clazz).toType
 

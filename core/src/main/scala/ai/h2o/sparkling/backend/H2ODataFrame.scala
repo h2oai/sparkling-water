@@ -51,7 +51,7 @@ private[backend] class H2ODataFrame(val frame: H2OFrame, val requiredColumns: Ar
     if (requiredColumns == null) {
       colNames.indices.toArray
     } else {
-      requiredColumns.map(colNames.indexOf)
+      requiredColumns.map(col => colNames.indexOf(col))
     }
   }
 

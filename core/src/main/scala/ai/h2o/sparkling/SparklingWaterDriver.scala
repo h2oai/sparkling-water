@@ -27,7 +27,7 @@ import org.apache.spark.SparkConf
 object SparklingWaterDriver {
 
   /** Entry point */
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     // Configure this application
     val conf: SparkConf = H2OConf.checkSparkConf(
       new SparkConf()

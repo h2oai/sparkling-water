@@ -98,7 +98,8 @@ case class H2OTargetEncoderMOJOUdfWrapper(
     new EasyPredictModelWrapper(config)
   }
 
-  @transient private lazy val positions: Seq[Int] = mojoModel._inoutMapping.asScala.map(_.to.length).scanLeft(0)(_ + _)
+  @transient private lazy val positions: Seq[Int] =
+    mojoModel._inoutMapping.asScala.map(_.to.length).scanLeft(0)(_ + _).toSeq
 
   val mojoUdf: UserDefinedFunction =
     udf[Array[Option[Vector]], Row] { r: Row =>
