@@ -61,6 +61,11 @@ def irisDatasetPath():
 
 
 @pytest.fixture(scope="module")
+def irisDataset(spark, irisDatasetPath):
+    return spark.read.csv(irisDatasetPath, header=True, inferSchema=True)
+
+
+@pytest.fixture(scope="module")
 def airlinesDatasetPath():
     return "file://" + os.path.abspath("../examples/smalldata/airlines/allyears2k_headers.csv")
 

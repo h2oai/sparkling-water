@@ -22,7 +22,7 @@ import ai.h2o.sparkling.api.generation.common.ModelMetricsSubstitutionContext
 object MetricsFactoryTemplate extends ((Seq[ModelMetricsSubstitutionContext]) => String) {
 
   def apply(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): String = {
-    val metricClasses = metricSubstitutionContexts.map(_.entityName)
+    val metricClasses = getEntityNames(metricSubstitutionContexts)
     val imports = metricClasses.map(metricClass => s"""source(file.path("R", "${metricClass}.R"))""").mkString("\n")
 
     s"""#
@@ -55,12 +55,23 @@ object MetricsFactoryTemplate extends ((Seq[ModelMetricsSubstitutionContext]) =>
        |""".stripMargin
   }
 
-  private def generateCases(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): String = {
+  private def getEntityNames(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): Seq[String] = {
     metricSubstitutionContexts
       .map { metricSubstitutionContext =>
-        val metricsObjectName = metricSubstitutionContext.entityName
-        s"""  } else if (invoke(invoke(javaObject, "getClass"), "getSimpleName") == "$metricsObjectName") {
-           |    rsparkling.$metricsObjectName(javaObject)""".stripMargin
+        if (metricSubstitutionContext.entityName.endsWith("Base")) {
+          metricSubstitutionContext.entityName.substring(0, metricSubstitutionContext.entityName.length - 4)
+        } else {
+          metricSubstitutionContext.entityName
+        }
+      }
+  }
+
+  private def generateCases(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): String = {
+    val names = getEntityNames(metricSubstitutionContexts)
+    names
+      .map { entityName =>
+        s"""  } else if (invoke(invoke(javaObject, "getClass"), "getSimpleName") == "$entityName") {
+           |    rsparkling.$entityName(javaObject)""".stripMargin
       }
       .mkString("\n")
   }

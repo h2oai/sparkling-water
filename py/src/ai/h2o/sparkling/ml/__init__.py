@@ -27,3 +27,4 @@ from ai.h2o.sparkling.ml.models import H2OKMeansMOJOModel, H2OGLMMOJOModel, H2OG
 from ai.h2o.sparkling.ml.models import H2ODeepLearningMOJOModel, H2OWord2VecMOJOModel, H2OAutoEncoderMOJOModel, H2ODRFMOJOModel, H2OPCAMOJOModel, H2OGLRMMOJOModel
 from ai.h2o.sparkling.ml.models import H2OIsolationForestMOJOModel, H2OCoxPHMOJOModel, H2ORuleFitMOJOModel, H2OExtendedIsolationForestMOJOModel, H2OStackedEnsembleMOJOModel
 from ai.h2o.sparkling.ml.models import H2OMOJOModel, H2OAlgorithmMOJOModel, H2OFeatureMOJOModel, H2OMOJOPipelineModel, H2OMOJOSettings
+from ai.h2o.sparkling.ml.metrics import H2ORegressionMetrics, H2OBinomialMetrics, H2OMultinomialMetrics

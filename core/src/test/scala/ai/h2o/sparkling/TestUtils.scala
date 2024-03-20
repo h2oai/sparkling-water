@@ -22,7 +22,7 @@ import java.sql.Timestamp
 import org.apache.spark.mllib
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.functions.{lit, rand}
+import org.apache.spark.sql.functions.{lit, rand, col, abs}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import org.scalatest.Matchers
@@ -96,6 +96,50 @@ object TestUtils extends Matchers {
       s"""The expected data frame contains $numberOfExtraRowsInExpected distinct rows that are not in the produced data frame.
          |The produced data frame contains $numberOfExtraRowsInProduced distinct rows that are not in the expected data frame.
        """.stripMargin)
+  }
+
+  def assertDataFramesAreEqual(
+      expected: DataFrame,
+      produced: DataFrame,
+      identityColumn: String,
+      tolerance: Double): Unit = {
+    val tolerances = expected.schema.fields
+      .filterNot(_.name == identityColumn)
+      .filter(_.dataType.isInstanceOf[NumericType])
+      .map(_.name -> tolerance)
+      .toMap
+    assertDataFramesAreEqual(expected, produced, identityColumn, tolerances)
+  }
+
+  def assertDataFramesAreEqual(
+      expected: DataFrame,
+      produced: DataFrame,
+      identityColumn: String,
+      tolerances: Map[String, Double] = Map.empty): Unit = {
+    expected.schema shouldEqual produced.schema
+    val intersection = expected.as("expected").join(produced.as("produced"), identityColumn)
+    intersection.count() shouldEqual expected.count()
+    intersection.count() shouldEqual produced.count()
+    val isEqualExpression = expected.columns.foldLeft(lit(true)) {
+      case (partialExpression, columnName) =>
+        val columnComparision = if (tolerances.contains(columnName)) {
+          val difference = abs(col(s"expected.$columnName") - col(s"produced.$columnName"))
+          difference <= lit(tolerances(columnName))
+        } else if (columnName == identityColumn) {
+          lit(true)
+        } else {
+          col(s"expected.$columnName") === col(s"produced.$columnName")
+        }
+        partialExpression && columnComparision
+    }
+    val withComparisonDF = intersection.withColumn("isEqual", isEqualExpression)
+    val differentRowsDF = withComparisonDF
+      .filter(col("isEqual") === lit(false))
+      .select(col(s"expected.$identityColumn") as "id")
+    val differentIds = differentRowsDF.collect().map(_.get(0))
+    assert(
+      differentIds.length == 0,
+      s"The rows of ids($identityColumn) [${differentIds.mkString(", ")}] are not equal.")
   }
 
   def assertDatasetBasicProperties[T <: Product](

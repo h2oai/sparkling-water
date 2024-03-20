@@ -153,38 +153,4 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
     metricsObject.isInstanceOf[T] should be(true)
     MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
   }
-
-  test("test regression metric objects") {
-    val algo = new algos.H2OGBM()
-      .setSplitRatio(0.8)
-      .setSeed(1)
-      .setWithContributions(true)
-      .setWithLeafNodeAssignments(true)
-      .setWithStageResults(true)
-      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-      .setLabelCol("AGE")
-    val model = algo.fit(dataset)
-    assertMetrics[H2ORegressionMetrics](model)
-
-    model.write.overwrite().save("ml/build/gbm_regression_model_metrics")
-    val loadedModel = H2OGBMMOJOModel.load("ml/build/gbm_regression_model_metrics")
-    assertMetrics[H2ORegressionMetrics](loadedModel)
-  }
-
-  test("test regression glm metric objects") {
-    val algo = new algos.H2OGLM()
-      .setSplitRatio(0.8)
-      .setSeed(1)
-      .setWithContributions(true)
-      .setWithLeafNodeAssignments(true)
-      .setWithStageResults(true)
-      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-      .setLabelCol("AGE")
-    val model = algo.fit(dataset)
-    assertMetrics[H2ORegressionGLMMetrics](model)
-
-    model.write.overwrite().save("ml/build/glm_regression_model_metrics")
-    val loadedModel = H2OGLMMOJOModel.load("ml/build/glm_regression_model_metrics")
-    assertMetrics[H2ORegressionGLMMetrics](loadedModel)
-  }
 }

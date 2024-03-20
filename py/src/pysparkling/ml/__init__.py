@@ -19,6 +19,7 @@ from pysparkling.ml.algos.classification import *
 from pysparkling.ml.algos.regression import *
 from pysparkling.ml.features import *
 from pysparkling.ml.models import *
+from pysparkling.ml.metrics import *
 
 __all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost", "H2OGLM", "H2OCoxPH", "H2OGAM",
            "H2OMOJOModel", "H2OAlgorithmMOJOModel", "H2OFeatureMOJOModel", "H2OSupervisedMOJOModel",
@@ -32,7 +33,8 @@ __all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost
            "H2ODRFMOJOModel", "H2OIsolationForestMOJOModel", "H2OWord2Vec", "H2OWord2VecMOJOModel", "H2OAutoEncoder",
            "H2OAutoEncoderMOJOModel", "H2OPCA", "H2OPCAMOJOModel", "H2OGLRM", "H2OGLRMMOJOModel", "H2ORuleFit",
            "H2ORuleFitClassifier", "H2ORuleFitRegressor", "H2ORuleFitMOJOModel", "H2OStackedEnsemble",
-           "H2OStackedEnsembleMOJOModel", "H2OExtendedIsolationForest", "H2OExtendedIsolationForestMOJOModel"]
+           "H2OStackedEnsembleMOJOModel", "H2ORegressionMetrics", "H2OBinomialMetrics", "H2OMultinomialMetrics",
+           "H2OExtendedIsolationForest"]
 
 from pysparkling.initializer import Initializer
 
