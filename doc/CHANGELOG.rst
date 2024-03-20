@@ -1,6 +1,26 @@
 Change Log
 ==========
 
+v3.46.0.1-1 (2024-03-21)
+------------------------
+Downloads:
+
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.46.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.46.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.46.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.46.0.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.46.0.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.46.0.1-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.46.0.1-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.46.0.1-1-3.1/index.html>`__
+   - for Spark 3.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.46.0.1-1-3.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.2/3.46.0.1-1-3.2/index.html>`__
+   - for Spark 3.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.46.0.1-1-3.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.3/3.46.0.1-1-3.3/index.html>`__
+   - for Spark 3.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.4/3.46.0.1-1-3.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.4/3.46.0.1-1-3.4/index.html>`__
+   - for Spark 3.5: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.5/3.46.0.1-1-3.5/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.5/3.46.0.1-1-3.5/index.html>`__
+
+-  Improvement
+
+   -  `#5703 <https://github.com/h2oai/sparkling-water/issues/5716>`__ - Upgrade H2O to 3.46.0.1
+   -  `#5678 <https://github.com/h2oai/sparkling-water/issues/5678>`__ - Upgrade Jetty to 9.4.53.v20231009
+   -  `#5705 <https://github.com/h2oai/sparkling-water/issues/5705>`__ - Update Python version scheme inside setup.py
+   -  `#5695 <https://github.com/h2oai/sparkling-water/issues/5695>`__ - Add Python PEP517 support
+
 v3.44.0.3-1 (2023-12-23)
 ------------------------
 Downloads:
