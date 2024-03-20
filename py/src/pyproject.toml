@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools >= 59.6.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION"
+version = "SUBST_SW_VERSION"
+description = "Sparkling Water integrates H2O's Fast Scalable Machine Learning with Spark"
+readme = "README.rst"
+requires-python = ">= SUBST_MIN_SUPPORTED_PYTHON"
+license = { text = "Apache v2" }
+dependencies = [
+    "requests",
+    "tabulate"
+]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'Topic :: Software Development :: Build Tools',
+    'License :: OSI Approved :: Apache Software License',
+SUBST_PYTHON_VERSIONS
+]
+keywords = ["machine learning", "data mining", "statistical analysis", "modeling", "big data", "distributed", "parallel"]
+authors = [
+    {name = "H2O", email = "support@h2o.ai"}
+]
+
+[project.urls]
+Homepage = "https://h2o.ai/products/h2o-sparkling-water/"
+Documentation = "https://docs.h2o.ai/sparkling-water/SUBST_SPARK_MAJOR_VERSION/latest-stable/doc/index.html"
+Repository = "https://github.com/h2oai/sparkling-water/"
+Issues = "https://github.com/h2oai/sparkling-water/issues/"
+Changelog = "https://github.com/h2oai/sparkling-water/blob/master/doc/CHANGELOG.rst"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+sparkling_water = ["*.jar"]
+h2o = ["version.txt", "buildinfo.txt"]
+"ai.h2o.sparkling" = ["version.txt"]

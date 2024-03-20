@@ -77,12 +77,14 @@ def copyPySetup() {
   copy {
     from("$projectDir/src") {
       include 'setup.py'
+      include 'pyproject.toml'
     }
     filter {
       it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
         .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
         .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", ".post"))
         .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+        .replaceAll("SUBST_MIN_SUPPORTED_PYTHON", supportedPythonVersions.split(" ")[0])
         .replaceAll("SUBST_PYTHON_VERSIONS", convertSupportedPythonVersionsToPyPiDefinitions(supportedPythonVersions))
     }
     from("$projectDir/src") {
