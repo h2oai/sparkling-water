@@ -24,7 +24,7 @@ authors = [
 
 [project.urls]
 Homepage = "https://h2o.ai/products/h2o-sparkling-water/"
-Documentation = "https://docs.h2o.ai/sparkling-water/3.4/latest-stable/doc/index.html"
+Documentation = "https://docs.h2o.ai/sparkling-water/SUBST_SPARK_MAJOR_VERSION/latest-stable/doc/index.html"
 Repository = "https://github.com/h2oai/sparkling-water/"
 Issues = "https://github.com/h2oai/sparkling-water/issues/"
 Changelog = "https://github.com/h2oai/sparkling-water/blob/master/doc/CHANGELOG.rst"
