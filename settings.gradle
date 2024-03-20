@@ -24,7 +24,6 @@ include 'ci'
 include 'utils'
 include 'scoring'
 include 'kubernetes'
-include 'booklet'
 
 // Prefix all projects with sparkling-water name
 rootProject.children.each { project ->

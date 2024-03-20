@@ -190,7 +190,7 @@ def build() {
         stage('Build') {
             params.commons.withSigningCredentials {
                 sh """
-                    ./gradlew dist -PmakeBooklet=true -Pspark=${params.spark} -Pversion=${getVersion(params)} -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
+                    ./gradlew dist -Pspark=${params.spark} -Pversion=${getVersion(params)} -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
                     """
             }
         }
