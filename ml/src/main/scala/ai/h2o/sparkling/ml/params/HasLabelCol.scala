@@ -15,18 +15,24 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.internals
+package ai.h2o.sparkling.ml.params
 
-/**
-  * Copied from H2O's class ModelCategory
-  */
-private[sparkling] object H2OModelCategory extends Enumeration {
-  val Unknown, Binomial, Multinomial, Ordinal, Regression, HGLMRegression, Clustering, AutoEncoder, TargetEncoder,
-      DimReduction, WordEmbedding, CoxPH, AnomalyDetection, BinomialUplift = Value
+import ai.h2o.sparkling.H2OFrame
+import org.apache.spark.expose.Logging
 
-  def fromString(modelCategory: String): Value = {
-    values
-      .find(_.toString == modelCategory)
-      .getOrElse(throw new RuntimeException(s"Unknown model category $modelCategory"))
+trait HasLabelCol extends ParameterConstructorMethods with Logging {
+  protected val labelCol = stringParam(name = "labelCol", doc = """Response variable column.""")
+
+  def getLabelCol(): String = $(labelCol)
+
+  def setLabelCol(value: String): this.type = {
+    set(labelCol, value)
   }
+
+  private[sparkling] def getLabelColParam(trainingFrame: H2OFrame): Map[String, Any] = {
+    Map("response_column" -> getLabelCol())
+  }
+
+  setDefault(labelCol -> "label")
+
 }

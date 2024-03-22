@@ -15,18 +15,26 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.internals
+package ai.h2o.sparkling.ml.params
 
-/**
-  * Copied from H2O's class ModelCategory
-  */
-private[sparkling] object H2OModelCategory extends Enumeration {
-  val Unknown, Binomial, Multinomial, Ordinal, Regression, HGLMRegression, Clustering, AutoEncoder, TargetEncoder,
-      DimReduction, WordEmbedding, CoxPH, AnomalyDetection, BinomialUplift = Value
+import ai.h2o.sparkling.H2OFrame
+import org.apache.spark.expose.Logging
+trait HasTreatmentCol extends ParameterConstructorMethods with Logging {
+  protected val treatmentCol = stringParam(
+    name = "treatmentCol",
+    doc =
+      """Define the column which will be used for computing uplift gain to select best split for a tree. The column has to divide the dataset into treatment (value 1) and control (value 0) groups.""")
 
-  def fromString(modelCategory: String): Value = {
-    values
-      .find(_.toString == modelCategory)
-      .getOrElse(throw new RuntimeException(s"Unknown model category $modelCategory"))
+  def getTreatmentCol(): String = $(treatmentCol)
+
+  def setTreatmentCol(value: String): this.type = {
+    set(treatmentCol, value)
   }
+
+  private[sparkling] def getTreatmentColParam(trainingFrame: H2OFrame): Map[String, Any] = {
+    Map("treatment_column" -> getTreatmentCol())
+  }
+
+  setDefault(treatmentCol -> "treatment")
+
 }

@@ -15,10 +15,20 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos import H2OKMeans, H2OAutoML, H2OGridSearch, H2OGLM, H2OGBM, H2OXGBoost, H2ODeepLearning
-from ai.h2o.sparkling.ml.algos import H2ODRF, H2OUpliftDRF, H2OGAM, H2OIsolationForest, H2OCoxPH, H2ORuleFit
-from ai.h2o.sparkling.ml.algos import H2OStackedEnsemble, H2OExtendedIsolationForest
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from pyspark.ml.param import *
 
-__all__ = ["H2OAutoML", "H2OGridSearch", "H2OGLM", "H2OGAM", "H2OGBM", "H2OXGBoost", "H2ODeepLearning", "H2OKMeans",
-           "H2ODRF", "H2OUpliftDRF", "H2OIsolationForest", "H2OCoxPH", "H2ORuleFit", "H2OStackedEnsemble",
-           "H2OExtendedIsolationForest"]
+
+class HasTreatmentCol(Params):
+    treatmentCol = Param(
+        Params._dummy(),
+        "treatmentCol",
+        "Define the column which will be used for computing uplift gain to select best split for a tree."
+        "The column has to divide the dataset into treatment (value 1) and control (value 0) groups.",
+        H2OTypeConverters.toNullableString())
+
+    def getTreatmentCol(self):
+        return self.getOrDefault(self.treatmentCol)
+
+    def setTreatmentCol(self, value):
+        return self._set(treatmentCol=value)

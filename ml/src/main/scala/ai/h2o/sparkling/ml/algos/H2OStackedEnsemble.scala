@@ -112,9 +112,6 @@ class H2OStackedEnsemble(override val uid: String)
   override protected def paramTag: ClassTag[StackedEnsembleParameters] =
     scala.reflect.classTag[StackedEnsembleParameters]
 
-  override private[sparkling] def getInputCols(): Array[String] = getFeaturesCols()
-
-  override private[sparkling] def setInputCols(value: Array[String]): this.type = setFeaturesCols(value)
 }
 
 object H2OStackedEnsemble extends H2OParamsReadable[H2OStackedEnsemble]
