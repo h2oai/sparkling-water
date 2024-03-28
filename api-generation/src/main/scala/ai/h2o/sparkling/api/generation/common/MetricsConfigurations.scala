@@ -41,7 +41,7 @@ trait MetricsConfigurations {
         h2oSchemaClass = classOf[ModelMetricsBinomialGLMV3],
         parentEntities = Seq("H2OBinomialMetrics", "H2OGLMMetrics"),
         classDescription = "The class makes available all binomial metrics supported by GLM algorithm.",
-        skipFields = duplicatedGLMMetrics),
+        overriddenFields = duplicatedGLMMetrics),
       ModelMetricsSubstitutionContext(
         entityName = "H2ORegressionMetrics",
         h2oSchemaClass = classOf[ModelMetricsRegressionV3[_, _]],
@@ -53,7 +53,7 @@ trait MetricsConfigurations {
         h2oSchemaClass = classOf[ModelMetricsRegressionGLMV3],
         parentEntities = Seq("H2ORegressionMetrics", "H2OGLMMetrics"),
         classDescription = "The class makes available all regression metrics supported by GLM algorithm.",
-        skipFields = duplicatedGLMMetrics),
+        overriddenFields = duplicatedGLMMetrics),
       ModelMetricsSubstitutionContext(
         entityName = "H2ORegressionCoxPHMetrics",
         h2oSchemaClass = classOf[ModelMetricsRegressionCoxPHV3],
@@ -70,7 +70,7 @@ trait MetricsConfigurations {
         h2oSchemaClass = classOf[ModelMetricsMultinomialGLMV3],
         parentEntities = Seq("H2OMultinomialMetrics", "H2OGLMMetrics"),
         classDescription = "The class makes available all multinomial metrics supported by GLM algorithm.",
-        skipFields = duplicatedGLMMetrics),
+        overriddenFields = duplicatedGLMMetrics),
       ModelMetricsSubstitutionContext(
         entityName = "H2OOrdinalMetrics",
         h2oSchemaClass = classOf[ModelMetricsOrdinalV3[_, _]],

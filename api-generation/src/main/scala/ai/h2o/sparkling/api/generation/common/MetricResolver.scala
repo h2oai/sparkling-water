@@ -26,11 +26,17 @@ trait MetricResolver {
     val parameters =
       for (field <- h2oSchemaClass.getDeclaredFields
            if field.getAnnotation(classOf[API]) != null
-           if !MetricFieldExceptions.ignored().contains(field.getName)
-           if !substitutionContext.skipFields.contains(field.getName))
+           if !MetricFieldExceptions.ignored().contains(field.getName))
         yield {
+          val overridden = substitutionContext.overriddenFields.contains(field.getName)
           val (swFieldName, swMetricName) = MetricNameConverter.convertFromH2OToSW(field.getName)
-          Metric(swFieldName, swMetricName, field.getName, field.getType, field.getAnnotation(classOf[API]).help())
+          Metric(
+            swFieldName,
+            swMetricName,
+            field.getName,
+            field.getType,
+            field.getAnnotation(classOf[API]).help(),
+            overridden)
         }
     parameters.toSeq
   }

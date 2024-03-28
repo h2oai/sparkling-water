@@ -77,15 +77,16 @@ object ModelMetricsTemplate
 
   private def generateDefaults(metrics: Seq[Metric]): String = {
     metrics
-      .flatMap {
-        case metric if metric.dataType.getSimpleName == "double" =>
+//      .filter(!_.overridden)
+      .flatMap { metric =>
+        if (metric.dataType.getSimpleName == "double")
           Some(s"\n  setDefault(${metric.swFieldName} -> Double.NaN)")
-        case metric if metric.dataType.getSimpleName == "float" =>
+        else if (metric.dataType.getSimpleName == "float")
           Some(s"\n  setDefault(${metric.swFieldName} -> Float.NaN)")
-        case metric if metric.dataType.getSimpleName == "long" =>
-          None
-        case metric if !metric.dataType.isPrimitive =>
+        else if (!metric.dataType.isPrimitive)
           Some(s"\n  setDefault(${metric.swFieldName} -> null)")
+        else
+          None
       }
       .mkString("")
   }
@@ -94,10 +95,11 @@ object ModelMetricsTemplate
     metrics
       .map { metric =>
         val metricType = resolveMetricType(metric)
+        val overridden = if (metric.overridden) "override" else ""
         s"""  /**
          |    * ${resolveComment(metric)}
          |    */
-         |  def get${metric.swMetricName}(): $metricType = $$(${metric.swFieldName})""".stripMargin
+         |  ${overridden} def get${metric.swMetricName}(): $metricType = $$(${metric.swFieldName})""".stripMargin
       }
       .mkString("\n\n")
   }
@@ -113,7 +115,8 @@ object ModelMetricsTemplate
         }
         val constructorMethod = prefix + "Param"
         val comment = resolveComment(metric)
-        s"""  protected val ${metric.swFieldName} = ${constructorMethod}(
+        val overridden = if (metric.overridden) "override " else ""
+        s"""  protected ${overridden}val ${metric.swFieldName} = ${constructorMethod}(
          |    name = "${metric.swFieldName}",
          |    doc = \"\"\"$comment\"\"\")""".stripMargin
       }
