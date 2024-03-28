@@ -55,6 +55,8 @@ class MetricsTestSuite extends FunSuite with Matchers with SparkTestContext {
       |
       | "r2" : 1.0,
       | "logloss": 2.0,
+      | "loglikelihood": 2.0,
+      | "AIC": 4.0,
       | "AUC": 3.0,
       | "pr_auc": 4.0,
       | "Gini": 5.0,
