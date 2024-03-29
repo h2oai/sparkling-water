@@ -289,7 +289,8 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     val gridModelMetrics = search.getGridModelsMetrics().drop("MOJO Model ID")
     val modelMetricsFromGrid = gridModelMetrics.columns.zip(gridModelMetrics.head().toSeq).toMap
 
-    modelMetricsFromGrid.filter(!_._2.asInstanceOf[Double].isNaN) should contain theSameElementsAs expectedMetrics.filter(!_._2.isNaN)
+    modelMetricsFromGrid.filter(!_._2.asInstanceOf[Double].isNaN) should contain theSameElementsAs expectedMetrics
+      .filter(!_._2.isNaN)
   }
 
   test("The first row returned by getGridModelsParams() method is the same as training params of the best model") {
