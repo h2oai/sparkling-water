@@ -23,10 +23,9 @@ import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.ml.param.{ParamMap, Params}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -268,6 +267,8 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   }
 
   test("The first row returned by getGridModelsMetrics() method is the same as current metrics of the best model") {
+    import spark.implicits._
+
     val drf = new H2ODRF()
       .setFeaturesCols(Array("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"))
       .setLabelCol("CAPSULE")
@@ -288,7 +289,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     val gridModelMetrics = search.getGridModelsMetrics().drop("MOJO Model ID")
     val modelMetricsFromGrid = gridModelMetrics.columns.zip(gridModelMetrics.head().toSeq).toMap
 
-    modelMetricsFromGrid shouldEqual expectedMetrics
+    modelMetricsFromGrid.filter(!_._2.asInstanceOf[Double].isNaN) should contain theSameElementsAs expectedMetrics.filter(!_._2.isNaN)
   }
 
   test("The first row returned by getGridModelsParams() method is the same as training params of the best model") {
