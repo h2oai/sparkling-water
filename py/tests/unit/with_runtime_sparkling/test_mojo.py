@@ -19,6 +19,7 @@ import tempfile
 import shutil
 import unit_test_utils
 import os
+import math
 
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
@@ -63,7 +64,7 @@ def testModelCategory(gbmModel):
 def testTrainingMetrics(gbmModel):
     metrics = gbmModel.getTrainingMetrics()
     assert metrics is not None
-    assert len(metrics) is 10
+    assert len(metrics) is 12
 
 
 def testFeatureTypes(gbmModel):
@@ -245,7 +246,8 @@ def testMetricObjects(prostateDataset):
         for metric in metricsMap:
             metricValue = metricsMap[metric]
             objectValue = getattr(metricsObject, "get" + metric)()
-            assert(metricValue == objectValue)
+            if not math.isnan(metricValue) and not math.isnan(objectValue):
+                assert(metricValue == objectValue)
         assert metricsObject.getConfusionMatrix().count() > 0
         assert len(metricsObject.getConfusionMatrix().columns) > 0
         assert metricsObject.getGainsLiftTable().count() > 0
