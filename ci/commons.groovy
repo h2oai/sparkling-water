@@ -225,6 +225,9 @@ def gitCommit(files, msg) {
 }
 
 def installDocker() {
+    sh "sudo rm /etc/apt/sources.list.d/nvidia*"
+    sh "sudo rm /etc/apt/sources.list.d/cuda*"
+    sh "sudo rm /etc/apt/*/cloudera.*"
     sh "sudo apt-get update"
     sh "sudo apt -y install containerd"
     sh "sudo apt -y install docker.io"
