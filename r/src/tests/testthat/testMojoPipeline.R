@@ -103,6 +103,7 @@ test_that("test MOJO predicition intervals", {
 
   flattenedContributions <- tidyr::unnest_wider(data = mojoOutput, col = "prediction")
   expect_equal(length(colnames(flattenedContributions)), length(colnames(dataset)) + 3)
+  expect_equal(mojo$getUuid(), "test_regression_accuracy3_e5169_d71b")
 })
 
 spark_disconnect(sc)

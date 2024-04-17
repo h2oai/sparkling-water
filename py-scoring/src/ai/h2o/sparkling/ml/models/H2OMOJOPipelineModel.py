@@ -48,3 +48,6 @@ class H2OMOJOPipelineModel(H2OAlgorithmMOJOModelBase):
 
     def getScoringBulkSize(self):
         return self._java_obj.getScoringBulkSize()
+
+    def getUuid(self):
+        return self._java_obj.getUuid()
