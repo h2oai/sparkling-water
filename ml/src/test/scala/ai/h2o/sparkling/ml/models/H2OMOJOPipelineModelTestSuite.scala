@@ -113,6 +113,10 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
     }
   }
 
+  test("get UUID") {
+    prostateMojoPipeline.getUuid() shouldEqual "b448504b-1877-435f-9b09-d911a3388bd7"
+  }
+
   test("Testing dataset is missing one of the feature columns") {
     val schema = prostateTestData.drop("AGE").schema
     val rdd = sc.parallelize(Seq(Row("1", "0", "1", "2", "1", "1.4", "0", "6")))

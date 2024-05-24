@@ -164,3 +164,4 @@ def testMojoPipelinePredictionInterval(spark):
     assert predictionDF.select("secret_Pressure3pm").distinct().count() == expectedCount
     assert predictionDF.select("`secret_Pressure3pm.lower`").distinct().count() == expectedCount
     assert predictionDF.select("`secret_Pressure3pm.upper`").distinct().count() == expectedCount
+    assert mojo.getUuid() == "test_regression_accuracy3_e5169_d71b"
