@@ -21,7 +21,7 @@ import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.api.{MojoPipelineService, PipelineConfig}
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.frame.MojoFrame
-import ai.h2o.sparkling.ml.params.{H2OAlgorithmMOJOParams, H2OBaseMOJOParams, HasFeatureTypesOnMOJO}
+import ai.h2o.sparkling.ml.params.{H2OAlgorithmMOJOParams, H2OBaseMOJOParams, HasFeatureTypesOnMOJO, ParameterConstructorMethods}
 import ai.h2o.sparkling.sql.catalyst.encoders.RowEncoder
 import com.google.common.collect.Iterators
 import org.apache.spark.annotation.DeveloperApi
@@ -40,9 +40,12 @@ class H2OMOJOPipelineModel(override val uid: String)
   with H2OMOJOWritable
   with H2OAlgorithmMOJOParams
   with H2OBaseMOJOParams
+  with ParameterConstructorMethods
   with HasFeatureTypesOnMOJO {
 
   H2OMOJOPipelineCache.startCleanupThread()
+
+  protected final val uuid = stringParam(name = "UUID", doc = "MOJO2 UUID")
 
   // private parameter used to store MOJO output columns
   protected final val outputSubCols: StringArrayParam =
@@ -88,6 +91,8 @@ class H2OMOJOPipelineModel(override val uid: String)
     this,
     "scoringBulkSize",
     "A number of records passed at once to the underlying mojo2 runtime library.  Supported only by DriverlessAI MOJO models.")
+
+  def getUuid(): String = $ { uuid }
 
   def getOutputSubCols(): Array[String] = $ { outputSubCols }
 
@@ -341,6 +346,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     val featureTypesMap = featureCols.zip(featureTypeNames).toMap
     val outputCols = pipelineMojo.getOutputMeta.getColumns.asScala
     model.set(model.featureTypes, featureTypesMap)
+    model.set(model.uuid, pipelineMojo.getUuid)
     model.set(model.outputSubCols, outputCols.map(_.getColumnName).toArray)
     model.set(model.outputSubTypes, outputCols.map(_.getColumnType.toString).toArray)
   }
