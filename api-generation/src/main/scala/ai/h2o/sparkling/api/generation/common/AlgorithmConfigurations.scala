@@ -86,6 +86,7 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
     val calibrationDataFrame = ExplicitField("calibration_frame", "HasCalibrationDataFrame", null)
     val plugValues = ExplicitField("plug_values", "HasPlugValues", null)
     val betaConstraints = ExplicitField("beta_constraints", "HasBetaConstraints", null)
+    val linearConstraints = ExplicitField("linear_constraints", "HasLinearConstraints", null)
     val userPoints = ExplicitField("user_points", "HasUserPoints", null)
     val randomCols = ExplicitField("random_columns", "HasRandomCols", null)
     val gamCols = ExplicitField("gam_columns", "HasGamCols", null, None, Some("HasGamColsOnMOJO"))
@@ -93,7 +94,7 @@ class AlgorithmConfigurations extends MultipleAlgorithmsConfiguration {
     val interactionPairs = ExplicitField("interaction_pairs", "HasInteractionPairs", null)
 
     val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
-    val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints, interactionPairs)
+    val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints, interactionPairs, linearConstraints)
     val gamFields = Seq(ignoredCols, betaConstraints, gamCols)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val drfFields = Seq(calibrationDataFrame, ignoredCols)
