@@ -21,37 +21,40 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   destFile = outputFile
   from testingBaseImage
 
-  runCommand "rm /etc/startup/70_start_slapd"
+  runCommand "sudo yum update -y && sudo yum install -y yum-utils java-1.8.0-openjdk-devel unzip ca-certificates git docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
 
   // Install Terraform
-  runCommand """\\
-                |   curl -s ${terraformDownloadUrl} --output terraform.zip && \\
-                |   unzip terraform.zip -d /usr/local/bin/ && \\
-                |   rm -f terraform.zip
-               """.stripMargin()
+  runCommand "sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo && sudo yum -y install terraform"
 
-  environmentVariable("PATH","/usr/lib/jvm/java-8-oracle/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+//  runCommand """\\
+//                |   curl -s ${terraformDownloadUrl} --output terraform.zip && \\
+//                |   unzip terraform.zip -d /usr/local/bin/ && \\
+//                |   rm -f terraform.zip
+//               """.stripMargin()
 
-  // Update to R 4.2
-  runCommand """\\
-                apt install software-properties-common -y && \\
-                apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \\
-                add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu xenial-cran40/' && \\
-                apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub && \\
-                apt update && \\
-                apt install r-base -y && \\
-                R -e 'update.packages(ask = FALSE, checkBuilt = TRUE)' && \\
-                R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")'
-                """
+//  environmentVariable("PATH","/usr/lib/jvm/java-8-oracle/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 
-  runCommand """\\
-                apt-get install libharfbuzz-dev libfribidi-dev && \\
-                R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("dbplyr", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")'
-                """
+//  // Update to R 4.2
+//  runCommand """\\
+//                apt install software-properties-common -y && \\
+//                apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \\
+//                add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu xenial-cran40/' && \\
+//                apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub && \\
+//                apt update && \\
+//                apt install r-base -y && \\
+//                R -e 'update.packages(ask = FALSE, checkBuilt = TRUE)' && \\
+//                R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")'
+//                """
+//
+//  runCommand """\\
+//                apt-get install libharfbuzz-dev libfribidi-dev && \\
+//                R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
+//                R -e 'install.packages("dbplyr", repos = "http://cran.us.r-project.org")' && \\
+//                R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")' && \\
+//                R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")'
+//                """
 
+  runCommand("sudo useradd jenkins")
   user("jenkins")
   getAllFullSparkVersions().each { version ->
     String tgzFileName
@@ -89,8 +92,6 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
 
   def branchName = getGitBranch()
 
-  user("jenkins")
-
   environmentVariable("USER", "jenkins")
   runCommand """\\
                cd /home/jenkins && \\
@@ -99,10 +100,11 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                rm /home/jenkins/miniconda.sh
                 """
 
-  environmentVariable("PATH", "/home/jenkins/miniconda/bin:/usr/lib/jvm/java-8-oracle/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
-  environmentVariable("JAVA_HOME", "/usr/lib/jvm/java-8-oracle")
+//  environmentVariable("PATH", "/home/jenkins/miniconda/bin:/usr/lib/jvm/java-8-oracle/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+//  environmentVariable("JAVA_HOME", "/usr/lib/jvm/java-8-oracle")
 
   runCommand """\\
+                . ~/miniconda/etc/profile.d/conda.sh && \\
                 conda install anaconda-client conda-build conda-verify -y && \\
                 conda update conda -y && \\
                 conda update anaconda-client conda-build conda-verify -y && \\
@@ -147,19 +149,6 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                """
 
   user("jenkins")
-
-  runCommand "pip install awscli --upgrade --user"
-
-  // get docker GPG keys, update sources and install docker
-  runCommand """\\
-                cd /home/jenkins && \\
-                sudo mkdir -p /etc/apt/keyrings && \\
-                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \\
-                echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu xenial stable" | \\
-                  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \\
-                sudo apt-get update && \\
-                sudo apt-get install -y docker-ce docker-ce-cli containerd.io 
-             """
 
   // install kubectl
   runCommand """\\
