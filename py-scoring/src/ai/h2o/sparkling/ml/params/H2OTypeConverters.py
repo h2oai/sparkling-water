@@ -20,7 +20,7 @@ from py4j.java_collections import JavaArray
 from pyspark.ml.linalg import DenseVector, DenseMatrix
 from pyspark.ml.param import TypeConverters
 from pyspark.ml.util import _jvm
-from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import DataFrame
 
 
 class H2OTypeConverters(object):
@@ -228,7 +228,7 @@ class H2OTypeConverters(object):
 
                 if TypeConverters._can_convert_to_list(valueForConversion):
                     valueForConversion = TypeConverters.toList(valueForConversion)
-                    if all(map(lambda v: type(v) == bool, valueForConversion)):
+                    if all(map(lambda v: isinstance(v, bool), valueForConversion)):
                         return [bool(v) for v in valueForConversion]
                 raise TypeError("Could not convert %s to list of booleans" % valueForConversion)
 

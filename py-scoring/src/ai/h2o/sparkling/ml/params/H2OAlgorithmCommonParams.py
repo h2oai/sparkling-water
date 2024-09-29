@@ -17,8 +17,6 @@
 
 from ai.h2o.sparkling.ml.params.H2OCommonParams import H2OCommonParams
 from ai.h2o.sparkling.ml.params.H2OAlgorithmMOJOParams import H2OAlgorithmMOJOParams
-from pyspark.ml.param import *
-import warnings
 
 
 class H2OAlgorithmCommonParams(H2OCommonParams, H2OAlgorithmMOJOParams):

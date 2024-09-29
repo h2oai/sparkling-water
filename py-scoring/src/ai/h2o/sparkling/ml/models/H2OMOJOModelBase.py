@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from pyspark.ml.param import *
 from pyspark.ml.util import JavaMLWritable
 from pyspark.ml.wrapper import JavaModel
 from ai.h2o.sparkling.ml.util.H2OJavaMLReadable import H2OJavaMLReadable

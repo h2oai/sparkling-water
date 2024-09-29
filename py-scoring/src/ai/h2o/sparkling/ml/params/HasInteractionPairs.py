@@ -15,9 +15,8 @@
 # limitations under the License.
 #
 
-from pyspark.ml.param import *
 import warnings
-
+from pyspark.ml.param import Param, Params
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 

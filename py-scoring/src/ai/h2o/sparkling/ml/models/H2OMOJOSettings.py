@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from pyspark.ml.param import *
 from pyspark.ml.wrapper import JavaWrapper
 
 

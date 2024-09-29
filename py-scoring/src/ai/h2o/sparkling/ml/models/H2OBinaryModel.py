@@ -16,7 +16,6 @@
 #
 
 from ai.h2o.sparkling.Initializer import Initializer
-from pyspark.ml.param import *
 from pyspark.ml.util import _jvm
 
 

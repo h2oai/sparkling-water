@@ -20,7 +20,7 @@ from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
 from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from pyspark import keyword_only
-from pyspark.ml.param.shared import *
+from pyspark.ml.param import Param, Params
 from pyspark.ml.wrapper import JavaTransformer
 
 

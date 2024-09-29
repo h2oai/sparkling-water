@@ -53,6 +53,6 @@ class Utils(object):
     @staticmethod
     def __deprecationWarning(old, type, new=None):
         if new is None:
-            warnings.warn("The {} '{}' is deprecated without replacement!".format(type, old, new))
+            warnings.warn("The {} '{}' is deprecated without replacement!".format(type, old))
         else:
             warnings.warn("The {} '{}' is deprecated. Use '{}' instead!".format(type, old, new))
