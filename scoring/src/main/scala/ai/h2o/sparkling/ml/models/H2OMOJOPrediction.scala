@@ -31,7 +31,8 @@ trait H2OMOJOPrediction
   with H2OMOJOPredictionClustering
   with H2OMOJOPredictionBinomial
   with H2OMOJOPredictionCoxPH
-  with H2OMOJOPredictionOrdinal {
+  with H2OMOJOPredictionOrdinal
+  with H2OMOJOPredictionUpliftBinomial {
   self: H2OAlgorithmMOJOModel =>
 
   def extractPredictionColContent(): Column = {
@@ -46,6 +47,7 @@ trait H2OMOJOPrediction
       case ModelCategory.AnomalyDetection => extractAnomalyPredictionColContent()
       case ModelCategory.Ordinal => extractOrdinalPredictionColContent()
       case ModelCategory.CoxPH => extractCoxPHPredictionColContent()
+      case ModelCategory.BinomialUplift => extractUpliftBinomialPredictionColContent()
       case _ => throw new RuntimeException("Unknown model category " + mojoModel.getModelCategory)
     }
   }
@@ -65,6 +67,7 @@ trait H2OMOJOPrediction
       case ModelCategory.AnomalyDetection => getAnomalyPredictionUDF(schema, uid, mojoFileName, configInitializers)
       case ModelCategory.Ordinal => getOrdinalPredictionUDF(schema, uid, mojoFileName, configInitializers)
       case ModelCategory.CoxPH => getCoxPHPredictionUDF(schema, uid, mojoFileName, configInitializers)
+      case ModelCategory.BinomialUplift => getUpliftBinomialPredictionUDF(schema, uid, mojoFileName, configInitializers)
       case _ => throw new RuntimeException("Unknown model category " + mojoModel.getModelCategory)
     }
   }
@@ -81,6 +84,7 @@ trait H2OMOJOPrediction
       case ModelCategory.AnomalyDetection => getAnomalyPredictionColSchema()
       case ModelCategory.Ordinal => getOrdinalPredictionColSchema()
       case ModelCategory.CoxPH => getCoxPHPredictionColSchema()
+      case ModelCategory.BinomialUplift => getUpliftBinomialPredictionColSchema()
       case _ => throw new RuntimeException("Unknown model category " + mojoModel.getModelCategory)
     }
   }
@@ -101,6 +105,7 @@ trait H2OMOJOPrediction
       case ModelCategory.AnomalyDetection => getAnomalyPredictionSchema()
       case ModelCategory.Ordinal => getOrdinalPredictionSchema()
       case ModelCategory.CoxPH => getCoxPHPredictionSchema()
+      case ModelCategory.BinomialUplift => getUpliftBinomialPredictionSchema()
       case _ => throw new RuntimeException("Unknown model category " + mojoModel.getModelCategory)
     }
   }

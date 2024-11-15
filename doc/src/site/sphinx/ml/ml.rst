@@ -15,6 +15,7 @@ Machine Learning
    sw_xgboost
    sw_isolation_forest
    sw_extended_isolation_forest
+   sw_uplift_drf
    sw_coxph
    sw_deep_learning
    sw_rule_fit

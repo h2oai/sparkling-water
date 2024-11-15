@@ -62,6 +62,22 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
     compareParameterValues(algorithm, mojo)
   }
 
+  test("Test MOJO parameters on UpliftDRF") {
+    val algorithm = new H2OUpliftDRF()
+      .setLabelCol("CAPSULE")
+      .setSeed(1)
+      .setAuucType("lift")
+      .setAuucNbins(5)
+      .setUpliftMetric("ChiSquared")
+      .setTreatmentCol("CAPSULE")
+      .setCheckConstantResponse(true)
+      .setDistribution("bernoulii")
+      .setCategoricalEncoding("auto")
+    val mojo = algorithm.fit(dataset)
+
+    compareParameterValues(algorithm, mojo)
+  }
+
   test("Test MOJO parameters on XGBoost") {
     val algorithm = new H2OXGBoost()
       .setLabelCol("CAPSULE")

@@ -282,6 +282,7 @@ The list of specific MOJO models:
 - ``H2OKMeansMOJOModel``
 - ``H2OIsolationForestMOJOModel``
 - ``H2OExtendedIsolationForestMOJOModel``
+- ``H2OUpliftDRFMOJOModel``
 - ``H2OCoxPHMOJOModel``
 - ``H2OTargetEncoderMOJOModel``
 - ``H2OAutoEncoderMOJOModel``

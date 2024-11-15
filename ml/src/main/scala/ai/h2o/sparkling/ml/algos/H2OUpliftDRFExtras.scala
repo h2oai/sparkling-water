@@ -15,18 +15,15 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.internals
+package ai.h2o.sparkling.ml.algos
 
-/**
-  * Copied from H2O's class ModelCategory
-  */
-private[sparkling] object H2OModelCategory extends Enumeration {
-  val Unknown, Binomial, Multinomial, Ordinal, Regression, HGLMRegression, Clustering, AutoEncoder, TargetEncoder,
-      DimReduction, WordEmbedding, CoxPH, AnomalyDetection, BinomialUplift = Value
+import ai.h2o.sparkling.ml.params.{H2OAlgorithmCommonParams, HasLabelCol, HasTreatmentCol}
+import hex.tree.uplift.UpliftDRFModel.UpliftDRFParameters
 
-  def fromString(modelCategory: String): Value = {
-    values
-      .find(_.toString == modelCategory)
-      .getOrElse(throw new RuntimeException(s"Unknown model category $modelCategory"))
-  }
+trait H2OUpliftDRFExtras
+  extends H2OAlgorithm[UpliftDRFParameters]
+  with HasTreatmentCol
+  with HasLabelCol
+  with H2OAlgorithmCommonParams {
+  override def getInputCols(): Array[String] = getFeaturesCols() :+ getTreatmentCol() :+ getLabelCol()
 }
