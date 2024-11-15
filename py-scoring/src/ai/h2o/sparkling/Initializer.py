@@ -159,8 +159,9 @@ class Initializer(object):
         if zipfile.is_zipfile(packagePath):
             return Initializer.__extracted_jar_path(sc)
         else:
-            from pkg_resources import resource_filename
-            return os.path.abspath(resource_filename("sparkling_water", BackingJar.getName()))
+            import importlib.resources as resources
+            with resources.path("sparkling_water", BackingJar.getName()) as jar_path:
+                return jar_path.resolve()
 
     @staticmethod
     def __get_logger(jvm):
@@ -192,11 +193,11 @@ class Initializer(object):
 
     @staticmethod
     def isRunningViaDBCConnect():
-        import pkg_resources as pkg
         try:
-            pkg.get_distribution('databricks-connect')
-            return True
-        except:
+            from importlib.util import find_spec
+            spec = find_spec('databricks.connect')
+            return spec is not None
+        except ImportError:
             return False
 
     @staticmethod
