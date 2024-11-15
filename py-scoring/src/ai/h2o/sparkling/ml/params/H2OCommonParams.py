@@ -18,7 +18,7 @@
 from ai.h2o.sparkling.ml.params.H2OBaseMOJOParams import H2OBaseMOJOParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from h2o.utils.typechecks import assert_is_type
-from pyspark.ml.param import *
+from pyspark.ml.param import Param, Params
 
 
 class H2OCommonParams(H2OBaseMOJOParams):

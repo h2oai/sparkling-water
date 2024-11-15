@@ -21,7 +21,6 @@ from ai.h2o.sparkling.ml.params.H2OAutoMLInputParams import H2OAutoMLInputParams
 from ai.h2o.sparkling.ml.params.H2OAutoMLStoppingCriteriaParams import H2OAutoMLStoppingCriteriaParams
 from ai.h2o.sparkling.ml.params.H2OCommonParams import H2OCommonParams
 from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
-from pyspark.ml.param import *
 
 
 class H2OAutoMLParams(
