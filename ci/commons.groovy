@@ -135,7 +135,7 @@ def withAWSCredentials(groovy.lang.Closure code) {
 }
 
 def withRootAWSCredentials(groovy.lang.Closure code) {
-    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'SW_ROOT_AWS_CREDS', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'sparkling-water-jenkins', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
         code()
     }
 }
