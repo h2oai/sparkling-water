@@ -15,7 +15,9 @@
 # limitations under the License.
 #
 
-from pysparkling.ml.models import *
+
+from pysparkling.initializer import Initializer
+
 
 __all__ = ["H2OMOJOModel", "H2OSupervisedMOJOModel", "H2OTreeBasedSupervisedMOJOModel", "H2OUnsupervisedMOJOModel",
            "H2OTreeBasedUnsupervisedMOJOModel", "H2OMOJOPipelineModel", "H2OMOJOSettings", "H2OBinaryModel",
@@ -24,6 +26,5 @@ __all__ = ["H2OMOJOModel", "H2OSupervisedMOJOModel", "H2OTreeBasedSupervisedMOJO
            "H2OExtendedIsolationForestMOJOModel", "H2OPCAMOJOModel", "H2OGLRMMOJOModel", "H2OCoxPHMOJOModel",
            "H2ORuleFitMOJOModel", "H2OWord2VecMOJOModel"]
 
-from pysparkling.initializer import Initializer
 
 Initializer.load_sparkling_jar()

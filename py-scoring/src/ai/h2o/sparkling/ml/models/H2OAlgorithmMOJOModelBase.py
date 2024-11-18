@@ -15,10 +15,7 @@
 # limitations under the License.
 #
 
-from pyspark.ml.param import *
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
-
-import warnings
 
 
 class H2OAlgorithmMOJOModelBase(H2OMOJOModelBase):
