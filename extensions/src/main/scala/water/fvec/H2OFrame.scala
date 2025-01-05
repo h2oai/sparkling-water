@@ -146,7 +146,18 @@ object H2OFrame {
 
   /** Return default parser setup */
   def defaultParserSetup(singleQuotes: Boolean = true) =
-    new ParseSetup(GUESS_INFO, GUESS_SEP, singleQuotes, GUESS_HEADER, GUESS_COL_CNT, null, null, null, null, null)
+    new ParseSetup(
+      GUESS_INFO,
+      GUESS_SEP,
+      singleQuotes,
+      GUESS_HEADER,
+      GUESS_COL_CNT,
+      null,
+      null,
+      null,
+      null,
+      null,
+      false)
 
   /** Return guessed parser setup for given file.
     *

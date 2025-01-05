@@ -78,8 +78,6 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
       .setLabelCol("CAPSULE")
       .setSeed(1)
       .setFamily("binomial")
-      .setRandomFamily(Array("gaussian"))
-      .setRandomLink(Array("identity"))
       .setAlphaValue(Array(0.5))
       .setLambdaValue(Array(0.5))
       .setMaxIterations(30)

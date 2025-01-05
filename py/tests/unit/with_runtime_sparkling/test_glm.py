@@ -153,11 +153,7 @@ def createInitialGlmDefinitionForRandomCols():
     return H2OGLM(featuresCols=["x1", "x3", "x5", "x6"],
                   labelCol="y",
                   family="gaussian",
-                  randomFamily=["gaussian"],
-                  randomLink=["identity"],
-                  HGLM=True,
                   calcLike=True)
-
 
 @pytest.mark.skip(reason="HGLM doesn't support MOJOs yet.")
 def testRandomColsArePropagatedToInternals(semiconductorDataset):
