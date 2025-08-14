@@ -1,4 +1,4 @@
-.. |sparkling-water-logo| image:: https://raw.githubusercontent.com/h2oai/sparkling-water/0a820078d69fcaea2aa8b391cad2939c0dac9d6f/doc/src/site/sphinx/images/sparkling-water.png
+.. image:: https://raw.githubusercontent.com/h2oai/sparkling-water/0a820078d69fcaea2aa8b391cad2939c0dac9d6f/doc/src/site/sphinx/images/sparkling-water.png
    :target: https://github.com/h2oai/sparkling-water
    :alt: Sparkling Water
    :align: center
