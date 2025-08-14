@@ -1,14 +1,8 @@
-.. image:: https://raw.githubusercontent.com/h2oai/sparkling-water/0a820078d69fcaea2aa8b391cad2939c0dac9d6f/doc/src/site/sphinx/images/sparkling-water.png
-   :target: https://github.com/h2oai/sparkling-water
-   :alt: Sparkling Water
-   :align: center
-
----
+Sparkling Water
+---------------
 
 |mvn-badge| |apache-2-0-license| |Powered by H2O.ai|
 
-Sparkling Water
-===============
 
 Sparkling Water integrates `H2O-3 <https://github.com/h2oai/h2o-3/>`__, a fast scalable machine learning engine with `Apache Spark <https://spark.apache.org/>`__. It provides:
 
