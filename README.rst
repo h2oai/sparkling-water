@@ -200,6 +200,7 @@ Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/3.
 .. |apache-2-0-license| image:: https://img.shields.io/badge/License-Apache%202-blue.svg
    :target: LICENSE
 .. |sparkling-water-logo| image:: https://raw.githubusercontent.com/h2oai/sparkling-water/0a820078d69fcaea2aa8b391cad2939c0dac9d6f/doc/src/site/sphinx/images/sparkling-water.png
+   :target: https://github.com/h2oai/sparkling-water
    :align: center
 .. |Powered by H2O.ai| image:: https://img.shields.io/badge/powered%20by-h2oai-yellow.svg
    :target: https://github.com/h2oai/
