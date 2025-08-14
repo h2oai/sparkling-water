@@ -199,7 +199,8 @@ Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/3.
    :target: http://search.maven.org/#search%7Cgav%7C1%7Cg:%22ai.h2o%22%20AND%20a:%22sparkling-water-core_2.12%22
 .. |apache-2-0-license| image:: https://img.shields.io/badge/License-Apache%202-blue.svg
    :target: LICENSE
-.. |sparkling-water-logo| image:: http://s3.amazonaws.com/h2o-release/h2o-classic/master/1761/docs-website/_images/sparkling-water.png
+.. |sparkling-water-logo| image:: doc/src/site/sphinx/images/sparkling-water.png
+   :align: center
 .. |Powered by H2O.ai| image:: https://img.shields.io/badge/powered%20by-h2oai-yellow.svg
    :target: https://github.com/h2oai/
 
