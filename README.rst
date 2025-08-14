@@ -1,5 +1,5 @@
 Sparkling Water
----------------
+===============
 
 |mvn-badge| |apache-2-0-license| |Powered by H2O.ai|
 
