@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from pyspark.ml.param import *
 from ai.h2o.sparkling.ml.params.HasInputColsOnMOJO import HasInputColsOnMOJO
 from ai.h2o.sparkling.ml.params.HasOutputColOnMOJO import HasOutputColOnMOJO
 

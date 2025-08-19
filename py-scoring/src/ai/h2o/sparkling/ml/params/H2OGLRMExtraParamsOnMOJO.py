@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from pyspark.ml.param import *
 from ai.h2o.sparkling.ml.params.H2ODimReductionExtraParamsOnMOJO import H2ODimReductionExtraParamsOnMOJO
 
 

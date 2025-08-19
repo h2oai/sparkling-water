@@ -20,7 +20,6 @@ from ai.h2o.sparkling.ml.models.H2OAlgorithmMOJOModelBase import H2OAlgorithmMOJ
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from ai.h2o.sparkling.H2ODataFrameConverters import H2ODataFrameConverters
 from ai.h2o.sparkling.ml.metrics.H2OMetricsFactory import H2OMetricsFactory
-from pyspark.ml.param import *
 
 
 class H2OMOJOModelParams:
