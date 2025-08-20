@@ -43,6 +43,9 @@ configurations {
     exclude group: 'javax.xml.bind', module: 'jaxb-api' // a dependency of org.apache.hadoop:hadoop-yarn-common
     exclude group: 'net.sourceforge.f2j', module: 'arpack_combined_all'
     // a dependency of org.apache.spark:spark-graphx_2.11
+    // Exclude leaked dependency from h2o-3 - fixed in https://github.com/h2oai/h2o-3/pull/16654
+    exclude group: 'org.openjdk.jmh', module: 'jmh-core'
+    exclude group: 'org.openjdk.jmh', module: 'jmh-generator-annprocess'
   }
 }
 
