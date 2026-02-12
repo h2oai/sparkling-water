@@ -22,9 +22,22 @@ echo "Creating Working Directory"
 WORKDIR=$(mktemp -d)
 echo "Working directory created: $WORKDIR"
 K8DIR="$TOPDIR/kubernetes"
+K8DISTDIR="$K8DIR/build/dist"
+
+resolve_k8_path() {
+  local rel_path="$1"
+  if [ -e "$K8DIR/$rel_path" ]; then
+    echo "$K8DIR/$rel_path"
+  elif [ -e "$K8DISTDIR/$rel_path" ]; then
+    echo "$K8DISTDIR/$rel_path"
+  else
+    # Fall back to the original location to surface a clear cp error.
+    echo "$K8DIR/$rel_path"
+  fi
+}
 
 if [ "$1" = "external-backend" ]; then
-  cp "$K8DIR/Dockerfile-External-backend" "$WORKDIR"
+  cp "$(resolve_k8_path Dockerfile-External-backend)" "$WORKDIR"
   echo "Building Docker Image for External Backend ..."
   cp "$TOPDIR/jars/sparkling-water-assembly-extensions_$SCALA_VERSION-$VERSION-all.jar" "$WORKDIR"
   # Enable build Kubernetes images for nightlies. We build nightlies against specific H2O branches and in that
@@ -36,33 +49,52 @@ if [ "$1" = "external-backend" ]; then
   echo "Done!"
   exit 0
 fi
+# Debug: this is a change i did to build locally on mac
+# (cd "$SPARK_HOME" && \
+#  TMP_SPARK_R_DOCKERFILE=$(mktemp) && \
+#  sed  "s/apt-key adv --keyserver keys.gnupg.net --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF'/apt-key adv --keyserver keyserver.ubuntu.com --recv-key FCAE2A0E115C3D8A/g" ./kubernetes/dockerfiles/spark/bindings/R/Dockerfile >> "$TMP_SPARK_R_DOCKERFILE" && \
+#  ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" -p ./kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R "$TMP_SPARK_R_DOCKERFILE" -b java_image_tag=17-jammy build && \
+#  rm "$TMP_SPARK_R_DOCKERFILE")
 
-(cd "$SPARK_HOME" && \
- TMP_SPARK_R_DOCKERFILE=$(mktemp) && \
- sed  "s/apt-key adv --keyserver keys.gnupg.net --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF'/apt-key adv --keyserver keyserver.ubuntu.com --recv-key FCAE2A0E115C3D8A/g" ./kubernetes/dockerfiles/spark/bindings/R/Dockerfile >> "$TMP_SPARK_R_DOCKERFILE" && \
- ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" -p ./kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R "$TMP_SPARK_R_DOCKERFILE" -b java_image_tag=11-jre-slim-buster build && \
- rm "$TMP_SPARK_R_DOCKERFILE")
-
+if [ "$1" = "python" ]; then
+  (cd "$SPARK_HOME" && \
+   ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" \
+     -p ./kubernetes/dockerfiles/spark/bindings/python/Dockerfile \
+     -b java_image_tag=17-jammy build)
+elif [ "$1" = "r" ]; then
+  (cd "$SPARK_HOME" && \
+   TMP_SPARK_R_DOCKERFILE=$(mktemp) && \
+   sed  "s/apt-key adv --keyserver keys.gnupg.net --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF'/apt-key adv --keyserver keyserver.ubuntu.com --recv-key FCAE2A0E115C3D8A/g" ./kubernetes/dockerfiles/spark/bindings/R/Dockerfile >> "$TMP_SPARK_R_DOCKERFILE" && \
+   ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" \
+     -R "$TMP_SPARK_R_DOCKERFILE" \
+     -b java_image_tag=17-jammy build && \
+   rm "$TMP_SPARK_R_DOCKERFILE")
+else
+  (cd "$SPARK_HOME" && \
+   RDOCKERFILE=false PYDOCKERFILE=false \
+   ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" \
+     -b java_image_tag=17-jammy build)
+fi
 if [ "$1" = "scala" ]; then
-  cp "$K8DIR/Dockerfile-Scala" "$WORKDIR"
+  cp "$(resolve_k8_path Dockerfile-Scala)" "$WORKDIR"
   echo "Building Docker Image for Sparkling Water(Scala) ..."
   cp "$FAT_JAR_FILE" "$WORKDIR"
-  cp -R "$TOPDIR/kubernetes/scala/" "$WORKDIR/scala"
+  cp -R "$(resolve_k8_path scala)/" "$WORKDIR/scala"
   docker build --build-arg "spark_version=$INSTALLED_SPARK_FULL_VERSION" -t "sparkling-water-scala:$VERSION" -f "$WORKDIR/Dockerfile-Scala" "$WORKDIR"
   echo "Done!"
 fi
 
 if [ "$1" = "python" ]; then
-  cp "$K8DIR/Dockerfile-Python" "$WORKDIR"
+  cp "$(resolve_k8_path Dockerfile-Python)" "$WORKDIR"
   echo "Building Docker Image for PySparkling(Python) ..."
   cp "$PY_ZIP_FILE" "$WORKDIR"
-  cp -R "$TOPDIR/kubernetes/python/" "$WORKDIR/python"
+  cp -R "$(resolve_k8_path python)/" "$WORKDIR/python"
   docker build --build-arg "spark_version=$INSTALLED_SPARK_FULL_VERSION" -t "sparkling-water-python:$VERSION" -f "$WORKDIR/Dockerfile-Python" "$WORKDIR"
   echo "Done!"
 fi
 
 if [ "$1" = "r" ]; then
-  cp "$K8DIR/Dockerfile-R" "$WORKDIR"
+  cp "$(resolve_k8_path Dockerfile-R)" "$WORKDIR"
   echo "Building Docker Image for RSparkling(R) ..."
   cp "$TOPDIR/rsparkling_$VERSION.tar.gz" "$WORKDIR"
   # Enable build Kubernetes images for nightlies. We build nightlies against specific H2O branches and in that
@@ -73,7 +105,7 @@ if [ "$1" = "r" ]; then
     curl "http://h2o-release.s3.amazonaws.com/h2o/rel-${H2O_NAME}/${H2O_BUILD}/R/src/contrib/h2o_${H2O_VERSION}.${H2O_BUILD}.tar.gz" --output "$WORKDIR/h2o.tar.gz"
   fi
   cp "$FAT_JAR_FILE" "$WORKDIR"
-  cp -R "$TOPDIR/kubernetes/r/" "$WORKDIR/r"
+  cp -R "$(resolve_k8_path r)/" "$WORKDIR/r"
   docker build --build-arg "spark_version=$INSTALLED_SPARK_FULL_VERSION" -t "sparkling-water-r:$VERSION" -f "$WORKDIR/Dockerfile-R" "$WORKDIR"
   echo "Done!"
 fi

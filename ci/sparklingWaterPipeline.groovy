@@ -79,6 +79,37 @@ def getGradleCommand(config) {
     }
 }
 
+def buildSpark35Distribution() {
+    stage("Build Spark 3.5 (security overrides)") {
+        sh """
+            rm -rf spark
+            git clone --depth 1 --branch branch-3.5 https://github.com/apache/spark.git spark
+            cat > spark/maven-settings.xml <<'EOF'
+            <settings>
+              <mirrors>
+                <mirror>
+                  <id>maven-central</id>
+                  <name>Maven Central</name>
+                  <url>https://repo.maven.apache.org/maven2</url>
+                  <mirrorOf>central</mirrorOf>
+                </mirror>
+              </mirrors>
+            </settings>
+            EOF
+            cd spark
+            export MAVEN_OPTS="-Xss64m -Xmx2g -XX:ReservedCodeCacheSize=1g"
+            ./dev/make-distribution.sh -Phadoop-3 -Pscala-2.12 -Pkubernetes -DskipTests \
+              -Dhadoop.version=3.3.6 -Djetty.version=9.4.57.v20241219 -Divy.version=2.5.2 \
+              -Dguava.version=32.0.1-jre -Dnetty.version=4.1.125.Final \
+              -Dlibthrift.version=0.14.0 -Dzookeeper.version=3.7.2 -Dprotobuf.version=3.25.5 \
+              --tgz -s ./maven-settings.xml -U
+            mkdir -p ${env.WORKSPACE}/spark-dist
+            mv dist/*.tgz ${env.WORKSPACE}/spark-dist/spark-3.5.tgz
+            """
+        stash name: "spark-3.5-dist", includes: "spark-dist/spark-3.5.tgz"
+    }
+}
+
 def withSharedSetup(sparkMajorVersion, config, code) {
     node('docker') {
         ws("${env.WORKSPACE}-spark-${sparkMajorVersion}-${config.backendMode}") {
@@ -91,6 +122,17 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                 def kubernetesBoundaryVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('kubernetesSupportSinceSpark') }
                 def kubernetesBoundaryVersion = kubernetesBoundaryVersionLine.split("=")[1]
                 config.put("kubernetesSupported", config.commons.isKubernetesSupported(kubernetesBoundaryVersion, sparkMajorVersion))
+                if (config.sparkMajorVersion == "3.5") {
+                    unstash "spark-3.5-dist"
+                    sh """
+                        rm -rf spark-home
+                        mkdir -p spark-home
+                        tar -xzf spark-dist/spark-3.5.tgz -C spark-home --strip-components=1
+                        """
+                    config.put("sparkHome", "${env.WORKSPACE}/spark-home")
+                } else {
+                    config.put("sparkHome", "/home/jenkins/spark-${config.sparkVersion}-bin")
+                }
                 if (config.buildAgainstH2OBranch.toBoolean()) {
                     config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-${getHadoopMajorVersion()}/h2o-${getDriverHadoopVersion()}-assembly/build/libs/h2odriver.jar")
                 } else {
@@ -100,7 +142,6 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                     def buildVersion = buildVersionLine.split("=")[1]
                     config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${getDriverHadoopVersion()}.jar")
                 }
-                config.put("sparkHome", "/home/jenkins/spark-${config.sparkVersion}-bin")
                 def customEnv = [
                         "SPARK_HOME=${config.sparkHome}",
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
@@ -174,6 +215,9 @@ def prepareSparklingEnvironmentStage(config) {
             pipeline = load 'ci/sparklingWaterPipeline.groovy'
             def commons = load 'ci/commons.groovy'
             commons.withSparklingWaterDockerImage {
+                if (config.sparkMajorVersions.contains("3.5")) {
+                    buildSpark35Distribution()
+                }
                 if (config.buildAgainstH2OBranch.toBoolean()) {
                     retryWithDelay(3, 60, {
                         sh "git clone https://github.com/h2oai/h2o-3.git"

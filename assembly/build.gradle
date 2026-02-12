@@ -14,6 +14,25 @@ dependencies {
   api(project(":sparkling-water-repl"))
   api(project(":sparkling-water-core"))
   api(project(":sparkling-water-extensions"))
+
+  // Pin vulnerable transitive dependencies used in the assembly jar.
+  constraints {
+    shadowApi("com.google.guava:guava:32.0.1-jre") {
+      because "Fixes CVE-2023-2976 in Guava"
+    }
+    shadowApi("com.google.protobuf:protobuf-java:3.25.5") {
+      because "Fixes CVE-2024-7254 in protobuf-java"
+    }
+    shadowApi("commons-beanutils:commons-beanutils:1.11.0") {
+      because "Fixes CVE-2025-48734 in commons-beanutils"
+    }
+    shadowApi("org.eclipse.jetty:jetty-server:9.4.57.v20241219") {
+      because "Fixes CVE-2024-13009 in jetty-server"
+    }
+    shadowApi("org.eclipse.jetty:jetty-servlets:9.4.57.v20241219") {
+      because "Fixes CVE-2024-9823 in jetty-servlets"
+    }
+  }
 }
 
 //
