@@ -25,12 +25,13 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.Inspectors._
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with Matchers {
+class H2OMOJOPipelineModelTestSuite extends AnyFunSuite with SparkTestContext with Matchers {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

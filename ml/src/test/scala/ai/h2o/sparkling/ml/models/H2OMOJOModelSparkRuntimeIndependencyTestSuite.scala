@@ -21,9 +21,10 @@ import java.io.{ByteArrayOutputStream, NotSerializableException, ObjectOutputStr
 
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.spark.sql.SparkSession
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class H2OMOJOModelSparkRuntimeIndependencyTestSuite extends FunSuite with Matchers {
+class H2OMOJOModelSparkRuntimeIndependencyTestSuite extends AnyFunSuite with Matchers {
   def createSparkSession(): SparkSession = SparkSession.builder().master("local[*]").getOrCreate()
 
   test("Score with internal MOJO without Spark runtime") {

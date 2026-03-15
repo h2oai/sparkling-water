@@ -19,11 +19,13 @@ package ai.h2o.sparkling.backend
 import ai.h2o.sparkling.SparkTestContext
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers, OptionValues}
+import org.scalatest.OptionValues
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class PartitionStatsGeneratorTestSuite extends FunSuite with SparkTestContext with Matchers with OptionValues {
+class PartitionStatsGeneratorTestSuite extends AnyFunSuite with SparkTestContext with Matchers with OptionValues {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

@@ -17,37 +17,47 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.io.{File, FileInputStream, InputStream}
+import java.io.{ByteArrayOutputStream, File, FileInputStream, InputStream}
+import java.nio.file.Files
 
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
-import org.apache.spark.SparkFiles
 
 private[models] trait HasMojo {
 
   private[sparkling] var mojoFileName: String = _
 
+  // Store the raw MOJO bytes so the model can be used on executors without relying on
+  // SparkContext.addFile(), which is broken in Spark 4 standalone mode (the file is not
+  // distributed to already-running executors).
+  private[sparkling] var mojoData: Array[Byte] = _
+
+  // Per-JVM cached temp file rebuilt from mojoData when needed on an executor.
+  @transient private lazy val localMojoFile: File = {
+    val tmp = File.createTempFile(mojoFileName.stripSuffix(".mojo"), ".mojo")
+    tmp.deleteOnExit()
+    Files.write(tmp.toPath, mojoData)
+    tmp
+  }
+
   def setMojo(mojo: InputStream): this.type = setMojo(mojo, mojoName = "mojoData")
 
   def setMojo(mojo: InputStream, mojoName: String): this.type = {
-    val mojoFile = SparkSessionUtils.inputStreamToTempFile(mojo, mojoName, ".mojo")
-    setMojo(mojoFile)
+    val buf = new ByteArrayOutputStream()
+    val bytes = new Array[Byte](8192)
+    var n = mojo.read(bytes)
+    while (n != -1) { buf.write(bytes, 0, n); n = mojo.read(bytes) }
+    mojoFileName = if (mojoName.endsWith(".mojo")) mojoName else mojoName + ".mojo"
+    mojoData = buf.toByteArray
     this
   }
 
   def setMojo(mojo: File): this.type = {
-    val sparkSession = SparkSessionUtils.active
-    mojoFileName = mojo.getName
-    if (getMojo().exists()) {
-      // Copy content to a new temp file
-      withResource(new FileInputStream(mojo)) { inputStream =>
-        setMojo(inputStream, mojoFileName)
-      }
-    } else {
-      sparkSession.sparkContext.addFile(mojo.getAbsolutePath)
+    withResource(new FileInputStream(mojo)) { is =>
+      val name = if (mojo.getName.endsWith(".mojo")) mojo.getName else mojo.getName + ".mojo"
+      setMojo(is, name)
     }
-    this
   }
 
-  private[sparkling] def getMojo(): File = new File(SparkFiles.get(mojoFileName))
+  private[sparkling] def getMojo(): File = localMojoFile
 }

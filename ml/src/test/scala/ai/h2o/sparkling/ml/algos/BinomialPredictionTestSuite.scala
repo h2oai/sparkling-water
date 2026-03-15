@@ -23,11 +23,12 @@ import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 @RunWith(classOf[JUnitRunner])
-class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class BinomialPredictionTestSuite extends AnyFunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

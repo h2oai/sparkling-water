@@ -36,10 +36,10 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
   def getBinomialPredictionUDF(
       schema: StructType,
       modelUID: String,
-      mojoFileName: String,
+      mojoData: Array[Byte],
       configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config])
       : UserDefinedFunction = {
-    BinomialPredictionUDFClosure.getBinomialPredictionUDF(schema, modelUID, mojoFileName, configInitializers)
+    BinomialPredictionUDFClosure.getBinomialPredictionUDF(schema, modelUID, mojoData, configInitializers)
   }
 
   def getBinomialPredictionColSchema(): Seq[StructField] = {
@@ -98,11 +98,11 @@ object BinomialPredictionUDFClosure {
   def getBinomialPredictionUDF(
       schema: StructType,
       modelUID: String,
-      mojoFileName: String,
+      mojoData: Array[Byte],
       configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config])
       : UserDefinedFunction = {
     val function = (r: Row, offset: Double) => {
-      val model = H2OMOJOModel.loadEasyPredictModelWrapper(modelUID, mojoFileName, configInitializers)
+      val model = H2OMOJOModel.loadEasyPredictModelWrapper(modelUID, mojoData, configInitializers)
       val resultBuilder = mutable.ArrayBuffer[Any]()
       val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
       resultBuilder += pred.label

@@ -17,7 +17,9 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.io.{File, InputStream}
+import java.io.{File, FileInputStream, InputStream}
+
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
 import _root_.hex.genmodel.{MojoModel, MojoReaderBackendFactory}
@@ -34,7 +36,6 @@ import org.apache.spark.sql.functions._
 import _root_.hex.genmodel.attributes.Table.ColumnType
 import ai.h2o.sparkling.api.generation.common.MetricNameConverter
 import ai.h2o.sparkling.ml.metrics.H2OMetrics
-import org.apache.spark.SparkFiles
 import org.apache.spark.expose.Logging
 import org.apache.spark.ml.Model
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
@@ -425,7 +426,16 @@ trait H2OMOJOModelUtils extends Logging {
       modelUID: String,
       mojoFileName: String,
       configInitializers: Seq[EasyPredictModelWrapperConfigurationInitializer]): EasyPredictModelWrapper = {
-    val mojo = H2OMOJOCache.getMojoBackend(modelUID, () => new File(SparkFiles.get(mojoFileName)))
+    // mojoFileName is kept for cache key only; actual bytes are embedded in the closure via mojoData
+    throw new UnsupportedOperationException(
+      "Use loadEasyPredictModelWrapper(modelUID, mojoData, configInitializers) instead")
+  }
+
+  private[sparkling] def loadEasyPredictModelWrapper(
+      modelUID: String,
+      mojoData: Array[Byte],
+      configInitializers: Seq[EasyPredictModelWrapperConfigurationInitializer]): EasyPredictModelWrapper = {
+    val mojo = H2OMOJOCache.getMojoBackend(modelUID, () => Utils.mojoDataToTempFile(modelUID, mojoData))
     val config = new EasyPredictModelWrapper.Config()
     config.setModel(mojo)
     configInitializers.foreach(_(config))
@@ -699,7 +709,14 @@ object H2OMOJOModel
     val mojoModel = Utils.getMojoModel(mojo)
     val model = createSpecificMOJOModel(uid, mojoModel._algoName, mojoModel._category)
     model.setSpecificParams(mojoModel)
-    model.setMojo(mojo)
+    // Ensure MOJO has .mojo extension so Spark distributes it correctly to executors (Spark 4+)
+    val mojoToAdd = if (mojo.getName.endsWith(".mojo")) mojo
+    else {
+      withResource(new FileInputStream(mojo)) { is =>
+        SparkSessionUtils.inputStreamToTempFile(is, mojo.getName, ".mojo")
+      }
+    }
+    model.setMojo(mojoToAdd)
     val modelJson = getModelJson(mojo)
     model.setParameters(mojoModel, modelJson, settings)
     model

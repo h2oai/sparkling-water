@@ -217,7 +217,7 @@ class H2OGridSearch(override val uid: String)
       (model, getMetricValue(model._2, metric))
     }
 
-    val ordering = if (metric.higherTheBetter) Ordering.Double.reverse else Ordering.Double
+    val ordering: Ordering[Double] = if (metric.higherTheBetter) Ordering[Double].reverse else Ordering[Double]
     modelMetricPair.sortBy(_._2)(ordering).map(_._1)
   }
 

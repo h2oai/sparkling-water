@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 
 object MetricsAssertions extends Matchers {
   def assertMetricsObjectAgainstMetricsMap(metricsObject: H2OMetrics, metrics: Map[String, Double]): Unit = {

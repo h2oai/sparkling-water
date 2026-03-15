@@ -24,13 +24,14 @@ import hex.word2vec.Word2Vec.{NormModel, WordModel}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.junit.JUnitRunner
 
 import scala.reflect.{ClassTag, classTag}
 
 @RunWith(classOf[JUnitRunner])
-class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Matchers {
+class MOJOParameterTestSuite extends AnyFunSuite with SharedH2OTestContext with Matchers {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

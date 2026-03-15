@@ -131,7 +131,6 @@ def distTaskDependencies = [
   ":sparkling-water-api-generation:publish",
   ":sparkling-water-core:publish",
   ":sparkling-water-doc:publish",
-  ":sparkling-water-repl:publish",
   ":sparkling-water-ml:publish",
   ":sparkling-water-examples:publish",
   ":sparkling-water-package:publish",
@@ -141,6 +140,10 @@ def distTaskDependencies = [
   ":sparkling-water-utils:publish",
   ":sparkling-water-kubernetes:prepareKubernetesFiles",
 ]
+
+if (findProject(':sparkling-water-repl') != null) {
+  distTaskDependencies += [":sparkling-water-repl:publish"]
+}
 
 if (makeBooklet.toBoolean()) {
   distTaskDependencies = distTaskDependencies + [":sparkling-water-booklet:buildBooklet"]

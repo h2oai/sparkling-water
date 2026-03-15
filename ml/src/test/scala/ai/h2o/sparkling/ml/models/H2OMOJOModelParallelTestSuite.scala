@@ -20,11 +20,11 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.{SparkTestContext, TestUtils}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class H2OMOJOModelParallelTestSuite extends FunSuite with SparkTestContext {
+class H2OMOJOModelParallelTestSuite extends AnyFunSuite with SparkTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

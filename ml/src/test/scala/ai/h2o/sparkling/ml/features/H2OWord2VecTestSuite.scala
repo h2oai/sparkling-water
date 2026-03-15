@@ -27,13 +27,14 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.{col, collect_set, size => array_size}
 import org.apache.spark.sql.types.{ArrayType, FloatType, StructField, StructType}
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 import scala.collection.mutable
 
 @RunWith(classOf[JUnitRunner])
-class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class H2OWord2VecTestSuite extends AnyFunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

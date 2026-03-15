@@ -27,6 +27,20 @@ task integTest(type: Test) {
     testClassesDirs = sourceSets.integTest.output.classesDirs
     classpath = sourceSets.integTest.runtimeClasspath
 
+    // Required for Java 9+ module system (driver/test JVM only):
+    // - RestCommunication uses sun.net.www.protocol.*
+    // - Kryo serialization of HeapByteBuffer requires java.nio access
+    // - Kryo ScalaCollectionsRegistrar accesses java.lang.invoke.SerializedLambda fields
+    // - Kryo ScalaCollectionsRegistrar accesses java.util.AbstractList.modCount when
+    //   Word2Vec triggers a shuffle (only needed on driver, not executors)
+    jvmArgs += [
+        '--add-opens', 'java.base/sun.net.www.protocol.http=ALL-UNNAMED',
+        '--add-opens', 'java.base/sun.net.www.protocol.https=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.nio=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.lang.invoke=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.util=ALL-UNNAMED'
+    ]
+
     // Run with assertions ON
     enableAssertions = true
     // For a new JVM for each test class
@@ -41,6 +55,13 @@ task integTest(type: Test) {
     systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
     systemProperty "spark.testing", "true"
     systemProperty "spark.test.home", "${sparkHome}"
+
+    // Pass --add-opens to Spark driver and executors:
+    // - RestCommunication uses sun.net.www.protocol.*
+    // - Kryo serialization of ByteBuffer requires java.nio (Craigslist tf_idf demo)
+    def addOpens = "--add-opens java.base/sun.net.www.protocol.http=ALL-UNNAMED --add-opens java.base/sun.net.www.protocol.https=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED"
+    systemProperty "spark.driver.extraJavaOptions", addOpens
+    systemProperty "spark.executor.extraJavaOptions", addOpens
 
     // Also setup expected Scala version for Spark launcher
     environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"

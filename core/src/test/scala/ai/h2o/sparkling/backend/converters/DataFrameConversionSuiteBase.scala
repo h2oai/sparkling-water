@@ -24,9 +24,10 @@ import org.apache.spark.ml.linalg._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class DataFrameConversionSuiteBase extends FunSuite with Matchers with SharedH2OTestContext {
+class DataFrameConversionSuiteBase extends AnyFunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

@@ -159,6 +159,8 @@ version ${INSTALLED_SPARK_MAJOR_MINOR_VERSION}. Please ensure correct Spark is p
 export GREP_OPTIONS=
 # Version of this distribution
 PROP_FILE="$TOPDIR/gradle.properties"
+SPARK_SELECTOR=$(grep '^spark=' "$PROP_FILE" | grep -v '#' | sed -e "s/.*=//")
+SPARK_PROP_FILE="$TOPDIR/gradle-spark${SPARK_SELECTOR}.properties"
 export VERSION
 VERSION=$(grep version "$PROP_FILE" | grep -v '#' | sed -e "s/.*=//" )
 export H2O_VERSION
@@ -167,8 +169,13 @@ export H2O_BUILD
 H2O_BUILD=$(grep h2oBuild "$PROP_FILE" | sed -e "s/.*=//")
 export H2O_NAME
 H2O_NAME=$(grep h2oMajorName "$PROP_FILE" | sed -e "s/.*=//")
-export SPARK_VERSION=$(grep sparkVersion "$PROP_FILE" | sed -e "s/.*=//")
-SCALA_VERSION=$(grep scalaVersion "$PROP_FILE" | sed -e "s/.*=//" | cut -d . -f 1,2)
+if [ -f "$SPARK_PROP_FILE" ]; then
+  export SPARK_VERSION=$(grep '^sparkVersion=' "$SPARK_PROP_FILE" | sed -e "s/.*=//")
+  SCALA_VERSION=$(grep '^scalaVersion=' "$SPARK_PROP_FILE" | sed -e "s/.*=//" | cut -d . -f 1,2)
+else
+  export SPARK_VERSION=$(grep '^sparkVersion=' "$PROP_FILE" | sed -e "s/.*=//")
+  SCALA_VERSION=$(grep '^scalaVersion=' "$PROP_FILE" | sed -e "s/.*=//" | cut -d . -f 1,2)
+fi
 # Fat jar for this distribution
 FAT_JAR="sparkling-water-assembly_$SCALA_VERSION-$VERSION-all.jar"
 export FAT_JAR_FILE="$TOPDIR/jars/$FAT_JAR"

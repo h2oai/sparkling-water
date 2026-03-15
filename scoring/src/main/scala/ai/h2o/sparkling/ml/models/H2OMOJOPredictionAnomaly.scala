@@ -35,11 +35,11 @@ trait H2OMOJOPredictionAnomaly {
   def getAnomalyPredictionUDF(
       schema: StructType,
       modelUID: String,
-      mojoFileName: String,
+      mojoData: Array[Byte],
       configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config])
       : UserDefinedFunction = {
     val function = (r: Row) => {
-      val model = H2OMOJOModel.loadEasyPredictModelWrapper(modelUID, mojoFileName, configInitializers)
+      val model = H2OMOJOModel.loadEasyPredictModelWrapper(modelUID, mojoData, configInitializers)
       val pred = model.predictAnomalyDetection(RowConverter.toH2ORowData(r))
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.score

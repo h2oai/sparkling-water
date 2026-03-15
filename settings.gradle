@@ -1,5 +1,19 @@
 rootProject.name = 'sparkling-water'
 
+def detectSparkMajorVersion() {
+  // Prefer -Pspark=... if provided, otherwise fall back to gradle.properties
+  def sparkProp = gradle.startParameter.projectProperties.get("spark")
+  if (sparkProp != null) {
+    return sparkProp.toString()
+  }
+  def props = new Properties()
+  file('gradle.properties').withInputStream { props.load(it) }
+  return props.getProperty('spark')
+}
+
+def sparkMajorVersion = detectSparkMajorVersion()
+def includeRepl = !(sparkMajorVersion != null && sparkMajorVersion.startsWith("4."))
+
 include 'api-generation'
 include 'core'
 include 'examples'
@@ -11,7 +25,9 @@ include 'py'
 include 'py-scoring'
 include 'r'
 include 'r-cran'
-include 'repl'
+if (includeRepl) {
+  include 'repl'
+}
 include 'package'
 include 'scoring-package'
 include 'doc'

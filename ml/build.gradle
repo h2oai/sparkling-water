@@ -39,7 +39,8 @@ dependencies {
   testImplementation("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}")
   testImplementation("ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}")
   testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
-  testImplementation("junit:junit:4.11")
+  testImplementation("org.scalatestplus:junit-4-13_${scalaBaseVersion}:${scalaTestVersion}.0")
+  testImplementation("junit:junit:4.13.2")
   testImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
 
   if (sparkMajorVersion <= "2.4") {

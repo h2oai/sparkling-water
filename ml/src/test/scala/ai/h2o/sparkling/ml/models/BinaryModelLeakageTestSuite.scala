@@ -22,11 +22,12 @@ import ai.h2o.sparkling.ml.algos.{H2OAutoML, H2OGBM, H2OGridSearch}
 import ai.h2o.sparkling.ml.internals.H2OModel
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class BinaryModelLeakageTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class BinaryModelLeakageTestSuite extends AnyFunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

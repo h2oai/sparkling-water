@@ -16,7 +16,7 @@
  */
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
+// DeprecatedMethod macro removed for Scala 2.13 compatibility
 
 import scala.collection.JavaConverters._
 

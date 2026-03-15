@@ -28,11 +28,12 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 @RunWith(classOf[JUnitRunner])
-class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matchers {
+class H2OMOJOModelTestSuite extends AnyFunSuite with SharedH2OTestContext with Matchers {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
@@ -881,7 +882,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       "Max. Leaves",
       "Mean Leaves")
     summary.schema.fieldNames should contain theSameElementsAs expectedFields
-    summaryCollected.map(_.getValuesMap(expectedFields)).head should contain theSameElementsAs
+    summaryCollected.map(_.getValuesMap[Any](expectedFields)).head should contain theSameElementsAs
       Map(
         "Min. Depth" -> 5,
         "Max. Leaves" -> 24,

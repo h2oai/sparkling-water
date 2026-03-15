@@ -23,13 +23,14 @@ import hex.Model
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import ai.h2o.sparkling.ml.ParameterSetters._
 import org.apache.spark.sql.functions.lit
 
 @RunWith(classOf[JUnitRunner])
-class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class H2OSupervisedMOJOModelTestSuite extends AnyFunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

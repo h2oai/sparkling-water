@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
+// DeprecatedMethod macro removed for Scala 2.13 compatibility
 import ai.h2o.sparkling.ml.models.H2OMOJOSettings
 import org.apache.spark.expose.Logging
 import org.apache.spark.ml.param.{BooleanParam, Param, StringArrayParam}

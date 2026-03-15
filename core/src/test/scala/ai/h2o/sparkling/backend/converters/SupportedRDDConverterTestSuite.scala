@@ -27,12 +27,12 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 import water.parser.Categorical
 
 @RunWith(classOf[JUnitRunner])
-class SupportedRDDConverterTestSuite extends FunSuite with SharedH2OTestContext {
+class SupportedRDDConverterTestSuite extends AnyFunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

@@ -20,11 +20,11 @@ import ai.h2o.sparkling._
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class RDDsServletTestSuite extends FunSuite with SharedH2OTestContext with RDDsRestApi {
+class RDDsServletTestSuite extends AnyFunSuite with SharedH2OTestContext with RDDsRestApi {
 
   override def createSparkSession(): SparkSession =
     sparkSession("local[*]", defaultSparkConf.set("spark.ext.h2o.context.path", "context"))

@@ -1,0 +1,112 @@
+#!groovy
+// Jenkinsfile-hardened: Build CVE-hardened Docker image for Sparkling Water on Kubernetes
+//
+// This pipeline builds Spark from source with security patches, builds the
+// Sparkling Water assembly + PySparkling, then produces a hardened Docker image
+// on Amazon Linux 2023 with full CVE remediation.
+
+pipeline {
+    agent {
+        label 'linux && docker'
+    }
+    environment {
+        MAVEN_OPTS = '-Xss128m -Xmx8g -XX:ReservedCodeCacheSize=2g'
+    }
+    options {
+        skipStagesAfterUnstable()
+        timeout(time: 240, unit: 'MINUTES')
+    }
+    parameters {
+        string(name: 'SPARK_MAJOR_VERSION', defaultValue: '4.1', description: 'Spark major version (e.g. 3.5, 4.0, 4.1)')
+    }
+    stages {
+        stage('Prepare Environment') {
+            steps {
+                cleanWs()
+                sh 'java --version'
+                sh 'docker system prune --all --force'
+                sh '''
+                    if ! command -v javac >/dev/null 2>&1; then
+                        sudo yum -y install java-17-amazon-corretto-devel
+                    fi
+                '''
+                sh '''
+                    if ! command -v mvn >/dev/null 2>&1; then
+                        MAVEN_VERSION="3.9.9"
+                        MAVEN_URL="https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz"
+                        sudo mkdir -p /opt/maven
+                        curl -sL "${MAVEN_URL}" -o /tmp/maven.tar.gz
+                        sudo tar xzf /tmp/maven.tar.gz -C /opt/maven --strip-components=1
+                        sudo ln -sf /opt/maven/bin/mvn /usr/local/bin/mvn
+                        rm -f /tmp/maven.tar.gz
+                    fi
+                    mvn --version
+                '''
+                sh '''
+                    if command -v javac >/dev/null 2>&1; then
+                        JAVA_BIN="$(readlink -f "$(which javac)")"
+                        JAVA_HOME="$(dirname "$(dirname "$JAVA_BIN")")"
+                        echo "export JAVA_HOME=${JAVA_HOME}" > .java_env
+                        echo "export PATH=${JAVA_HOME}/bin:${PATH}" >> .java_env
+                    else
+                        echo "javac not found" && exit 1
+                    fi
+                '''
+                checkout scm
+            }
+        }
+        stage('Build Spark (security overrides)') {
+            steps {
+                script {
+                    def pipeline = load 'ci/sparklingWaterPipeline.groovy'
+                    def sparkPropsFile = "gradle-spark${params.SPARK_MAJOR_VERSION}.properties"
+                    if (!fileExists(sparkPropsFile)) {
+                        error("${sparkPropsFile} not found - is SPARK_MAJOR_VERSION correct?")
+                    }
+                    def sparkVersion = readFile(sparkPropsFile).split("\n")
+                        .find { it.startsWith("sparkVersion") }.split("=")[1]
+
+                    def isSpark4 = params.SPARK_MAJOR_VERSION.startsWith("4")
+                    def sparkBranch = isSpark4 ? "v${sparkVersion}" : "branch-${params.SPARK_MAJOR_VERSION}"
+
+                    if (fileExists('.java_env')) {
+                        sh '. ./.java_env'
+                    }
+                    pipeline.buildSparkDistribution(params.SPARK_MAJOR_VERSION, sparkBranch)
+                }
+            }
+        }
+        stage('Build Sparkling Water Assembly JAR') {
+            steps {
+                sh './gradlew clean :sparkling-water-assembly:shadowJar -x check --no-daemon'
+            }
+        }
+        stage('Build PySparkling Package') {
+            steps {
+                sh './gradlew :sparkling-water-py:distPython -x check --no-daemon'
+            }
+        }
+        stage('Build Hardened Docker Image') {
+            steps {
+                script {
+                    def pipeline = load 'ci/sparklingWaterPipeline.groovy'
+                    def sparkPropsFile = "gradle-spark${params.SPARK_MAJOR_VERSION}.properties"
+                    def sparkVersion = readFile(sparkPropsFile).split("\n")
+                        .find { it.startsWith("sparkVersion") }.split("=")[1]
+
+                    def config = [
+                        sparkMajorVersion: params.SPARK_MAJOR_VERSION,
+                        sparkVersion: sparkVersion
+                    ]
+                    env.HARDENED_IMAGE = pipeline.buildHardenedDockerImage(config)
+                    echo "Built hardened image: ${env.HARDENED_IMAGE}"
+                }
+            }
+        }
+    }
+    post {
+        always {
+            archiveArtifacts artifacts: 'assembly/build/libs/**', allowEmptyArchive: true
+        }
+    }
+}

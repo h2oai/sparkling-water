@@ -19,14 +19,14 @@ package ai.h2o.sparkling
 import ai.h2o.sparkling.backend.utils.RestApiUtils
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 
 /**
   * Test methods available on H2OContext
   */
 @RunWith(classOf[JUnitRunner])
-class H2OContextTestSuite extends FunSuite with SharedH2OTestContext {
+class H2OContextTestSuite extends AnyFunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

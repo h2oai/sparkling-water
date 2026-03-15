@@ -19,14 +19,14 @@ package ai.h2o.sparkling
 
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 
 /**
   * Test using H2O Frame as Spark SQL data source
   */
 @RunWith(classOf[JUnitRunner])
-class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
+class DataSourceTestSuite extends AnyFunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._

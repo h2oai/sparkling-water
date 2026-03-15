@@ -24,14 +24,15 @@ import ai.h2o.sparkling.backend.internal.InternalBackendConf
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.junit.JUnitRunner
 
 /**
   * Test passing parameters via SparkConf.
   */
 @RunWith(classOf[JUnitRunner])
-class H2OConfTestSuite extends FunSuite with SparkTestContext with Matchers {
+class H2OConfTestSuite extends AnyFunSuite with SparkTestContext with Matchers {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]", createConf())
 

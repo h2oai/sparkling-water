@@ -23,7 +23,9 @@ dependencies {
   testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   testImplementation("junit:junit:4.11")
   testImplementation(project(":sparkling-water-core"))
-  testImplementation(project(":sparkling-water-repl"))
+  if (findProject(':sparkling-water-repl') != null) {
+    testImplementation(project(":sparkling-water-repl"))
+  }
   testImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
 }
 

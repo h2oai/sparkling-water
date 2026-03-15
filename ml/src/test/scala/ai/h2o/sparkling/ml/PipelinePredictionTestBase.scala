@@ -27,9 +27,9 @@ import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.{SparkContext, SparkFiles}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestContext {
+abstract class PipelinePredictionTestBase extends AnyFunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

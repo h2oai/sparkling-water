@@ -24,7 +24,6 @@ import org.apache.spark.ml.linalg._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.scalatest.{FunSuite, Matchers}
 
 class DataExchangeTestSuite extends DataFrameConversionSuiteBase {
 

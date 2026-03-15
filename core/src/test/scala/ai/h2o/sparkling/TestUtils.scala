@@ -25,7 +25,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions.{lit, rand}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 
 import scala.util.Random
 

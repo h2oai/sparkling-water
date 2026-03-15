@@ -20,7 +20,7 @@ package ai.h2o.sparkling.backend.external
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.H2OConf.{BooleanOption, IntOption, OptionOption, StringOption}
 import ai.h2o.sparkling.backend.{BuildInfo, SharedBackendConf}
-import ai.h2o.sparkling.macros.DeprecatedMethod
+// DeprecatedMethod macro removed for Scala 2.13 compatibility - replaced with standard deprecated annotation
 import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.expose.Logging
 
@@ -113,7 +113,7 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
 
   def externalK8sDomain: String = sparkConf.get(PROP_EXTERNAL_K8S_DOMAIN._1, PROP_EXTERNAL_K8S_DOMAIN._2)
 
-  @DeprecatedMethod(version = "3.40")
+  @deprecated("Method deprecated in version 3.40", "")
   def externalK8sServiceTimeout: Int =
     sparkConf.getInt(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._2)
 
@@ -233,7 +233,7 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
     set(PROP_EXTERNAL_K8S_DOMAIN._1, domain)
   }
 
-  @DeprecatedMethod(version = "3.40")
+  @deprecated("Method deprecated in version 3.40", "")
   def setExternalK8sServiceTimeout(timeout: Int): H2OConf = {
     set(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, timeout.toString)
   }

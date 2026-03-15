@@ -20,11 +20,12 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.SparkTestContext
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 @RunWith(classOf[JUnitRunner])
-class BinaryModelTestSuiteWithoutH2ORuntime extends FunSuite with Matchers with SparkTestContext {
+class BinaryModelTestSuiteWithoutH2ORuntime extends AnyFunSuite with Matchers with SparkTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

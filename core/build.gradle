@@ -11,10 +11,37 @@ sourceSets {
   main {
     scala {
       srcDirs += getSparkSpecificSourceDir(sparkMajorVersion)
+      // Spark 4 port: Scala interpreter/REPL integration is not yet supported.
+      // Exclude the Flow Scala interpreter REST API when:
+      // - the repl module is not included, OR
+      // - we are building for Spark 4
+      if (findProject(':sparkling-water-repl') == null || (sparkMajorVersion != null && sparkMajorVersion.startsWith("4."))) {
+        exclude 'ai/h2o/sparkling/backend/api/scalainterpreter/**'
+      }
     }
     resources {
       srcDirs += getSparkSpecificResourceDir(sparkMajorVersion) + ["${projectDir}/flow-css"]
       srcDirs += "$rootDir/assembly-extensions/build/embedded"
+    }
+  }
+  test {
+    scala {
+      // Spark 4 port: REPL module is excluded, so exclude interpreter tests as well.
+      if (findProject(':sparkling-water-repl') == null || (sparkMajorVersion != null && sparkMajorVersion.startsWith("4."))) {
+        exclude 'ai/h2o/sparkling/backend/api/scalainterpreter/**'
+      }
+    }
+  }
+}
+
+// The integTest source set (from gradle/itest.gradle) includes src/main/scala, so we must also
+// exclude the interpreter sources there to avoid compilation failures when repl is disabled.
+afterEvaluate {
+  if (sourceSets.findByName('integTest') != null) {
+    sourceSets.integTest.scala {
+      if (findProject(':sparkling-water-repl') == null || (sparkMajorVersion != null && sparkMajorVersion.startsWith("4."))) {
+        exclude 'ai/h2o/sparkling/backend/api/scalainterpreter/**'
+      }
     }
   }
 }
@@ -31,7 +58,9 @@ jar {
 dependencies {
   api(project(':sparkling-water-utils'))
   api(project(':sparkling-water-extensions'))
-  api(project(':sparkling-water-repl'))
+  if (findProject(':sparkling-water-repl') != null) {
+    api(project(':sparkling-water-repl'))
+  }
   api("ai.h2o:h2o-ext-jython-cfunc:${h2oVersion}")
   api("ai.h2o:h2o-genmodel:${h2oVersion}")
   api("ai.h2o:h2o-security:${h2oVersion}")
@@ -114,17 +143,21 @@ dependencies {
   testImplementation(project(':sparkling-water-extensions'))
   testImplementation(project(':sparkling-water-macros'))
   testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
-  testImplementation("junit:junit:4.11")
+  // ScalaTest 3.2+ moved JUnit integration to scalatestplus.
+  testImplementation("org.scalatestplus:junit-4-13_${scalaBaseVersion}:${scalaTestVersion}.0")
+  testImplementation("junit:junit:4.13.2")
 
   integTestImplementation("org.scala-lang:scala-library:${scalaVersion}")
   integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
-  integTestImplementation("junit:junit:4.11")
+  integTestImplementation("org.scalatestplus:junit-4-13_${scalaBaseVersion}:${scalaTestVersion}.0")
+  integTestImplementation("junit:junit:4.13.2")
   integTestImplementation("io.fabric8:kubernetes-client:${fabricK8sClientVersion}")
   integTestImplementation('com.unboundid:unboundid-ldapsdk:6.0.7')
 
   benchImplementation("org.scala-lang:scala-library:${scalaVersion}")
   benchImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
-  benchImplementation("junit:junit:4.11")
+  benchImplementation("org.scalatestplus:junit-4-13_${scalaBaseVersion}:${scalaTestVersion}.0")
+  benchImplementation("junit:junit:4.13.2")
 }
 
 task createSparkVersionFile {

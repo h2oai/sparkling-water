@@ -19,13 +19,14 @@ package ai.h2o.sparkling
 
 import com.unboundid.ldap.listener.{InMemoryDirectoryServer, InMemoryDirectoryServerConfig, InMemoryListenerConfig}
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.junit.JUnitRunner
 
 import java.io.{File, FileWriter}
 
 @RunWith(classOf[JUnitRunner])
-abstract class LdapTestSuiteBase extends FunSuite with SharedH2OTestContext with Matchers {
+abstract class LdapTestSuiteBase extends AnyFunSuite with SharedH2OTestContext with Matchers {
 
   protected val SwClusterOwnerName = "user01"
   protected val SwClusterOwnerPassword = "password1"

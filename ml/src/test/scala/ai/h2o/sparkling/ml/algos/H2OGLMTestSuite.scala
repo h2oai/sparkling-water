@@ -23,12 +23,13 @@ import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.IntegerType
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import water.Key
 
 @RunWith(classOf[JUnitRunner])
-class H2OGLMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class H2OGLMTestSuite extends AnyFunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

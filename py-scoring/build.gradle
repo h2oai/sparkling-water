@@ -13,7 +13,7 @@ def getPythonVersion() {
 ext {
   FS = File.separator
   FPS = File.pathSeparator
-  pythonBinary = findProperty("pythonBinary") ?: "python"
+  pythonBinary = findProperty("pythonBinary") ?: "python3" //debug changed from python to python3 to fix the issue with the python binary
   pkgDir = file("$buildDir/pkg")
   distDir = file("$buildDir/dist")
   condaDir = file("$buildDir/conda/h2o_pysparkling_scoring_${sparkMajorVersion}")

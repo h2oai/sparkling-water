@@ -1,0 +1,157 @@
+###############################################################################
+# Hardened Sparkling Water Docker Image
+#
+# Multi-stage build producing a minimal, CVE-remediated runtime image on
+# Amazon Linux 2023 for Kubernetes deployments.
+#
+# Build context (prepared by build-kubernetes-images.sh --hardened):
+#   spark-jars/                  - Spark distribution JARs (fabric8 6.x removed)
+#   spark-python/                - Spark Python files
+#   spark-bin/                   - Spark bin/ scripts
+#   spark-sbin/                  - Spark sbin/ scripts
+#   spark-entrypoint/            - entrypoint.sh from Spark K8s distribution
+#   sparkling-water-assembly.jar - Sparkling Water fat JAR
+#   h2o_pysparkling_*.zip        - PySparkling wheel
+###############################################################################
+
+# Stage 1: Download missing transitive dependencies and tini
+FROM curlimages/curl:latest AS jar-downloader
+
+ARG HADOOP_VERSION=3.4.2
+
+WORKDIR /artifacts
+
+RUN mkdir -p jars && \
+    cd jars && \
+    curl -fL -o woodstox-core-6.5.1.jar \
+      https://repo1.maven.org/maven2/com/fasterxml/woodstox/woodstox-core/6.5.1/woodstox-core-6.5.1.jar && \
+    curl -fL -o stax2-api-4.2.1.jar \
+      https://repo1.maven.org/maven2/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar && \
+    curl -fL -o commons-configuration2-2.9.0.jar \
+      https://repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.9.0/commons-configuration2-2.9.0.jar && \
+    curl -fL -o commons-lang-2.6.jar \
+      https://repo1.maven.org/maven2/commons-lang/commons-lang/2.6/commons-lang-2.6.jar && \
+    ls -lh *.jar
+
+RUN TINI_VERSION=v0.19.0 && \
+    curl -fL -o /artifacts/tini-amd64 \
+      https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-amd64 && \
+    chmod +x /artifacts/tini-amd64
+
+# Stage 2: Final runtime image on Amazon Linux 2023
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023
+
+ARG HADOOP_VERSION=3.4.2
+ARG PYSPARK_VERSION=4.1.1
+
+USER root
+
+RUN dnf install -y --setopt=install_weak_deps=false \
+      python3.11 python3.11-pip \
+      java-17-amazon-corretto-headless \
+      ca-certificates \
+      glibc-langpack-en && \
+    ln -sf /usr/bin/python3.11 /usr/local/bin/python3.11 && \
+    ln -sf /usr/bin/python3.11 /usr/local/bin/python3 && \
+    ln -sf /usr/bin/python3.11 /usr/local/bin/python && \
+    python3.11 --version && pip3.11 --version && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /var/lib/dnf/history.* /var/log/dnf.* /var/log/yum.*
+
+COPY --from=jar-downloader /artifacts/tini-amd64 /usr/bin/tini
+RUN chmod +x /usr/bin/tini && /usr/bin/tini --version
+
+RUN mkdir -p /opt/spark/jars /opt/spark/python /opt/spark/bin /opt/spark/sbin /opt/spark/conf /opt/spark/work-dir
+
+COPY spark-jars/*.jar /opt/spark/jars/
+
+COPY --from=jar-downloader /artifacts/jars/woodstox-core-6.5.1.jar /opt/spark/jars/
+COPY --from=jar-downloader /artifacts/jars/stax2-api-4.2.1.jar /opt/spark/jars/
+COPY --from=jar-downloader /artifacts/jars/commons-configuration2-2.9.0.jar /opt/spark/jars/
+COPY --from=jar-downloader /artifacts/jars/commons-lang-2.6.jar /opt/spark/jars/
+
+COPY sparkling-water-assembly.jar /opt/spark/jars/
+
+COPY spark-python/ /opt/spark/python/
+COPY spark-bin/ /opt/spark/bin/
+COPY spark-sbin/ /opt/spark/sbin/
+
+COPY spark-entrypoint/entrypoint.sh /opt/entrypoint.sh
+RUN chmod +x /opt/entrypoint.sh && \
+    awk 'BEGIN { \
+      found=0 \
+    } \
+    /SPARK_CLASSPATH="\$SPARK_CLASSPATH:\$\{SPARK_HOME\}\/jars\/\*"/ { \
+      print "# Expand wildcard - Java does not expand glob patterns, so expand them here"; \
+      print "if [ -d \"${SPARK_HOME}/jars\" ]; then"; \
+      print "  for jar in \"${SPARK_HOME}\"/jars/*.jar; do"; \
+      print "    if [ -f \"$jar\" ]; then"; \
+      print "      SPARK_CLASSPATH=\"$SPARK_CLASSPATH:$jar\""; \
+      print "    fi"; \
+      print "  done"; \
+      print "fi"; \
+      found=1; \
+      next \
+    } \
+    { print } \
+    END { \
+      if (found == 0) { \
+        print "ERROR: Pattern not found in entrypoint script" > "/dev/stderr"; \
+        exit 1 \
+      } \
+    }' /opt/entrypoint.sh > /tmp/entrypoint_patched.sh && \
+    mv /tmp/entrypoint_patched.sh /opt/entrypoint.sh && \
+    chmod +x /opt/entrypoint.sh && \
+    grep -q "Expand wildcard" /opt/entrypoint.sh || \
+      (echo "ERROR: Entrypoint patch verification failed" && exit 1)
+
+RUN chmod g+w /opt/spark/work-dir
+
+COPY h2o_pysparkling_*.zip /opt/pysparkling/
+RUN PYSPARKLING_ZIP="$(ls /opt/pysparkling/h2o_pysparkling_*.zip | head -1)" && \
+    echo "h2o_pysparkling @ file://${PYSPARKLING_ZIP}" > /opt/pysparkling/requirements.txt
+
+RUN python3.11 -m pip install --no-cache-dir --upgrade pip setuptools && \
+    python3.11 -m pip install --no-cache-dir "setuptools>=78.1.1" && \
+    python3.11 -m pip install --no-cache-dir "wheel>=0.46.2" && \
+    python3.11 -m pip install --no-cache-dir pyspark==${PYSPARK_VERSION} && \
+    python3.11 -c "import pyspark; print('PySpark installed:', pyspark.__version__)" && \
+    PYSPARKLING_ZIP="$(ls /opt/pysparkling/h2o_pysparkling_*.zip | head -1)" && \
+    python3.11 -m pip install --no-cache-dir "$PYSPARKLING_ZIP" && \
+    python3.11 -c "\
+import pyspark, os, glob; \
+jars_dir = os.path.join(os.path.dirname(pyspark.__file__), 'jars'); \
+jars = glob.glob(os.path.join(jars_dir, '*.jar')); \
+[os.remove(j) for j in jars]; \
+print(f'Removed {len(jars)} pip-bundled JARs from {jars_dir}; runtime uses SPARK_HOME=/opt/spark/jars/') \
+" && \
+    rm -rf /root/.cache/pip /tmp/* /var/tmp/*
+
+# Remove Codehaus Jackson 1.x (CVE-2019-10202, CVE-2019-10172) - abandoned, no upstream fix
+RUN rm -fv /opt/spark/jars/jackson-mapper-asl-*.jar \
+           /opt/spark/jars/jackson-core-asl-*.jar
+
+RUN echo "Verifying dependency JARs..." && \
+    test -f /opt/spark/jars/woodstox-core-6.5.1.jar && \
+    test -f /opt/spark/jars/stax2-api-4.2.1.jar && \
+    test -f /opt/spark/jars/commons-configuration2-2.9.0.jar && \
+    test -f /opt/spark/jars/commons-lang-2.6.jar && \
+    ls /opt/spark/jars/spark-core_*.jar 1>/dev/null 2>&1 && \
+    echo "All required JARs verified"
+
+# Final OS-level CVE patching
+RUN dnf upgrade -y --refresh --setopt=install_weak_deps=false && \
+    dnf upgrade -y libpng --setopt=install_weak_deps=false && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /var/lib/dnf/history.* /var/log/dnf.* /var/log/yum.*
+
+ENV SPARK_HOME=/opt/spark
+ENV PYSPARK_PYTHON=/usr/local/bin/python3.11
+ENV PYSPARK_DRIVER_PYTHON=/usr/local/bin/python3.11
+ENV PYTHONPATH=/opt/spark/python:${PYTHONPATH}
+ENV JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto
+ENV PATH=${SPARK_HOME}/bin:${JAVA_HOME}/bin:${PATH}
+
+WORKDIR /opt/spark/work-dir
+
+ENTRYPOINT [ "/usr/bin/tini", "--", "/opt/entrypoint.sh" ]

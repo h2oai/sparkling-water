@@ -18,11 +18,12 @@
 package ai.h2o.sparkling.backend.utils
 
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class SharedBackendUtilsTestSuite extends FunSuite with Matchers with SharedBackendUtils {
+class SharedBackendUtilsTestSuite extends AnyFunSuite with Matchers with SharedBackendUtils {
 
   private val expectedHttpHeaderArgs = Seq(
     "-add_http_header",

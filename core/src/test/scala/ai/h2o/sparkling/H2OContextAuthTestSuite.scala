@@ -23,14 +23,14 @@ import ai.h2o.sparkling.backend.api.dataframes.DataFrames
 import ai.h2o.sparkling.backend.utils.RestApiUtils
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 import water.api.schemas3.CloudV3
 
 import scala.io.Source
 
 @RunWith(classOf[JUnitRunner])
-class H2OContextAuthTestSuite extends FunSuite with SharedH2OTestContext {
+class H2OContextAuthTestSuite extends AnyFunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession =
     sparkSession(

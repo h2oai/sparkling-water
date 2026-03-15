@@ -35,11 +35,11 @@ trait H2OMOJOPredictionWordEmbedding {
   def getWordEmbeddingPredictionUDF(
       schema: StructType,
       modelUID: String,
-      mojoFileName: String,
+      mojoData: Array[Byte],
       configInitializers: Seq[(EasyPredictModelWrapper.Config) => EasyPredictModelWrapper.Config],
       featureCols: Seq[String]): UserDefinedFunction = {
     val function = (r: Row) => {
-      val model = H2OMOJOModel.loadEasyPredictModelWrapper(modelUID, mojoFileName, configInitializers)
+      val model = H2OMOJOModel.loadEasyPredictModelWrapper(modelUID, mojoData, configInitializers)
       val colIdx = model.m.getColIdx(featureCols.head)
       val pred = if (r.isNullAt(colIdx)) {
         null

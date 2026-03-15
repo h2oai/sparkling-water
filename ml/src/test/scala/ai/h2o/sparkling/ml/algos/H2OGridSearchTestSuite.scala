@@ -27,13 +27,14 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.ml.param.{ParamMap, Params}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 import scala.collection.mutable
 
 @RunWith(classOf[JUnitRunner])
-class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class H2OGridSearchTestSuite extends AnyFunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

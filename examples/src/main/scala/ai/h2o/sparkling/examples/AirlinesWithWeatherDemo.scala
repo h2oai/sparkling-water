@@ -39,7 +39,8 @@ object AirlinesWithWeatherDemo {
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(weatherDataFile)
-      .withColumn("Date", to_date(regexp_replace('Date, "(\\d+)/(\\d+)/(\\d+)", "$3-$2-$1")))
+      // Spark 4 uses ANSI-strict datetime parsing; parse the original M/d/yyyy text directly.
+      .withColumn("Date", to_date('Date, "M/d/yyyy"))
       .withColumn("Year", year('Date))
       .withColumn("Month", month('Date))
       .withColumn("DayofMonth", dayofmonth('Date))

@@ -14,7 +14,8 @@ dependencies {
   integTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   integTestImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
   integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
-  integTestImplementation("junit:junit:4.11")
+  integTestImplementation("org.scalatestplus:junit-4-13_${scalaBaseVersion}:${scalaTestVersion}.0")
+  integTestImplementation("junit:junit:4.13.2")
   integTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
   integTestImplementation("org.scala-lang:scala-library:${scalaVersion}")
 

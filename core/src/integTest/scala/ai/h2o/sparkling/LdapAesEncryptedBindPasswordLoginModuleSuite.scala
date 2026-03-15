@@ -20,7 +20,7 @@ package ai.h2o.sparkling
 import ai.h2o.sparkling.H2OFrame.query
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 import water.api.schemas3.PingV3
 
 import java.io.File

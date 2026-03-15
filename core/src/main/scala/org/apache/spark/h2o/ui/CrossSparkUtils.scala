@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.ui
 
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 import org.apache.spark.SparkContext
 import org.apache.spark.ui.SparkUITab
 

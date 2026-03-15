@@ -18,11 +18,12 @@
 package ai.h2o.sparkling.backend.utils
 
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ProgressBarTestSuite extends FunSuite with Matchers {
+class ProgressBarTestSuite extends AnyFunSuite with Matchers {
 
   test("should return a rendered progress bar - 0%") {
     val input = 0f

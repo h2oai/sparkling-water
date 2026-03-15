@@ -21,11 +21,11 @@ import java.net.URI
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
+class H2OFrameTestSuite extends AnyFunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._

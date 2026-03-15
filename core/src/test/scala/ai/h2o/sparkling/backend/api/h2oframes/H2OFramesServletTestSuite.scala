@@ -22,11 +22,11 @@ import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.{H2OFrame, SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class H2OFramesServletTestSuite extends FunSuite with SharedH2OTestContext with H2OFramesRestApi {
+class H2OFramesServletTestSuite extends AnyFunSuite with SharedH2OTestContext with H2OFramesRestApi {
 
   override def createSparkSession(): SparkSession =
     sparkSession("local[*]", defaultSparkConf.set("spark.ext.h2o.context.path", "context"))

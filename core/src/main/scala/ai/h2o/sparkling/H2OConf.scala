@@ -19,12 +19,12 @@ package ai.h2o.sparkling
 
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.internal.InternalBackendConf
-import ai.h2o.sparkling.repl.H2OInterpreter
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkConf
 import org.apache.spark.expose.Logging
 
 import java.io.{File, FileWriter}
+import java.nio.file.Files
 
 /**
   * Configuration holder which is representing
@@ -198,7 +198,14 @@ object H2OConf extends Logging {
 
   def checkSparkConf(sparkConf: SparkConf): SparkConf = {
     _sparkConfChecked = true
-    sparkConf.set("spark.repl.class.outputDir", H2OInterpreter.classOutputDirectory.getAbsolutePath)
+    // Ensure Spark REPL has a writable class output directory.
+    // We intentionally avoid depending on the optional `sparkling-water-repl` module here to keep Spark 4 ports buildable.
+    val replOutputDir = sparkConf.getOption("spark.repl.class.outputDir").getOrElse {
+      val tmpDir = Files.createTempDirectory("sparkling-water-repl-").toFile
+      tmpDir.deleteOnExit()
+      tmpDir.getAbsolutePath
+    }
+    sparkConf.set("spark.repl.class.outputDir", replOutputDir)
     sparkConf
   }
 

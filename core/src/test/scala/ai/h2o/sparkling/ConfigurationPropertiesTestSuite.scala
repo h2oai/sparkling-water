@@ -22,13 +22,15 @@ import java.nio.file.{Files, Path}
 
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.junit.JUnitRunner
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 abstract class ConfigurationPropertiesTestSuite
-  extends FunSuite
+  extends AnyFunSuite
   with Matchers
   with BeforeAndAfterEach
   with SparkTestContext {
@@ -49,8 +51,11 @@ abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends Configur
     val url = new URL(urlProvider(hc))
     val connection = url.openConnection().asInstanceOf[HttpURLConnection]
     try {
-      val flowHeaders = connection.getHeaderFields.asScala.filterKeys(key => extraHttpHeaders.contains(key)).toMap
-      flowHeaders shouldEqual extraHttpHeaders.mapValues(List(_).asJava)
+      val flowHeaders = connection.getHeaderFields.asScala.collect {
+        case (key, value) if key != null && extraHttpHeaders.contains(key) => key -> value
+      }.toMap
+      val expectedHeaders = extraHttpHeaders.view.mapValues(value => List(value).asJava).toMap
+      flowHeaders shouldEqual expectedHeaders
     } finally {
       connection.disconnect()
     }
@@ -119,7 +124,7 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaNodeExtraProperties
 }
 
 abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression(compressionType: String)
-  extends FunSuite
+  extends AnyFunSuite
   with BeforeAndAfterEach
   with Matchers
   with SharedH2OTestContext {

@@ -21,11 +21,12 @@ import ai.h2o.automl.Algo
 import ai.h2o.sparkling.ml.params.EnumParamValidator._
 import hex.genmodel.utils.DistributionFamily
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 @RunWith(classOf[JUnitRunner])
-class EnumParamValidatorTestSuite extends FunSuite with Matchers {
+class EnumParamValidatorTestSuite extends AnyFunSuite with Matchers {
 
   test("getValidatedEnumValue with unknown enum") {
     val thrown = intercept[IllegalArgumentException] {

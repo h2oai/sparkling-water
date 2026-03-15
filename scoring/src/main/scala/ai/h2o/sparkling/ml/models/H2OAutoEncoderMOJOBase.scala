@@ -34,12 +34,12 @@ trait H2OAutoEncoderMOJOBase extends H2OFeatureMOJOModel with H2OAutoEncoderExtr
   protected override def mojoUDF: UserDefinedFunction = {
     val schema = StructType(outputSchema)
     val uid = this.uid
-    val mojoFileName = this.mojoFileName
+    val mojoData = this.mojoData
     val withOrdinalCol = this.getWithOriginalCol()
     val withMSECol = this.getWithMSECol()
     val configInitializers = this.getEasyPredictModelWrapperConfigurationInitializers()
     val function = (r: Row) => {
-      val model = H2OMOJOModel.loadEasyPredictModelWrapper(uid, mojoFileName, configInitializers)
+      val model = H2OMOJOModel.loadEasyPredictModelWrapper(uid, mojoData, configInitializers)
       val pred = model.predictAutoEncoder(RowConverter.toH2ORowData(r))
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += new DenseVector(pred.reconstructed).compressed

@@ -20,13 +20,13 @@ import ai.h2o.sparkling.backend.utils.ReflectionUtils._
 import ai.h2o.sparkling.backend.utils.SupportedTypes._
 import org.apache.spark.unsafe.types.UTF8String
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 
 import scala.reflect.runtime.universe._
 
 @RunWith(classOf[JUnitRunner])
-class SupportedTypesTestSuite extends FunSuite {
+class SupportedTypesTestSuite extends AnyFunSuite {
 
   test("Infer type from a value") {
     def mustBe[T](expected: SupportedType, value: T): Unit = assert(supportedTypeOf(value) == expected)

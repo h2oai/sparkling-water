@@ -30,12 +30,13 @@ import org.apache.spark.sql.catalyst.util.DateTimeUtils
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{Assertions, FunSuite}
+import org.scalatest.Assertions
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 import water.parser.Categorical
 
 @RunWith(classOf[JUnitRunner])
-class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
+class DataFrameConverterTestSuite extends AnyFunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._
@@ -173,7 +174,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("H2OFrame[T_STR] to DataFrame[StringType]") {
     val df = spark.sparkContext
-      .parallelize(Array("string1", "string2", "string3", "string4", "string5", "string6", "string7", "string8"))
+      .parallelize(Seq("string1", "string2", "string3", "string4", "string5", "string6", "string7", "string8"))
       .toDF("C0")
     val h2oFrame = hc.asH2OFrame(df)
     assert(h2oFrame.columns(0).isString())
@@ -634,7 +635,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("Add metadata to Dataframe categorical column") {
-    val df = spark.sparkContext.parallelize(Array("ZERO", "ONE")).toDF("C0")
+    val df = spark.sparkContext.parallelize(Seq("ZERO", "ONE")).toDF("C0")
     val h2oFrame = hc.asH2OFrame(df)
     val h2oFrameWithCat = h2oFrame.convertColumnsToCategorical(Array(0))
     assert(h2oFrameWithCat.columns(0).isCategorical())
@@ -644,7 +645,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("SW-303 Decimal column conversion failure") {
-    val df = sc.parallelize(Array("ok", "bad", "ok", "bad", "bad")).toDF("status")
+    val df = sc.parallelize(Seq("ok", "bad", "ok", "bad", "bad")).toDF("status")
     df.createOrReplaceTempView("responses")
     val dfDouble = spark.sqlContext.sql("SELECT IF(r.status = 'ok', 0.0, 1.0) AS cancelled FROM responses AS r")
     val frame = hc.asH2OFrame(dfDouble)

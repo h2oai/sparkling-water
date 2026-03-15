@@ -22,14 +22,14 @@ import ai.h2o.sparkling.{H2OFrame, SharedH2OTestContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 @RunWith(classOf[JUnitRunner])
-class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
+class DatasetConverterTestSuite extends AnyFunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._

@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.ui
 
 import ai.h2o.sparkling.backend.utils.AzureDatabricksUtils
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 import org.apache.spark.h2o.SparkSpecificUtils
 import org.apache.spark.ui.{UIUtils, WebUIPage}
 

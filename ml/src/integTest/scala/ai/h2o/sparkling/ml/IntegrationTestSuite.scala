@@ -21,13 +21,13 @@ import ai.h2o.sparkling.ml.utils.SchemaUtils
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 
 import scala.concurrent.duration.Duration
 
 @RunWith(classOf[JUnitRunner])
-class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
+class IntegrationTestSuite extends AnyFunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local-cluster[2,1,2560]")
 

@@ -23,11 +23,12 @@ import com.google.gson.JsonParser
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class DataFramesServletTestSuite extends FunSuite with SharedH2OTestContext with DataFramesRestApi with Matchers {
+class DataFramesServletTestSuite extends AnyFunSuite with SharedH2OTestContext with DataFramesRestApi with Matchers {
 
   override def createSparkSession(): SparkSession =
     sparkSession("local[*]", defaultSparkConf.set("spark.ext.h2o.context.path", "context"))

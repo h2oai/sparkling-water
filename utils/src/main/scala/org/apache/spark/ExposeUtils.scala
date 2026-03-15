@@ -48,6 +48,26 @@ object ExposeUtils {
   }
 
   def hiveClassesArePresent: Boolean = {
-    SparkSession.hiveClassesArePresent
+    // Spark API compatibility:
+    // - Spark 2/3 expose SparkSession.hiveClassesArePresent
+    // - Spark 4 removed/relocated this helper
+    // Use reflection so this file compiles across Spark versions.
+    try {
+      val sparkSessionModule = SparkSession
+      val method = sparkSessionModule.getClass.getMethod("hiveClassesArePresent")
+      method.invoke(sparkSessionModule).asInstanceOf[Boolean]
+    } catch {
+      case _: NoSuchMethodException =>
+        try {
+          val hiveUtilsModuleClass = classForName("org.apache.spark.sql.hive.HiveUtils$")
+          val module = hiveUtilsModuleClass.getField("MODULE$").get(null)
+          val method = hiveUtilsModuleClass.getMethod("hiveClassesArePresent")
+          method.invoke(module).asInstanceOf[Boolean]
+        } catch {
+          case _: Throwable => false
+        }
+      case _: Throwable =>
+        false
+    }
   }
 }

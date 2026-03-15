@@ -22,12 +22,12 @@ import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 import ai.h2o.sparkling.ml.ParameterSetters._
 
 @RunWith(classOf[JUnitRunner])
-class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTestContext {
+class H2OTreeBasedSupervisedMOJOModelTestSuite extends AnyFunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

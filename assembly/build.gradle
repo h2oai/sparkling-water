@@ -11,9 +11,42 @@ description = "Sparkling Water Assembly"
 
 dependencies {
   api(project(":sparkling-water-ml"))
-  api(project(":sparkling-water-repl"))
+
+  // Pin vulnerable transitive dependencies to CVE-free versions.
+  constraints {
+    api("com.google.guava:guava:32.0.1-jre") {
+      because "CVE-2023-2976"
+    }
+    api("com.google.protobuf:protobuf-java:3.25.5") {
+      because "CVE-2024-7254"
+    }
+    api("commons-beanutils:commons-beanutils:1.11.0") {
+      because "CVE-2025-48734"
+    }
+    api("org.eclipse.jetty:jetty-server:${jettyVersion}") {
+      because "CVE-2024-13009"
+    }
+    api("org.eclipse.jetty:jetty-servlets:${jettyVersion}") {
+      because "CVE-2024-9823"
+    }
+    api("org.apache.mina:mina-core:2.2.4") {
+      because "CVE-2024-52046"
+    }
+    api("com.squareup.okhttp3:okhttp:4.12.0") {
+      because "CVE-2021-0341"
+    }
+    api("io.vertx:vertx-core:4.5.24") {
+      because "fabric8 BOM alignment"
+    }
+  }
+
+  if (findProject(':sparkling-water-repl') != null) {
+    api(project(":sparkling-water-repl"))
+  }
   api(project(":sparkling-water-core"))
   api(project(":sparkling-water-extensions"))
+  // fabric8 7.x for modern Kubernetes support; uses Vert.x HTTP client by default.
+  api("io.fabric8:kubernetes-client:${fabricK8sClientVersion}")
 }
 
 //

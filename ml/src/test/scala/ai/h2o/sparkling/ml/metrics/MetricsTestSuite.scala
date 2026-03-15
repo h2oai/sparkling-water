@@ -21,11 +21,12 @@ import ai.h2o.sparkling.SparkTestContext
 import com.google.gson.{JsonObject, JsonParser}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 @RunWith(classOf[JUnitRunner])
-class MetricsTestSuite extends FunSuite with Matchers with SparkTestContext {
+class MetricsTestSuite extends AnyFunSuite with Matchers with SparkTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 

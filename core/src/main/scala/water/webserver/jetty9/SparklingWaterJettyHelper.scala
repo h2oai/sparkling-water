@@ -21,7 +21,6 @@ import ai.h2o.sparkling.backend.api.dataframes.DataFramesServlet
 import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesServlet
 import ai.h2o.sparkling.backend.api.options.OptionsServlet
 import ai.h2o.sparkling.backend.api.rdds.RDDsServlet
-import ai.h2o.sparkling.backend.api.scalainterpreter.ScalaInterpreterServlet
 import ai.h2o.sparkling.{H2OConf, H2OContext, H2OCredentials}
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.proxy.ProxyServlet.Transparent
@@ -49,7 +48,17 @@ class SparklingWaterJettyHelper(
     context.setContextPath(conf.contextPath.getOrElse("/"))
     context.setServletHandler(proxyContextHandler(conf, context))
     if (conf.isH2OReplEnabled) {
-      ScalaInterpreterServlet.register(context, conf, hc)
+      // Spark 4 port:
+      // The Scala interpreter servlet depends on the optional `sparkling-water-repl` module.
+      // When that module is not present, skip registering the servlet.
+      try {
+        val moduleClass = Class.forName("ai.h2o.sparkling.backend.api.scalainterpreter.ScalaInterpreterServlet$")
+        val module = moduleClass.getField("MODULE$").get(null)
+        val method = module.getClass.getMethod("register", classOf[ServletContextHandler], classOf[H2OConf], classOf[H2OContext])
+        method.invoke(module, context, conf, hc)
+      } catch {
+        case _: Throwable => // ignore
+      }
     }
     RDDsServlet.register(context, conf, hc)
     H2OFramesServlet.register(context, conf, hc)

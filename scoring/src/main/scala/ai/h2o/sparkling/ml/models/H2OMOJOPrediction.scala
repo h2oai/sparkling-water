@@ -55,16 +55,16 @@ trait H2OMOJOPrediction
     val schema = getPredictionSchema()
     val configInitializers = getEasyPredictModelWrapperConfigurationInitializers()
     mojoModel.getModelCategory match {
-      case ModelCategory.Binomial => getBinomialPredictionUDF(schema, uid, mojoFileName, configInitializers)
-      case ModelCategory.Regression => getRegressionPredictionUDF(schema, uid, mojoFileName, configInitializers)
-      case ModelCategory.Multinomial => getMultinomialPredictionUDF(schema, uid, mojoFileName, configInitializers)
-      case ModelCategory.Clustering => getClusteringPredictionUDF(schema, uid, mojoFileName, configInitializers)
-      case ModelCategory.DimReduction => getDimReductionPredictionUDF(schema, uid, mojoFileName, configInitializers)
+      case ModelCategory.Binomial => getBinomialPredictionUDF(schema, uid, mojoData, configInitializers)
+      case ModelCategory.Regression => getRegressionPredictionUDF(schema, uid, mojoData, configInitializers)
+      case ModelCategory.Multinomial => getMultinomialPredictionUDF(schema, uid, mojoData, configInitializers)
+      case ModelCategory.Clustering => getClusteringPredictionUDF(schema, uid, mojoData, configInitializers)
+      case ModelCategory.DimReduction => getDimReductionPredictionUDF(schema, uid, mojoData, configInitializers)
       case ModelCategory.WordEmbedding =>
-        getWordEmbeddingPredictionUDF(schema, uid, mojoFileName, configInitializers, getFeaturesCols())
-      case ModelCategory.AnomalyDetection => getAnomalyPredictionUDF(schema, uid, mojoFileName, configInitializers)
-      case ModelCategory.Ordinal => getOrdinalPredictionUDF(schema, uid, mojoFileName, configInitializers)
-      case ModelCategory.CoxPH => getCoxPHPredictionUDF(schema, uid, mojoFileName, configInitializers)
+        getWordEmbeddingPredictionUDF(schema, uid, mojoData, configInitializers, getFeaturesCols())
+      case ModelCategory.AnomalyDetection => getAnomalyPredictionUDF(schema, uid, mojoData, configInitializers)
+      case ModelCategory.Ordinal => getOrdinalPredictionUDF(schema, uid, mojoData, configInitializers)
+      case ModelCategory.CoxPH => getCoxPHPredictionUDF(schema, uid, mojoData, configInitializers)
       case _ => throw new RuntimeException("Unknown model category " + mojoModel.getModelCategory)
     }
   }

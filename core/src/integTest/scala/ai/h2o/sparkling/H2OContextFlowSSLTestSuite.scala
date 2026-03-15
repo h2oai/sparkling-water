@@ -27,8 +27,8 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.StringType
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 import water.api.schemas3.CloudV3
 
 trait TestingCertificates {
@@ -44,7 +44,7 @@ trait TestingCertificates {
   }
 }
 
-abstract class H2OContextFlowSSLTestSuiteBase extends FunSuite with SharedH2OTestContext with TestingCertificates {
+abstract class H2OContextFlowSSLTestSuiteBase extends AnyFunSuite with SharedH2OTestContext with TestingCertificates {
 
   def sparkConf: SparkConf
 
@@ -145,7 +145,7 @@ class H2OContextFlowSSLTestSuite_CACertificateInTrustStore_SignedByFake extends 
 }
 
 abstract class H2OContextFlowSSLTestSuite_CertificateVerificationEnabledBase(certificateName: String)
-  extends FunSuite
+  extends AnyFunSuite
   with SparkTestContext
   with TestingCertificates {
   override def createSparkSession(): SparkSession = sparkSession("local-cluster[2, 1, 1024]")

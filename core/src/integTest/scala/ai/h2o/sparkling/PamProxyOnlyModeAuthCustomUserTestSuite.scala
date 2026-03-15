@@ -21,14 +21,15 @@ import ai.h2o.sparkling.backend.exceptions.RestApiUnauthorisedException
 import ai.h2o.sparkling.backend.utils.RestApiUtils
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Ignore}
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.Ignore
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.junit.JUnitRunner
 
 import java.io.{File, FileWriter}
 
 @RunWith(classOf[JUnitRunner])
 @Ignore //still unstable, to be fixed and unignored next release (SW-2779)
-class PamProxyOnlyModeAuthCustomUserTestSuite extends FunSuite with SharedH2OTestContext {
+class PamProxyOnlyModeAuthCustomUserTestSuite extends AnyFunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = {
     val tmpFile = File.createTempFile("sparkling-water-", "-pam-login.conf")

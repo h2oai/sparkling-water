@@ -17,39 +17,41 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.io.{File, FileInputStream, InputStream}
+import java.io.{ByteArrayOutputStream, File, FileInputStream, InputStream}
+import java.nio.file.Files
 
-import ai.h2o.sparkling.utils.SparkSessionUtils
+import ai.h2o.sparkling.ml.utils.Utils
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
-import org.apache.spark.SparkFiles
 
 private[models] trait HasBinaryModel {
 
   private var binaryModelFileName: Option[String] = None
+  private var binaryModelData: Option[Array[Byte]] = None
+
+  @transient private lazy val localBinaryModelFile: Option[File] =
+    binaryModelData.map { data =>
+      val name = binaryModelFileName.getOrElse("binaryModel")
+      Utils.mojoDataToTempFile(name, data)
+    }
 
   private[sparkling] def setBinaryModel(model: InputStream): this.type =
     setBinaryModel(model, binaryModelName = "binaryModel")
 
   private[sparkling] def setBinaryModel(model: InputStream, binaryModelName: String): this.type = {
-    val modelFile = SparkSessionUtils.inputStreamToTempFile(model, binaryModelName, ".bin")
-    setBinaryModel(modelFile)
+    val buf = new ByteArrayOutputStream()
+    val bytes = new Array[Byte](8192)
+    var n = model.read(bytes)
+    while (n != -1) { buf.write(bytes, 0, n); n = model.read(bytes) }
+    binaryModelFileName = Some(binaryModelName)
+    binaryModelData = Some(buf.toByteArray)
     this
   }
 
   private[sparkling] def setBinaryModel(model: File): this.type = {
-    val sparkSession = SparkSessionUtils.active
-    binaryModelFileName = Some(model.getName)
-    if (getBinaryModel().isDefined && getBinaryModel().get.exists()) {
-      // Copy content to a new temp file
-      withResource(new FileInputStream(model)) { inputStream =>
-        setBinaryModel(inputStream, binaryModelFileName.get)
-      }
-    } else {
-      sparkSession.sparkContext.addFile(model.getAbsolutePath)
+    withResource(new FileInputStream(model)) { is =>
+      setBinaryModel(is, model.getName)
     }
-    this
   }
 
-  private[sparkling] def getBinaryModel(): Option[File] =
-    binaryModelFileName.map(path => new File(SparkFiles.get(path)))
+  private[sparkling] def getBinaryModel(): Option[File] = localBinaryModelFile
 }

@@ -36,7 +36,6 @@ ext {
   // Published projects
   publishedProjects = [
     project(':sparkling-water-api-generation'),
-    project(':sparkling-water-repl'),
     project(':sparkling-water-core'),
     project(':sparkling-water-examples'),
     project(':sparkling-water-ml'),
@@ -60,7 +59,6 @@ ext {
   // Scala projects
   scalaProjects = [
     project(':sparkling-water-api-generation'),
-    project(':sparkling-water-repl'),
     project(':sparkling-water-core'),
     project(':sparkling-water-examples'),
     project(':sparkling-water-ml'),
@@ -78,8 +76,15 @@ ext {
   rProjects = [project(':sparkling-water-r'), project(':sparkling-water-r-cran')]
   docProjects = [project(':sparkling-water-doc')]
 
-  scalaTestVersions = ['2.11': '2.2.1', '2.12': '3.0.8']
+  scalaTestVersions = ['2.11': '2.2.1', '2.12': '3.0.8', '2.13': '3.2.19']
   numpyVersions = ['3.6': '1.19.5', '3.7': '1.19.5', 'default': '1.23.5']
+}
+
+// The REPL module is not available for all Spark/Scala combinations (e.g., Spark 4 port in this branch).
+def replProject = findProject(':sparkling-water-repl')
+if (replProject != null) {
+  ext.publishedProjects += replProject
+  ext.scalaProjects += replProject
 }
 
 def versionSpecificProps = new Properties()
@@ -172,9 +177,12 @@ configure(subprojects) { project ->
       url "https://oss.sonatype.org/content/repositories/releases/"
     }
 
-    // Snapshot repository of H2O builds
+    // Snapshot repository of H2O builds (exclusive: only for ai.h2o to avoid 403 on other artifacts)
     maven {
       url "https://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
+      content {
+        includeGroup "ai.h2o"
+      }
     }
 
     if (sparkVersion.endsWith("-SNAPSHOT")) {
@@ -246,27 +254,36 @@ clean.doFirst {
   delete file("metastore_db/")
 }
 
-def createStagingId(def username, def password) {
-  def proc = ['./createStagingId.sh', username, password].execute([], file("${rootDir.toString()}/gradle/publish"))
+static String waitForExitCode0AndReturnOutput(String scriptName, Process proc) {
+  int oneHour = 60 * 60 * 1000
+  if (proc.waitForOrKill(oneHour) != 0) {
+    throw new IllegalStateException("Running script $scriptName failed! Output: ${proc.text}")
+  }
   return proc.text
 }
 
-def uploadFiles(def username, def password, def repoDir, def stagingId) {
-  def proc = ['./uploadToNexus.sh'
-    , username, password, repoDir, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
-  proc.waitFor()
+String createStagingId(String username, String password) {
+  String script = './createStagingId.sh'
+  Process proc = [script, username, password].execute([], file("${rootDir.toString()}/gradle/publish"))
+  return waitForExitCode0AndReturnOutput(script, proc)
 }
 
-def closeBucket(def username, def password, def stagingId) {
-  def proc = ['./closeBucket.sh'
-    , username, password, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
-  proc.waitFor()
+void uploadFiles(String username, String password, String repoDir, String stagingId) {
+  String script = './uploadToNexus.sh'
+  Process proc = [script, username, password, repoDir, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+  waitForExitCode0AndReturnOutput(script, proc)
+}
+
+void closeBucket(String username, String password, String stagingId) {
+  String script = './closeBucket.sh'
+  Process proc = [script, username, password, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+  waitForExitCode0AndReturnOutput(script, proc)
 }
 
 task publishToNexus {
   doLast {
-    def stagingId = createStagingId(project.findProperty('nexusUsername'), project.findProperty('nexusPassword')).replace('\n', '')
-    uploadFiles(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), "${rootDir}/dist/build/dist/maven/repo", stagingId)
-    closeBucket(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), stagingId)
+    String stagingId = createStagingId(project.findProperty('nexusUsername') as String, project.findProperty('nexusPassword') as String).replace('\n', '')
+    uploadFiles(project.findProperty('nexusUsername') as String, project.findProperty('nexusPassword') as String, "${rootDir}/dist/build/dist/maven/repo", stagingId)
+    closeBucket(project.findProperty('nexusUsername') as String, project.findProperty('nexusPassword') as String, stagingId)
   }
 }
