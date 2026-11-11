@@ -40,6 +40,10 @@ Requirements: JDK 8–17 for H2O-3 open source, Scala 2.12 today (2.13 is a reno
 - History on `mm/refactoring` is linear: no merge commits. Update with `git pull --rebase`; local git config
   enforces rebase-on-pull and fast-forward-only merges for this branch.
 - PRs are always squash-merged (`gh pr merge --squash`); the squash commit message follows Conventional Commits.
+- Every commit title on `mm/refactoring` ends with its `tk` ticket id in brackets, e.g.
+  `feat(scoring): add Spark-only test context [hezat4]`. For a squash-merged PR the PR title carries the id, because
+  it becomes the commit title. A child ticket's commit uses the child id. Work without a ticket gets one first
+  (`tk new "..." --type chore`), which is closed in the same commit.
 - Simple changes (docs, ticket updates, small config or one-file fixes) need no PR: commit them directly to
   `mm/refactoring` as a single commit.
 - Ticket work (one `tk` step) goes through a PR from a short-lived branch named `mm/<type>/<slug>`.
