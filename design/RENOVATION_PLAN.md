@@ -103,6 +103,9 @@ Scoring lane first (1.1–1.12), then training-only removals and ports (1.13–1
   and the `apiGeneration` configuration uses `assembly-scoring` (shadow) + `api-generation` (shadow) + spark-repl, with no
   reference to `:sparkling-water-assembly`, so the scoring wheel never compiles `core`/`ml`. Verify: generated `src-gen`
   byte-identical on 3.5; `:sparkling-water-py-scoring:testPython`.
+- **1.12a Drop `pkg_resources` from the PySparkling initializer.** The initializer imports `pkg_resources`, which recent
+  setuptools removed, so released PySparkling fails at import (found by 0.2a). Use `importlib.metadata` in the
+  `py-scoring` initializer; remove the `setuptools<80` pin from `run_local.sh`. Verify: scoring `testPython`; `run_local.sh` green.
 - **1.13 Remove the REPL module.** `settings.gradle`, `core`/`utils`/`assembly` project references, `H2OConf` interpreter
   options and defaults, `spark.ext.h2o.repl.*`, delete `core/.../backend/api/scalainterpreter/*` and its tests (they
   import the repl), REPL docs. Verify: `./gradlew :sparkling-water-core:test` + build gate.
