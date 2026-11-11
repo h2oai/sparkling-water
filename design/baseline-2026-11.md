@@ -12,7 +12,8 @@ renovation change. Every later step must keep the JDK 11 results below at least 
 | Gradle | 7.6 wrapper |
 | Python | 3.11 via `-PpythonBinary=/opt/homebrew/bin/python3.11` (no `python` on PATH) |
 | R | not installed |
-| `SPARK_HOME` | not set |
+| `SPARK_HOME` | first run: not set; rerun: `~/opt/spark-3.5.9-bin-hadoop3` (Scala 2.12; the build compiles against 3.5.0) |
+| Driverless AI license | first run: none; rerun: `DRIVERLESS_AI_LICENSE_FILE` set |
 
 Commands, run with `--continue` so one failing module does not hide another:
 
@@ -33,21 +34,25 @@ Commands, run with `--continue` so one failing module does not hide another:
 
 | Module | JDK 11 passed / run | JDK 11 failed | JDK 17 passed / run | JDK 17 failed |
 |---|---|---|---|---|
-| core (25 suites) | 206 / 210 | 4 | 13 / 35 | 22 suites abort at start |
+| core (25 suites) | 208 / 210 | 2 | 13 / 35 | 22 suites abort at start |
 | utils (1 suite) | 12 / 12 | 0 | 0 / 1 | 1 suite aborts at start |
-| ml (40 suites) | 297 / 322 (1 skipped) | 24 | 11 / 50 | 39 suites abort at start |
+| ml (40 suites) | 314 / 322 (1 skipped) | 7 | 11 / 50 | 39 suites abort at start |
 | Duration | 22.5 min | | 3.7 min | |
+
+JDK 11 numbers include the 2026-11-11 rerun of the configuration and MOJO pipeline suites with `SPARK_HOME` and the
+license set; both now pass. JDK 17 numbers are from the first run only.
 
 ## JDK 11 failures, by cause
 
-None of the 28 failures is a defect in code the renovation keeps.
+None of the remaining 9 failures is a defect in code the renovation keeps. Two environment causes from the first run
+are resolved by the rerun and kept in the table for reference.
 
 | Cause | Tests | Suites | Kind |
 |---|---|---|---|
-| XGBoost not available: H2O-3 ships no native XGBoost for macOS arm64, so `/3/ModelBuilders/xgboost` returns 404 | 7 | `H2OSupervisedMOJOModelTestSuite`, `H2OTreeBasedSupervisedMOJOModelTestSuite`, `MOJOParameterTestSuite`, `H2OGridSearchTestSuite` | environment |
-| Driverless AI MOJO runtime: "License could not be found!" | 17 | `H2OMOJOPipelineModelTestSuite` | environment (needs a DAI license) |
-| Local-cluster mode needs a Spark distribution: executor launch fails, `assembly/target/scala-2.12/jars does not exist` | 2 | `ConfigurationPropertiesTestSuite_HttpHeadersOnNode`, `..._SetNotifyLocalViaNodeExtraProperties` | environment (needs `SPARK_HOME` = Spark 3.5.0 hadoop3) |
-| Scala REPL: `RemoteClassLoaderError` in the executor class loader | 2 | `ScalaInterpreterServletTestSuite` | code removed by step 1.13 |
+| XGBoost not available: H2O-3 ships no native XGBoost for macOS arm64, so `/3/ModelBuilders/xgboost` returns 404 | 7 | `H2OSupervisedMOJOModelTestSuite`, `H2OTreeBasedSupervisedMOJOModelTestSuite`, `MOJOParameterTestSuite`, `H2OGridSearchTestSuite` | environment; still failing, verify on Linux x86_64 |
+| Driverless AI MOJO runtime: "License could not be found!" | 17 | `H2OMOJOPipelineModelTestSuite` | environment; **passes (19/19) with a DAI license** |
+| Local-cluster mode needs a Spark distribution: executor launch fails, `assembly/target/scala-2.12/jars does not exist` | 2 | `ConfigurationPropertiesTestSuite_HttpHeadersOnNode`, `..._SetNotifyLocalViaNodeExtraProperties` | environment; **pass with `SPARK_HOME` set** |
+| Scala REPL: `RemoteClassLoaderError` in the executor class loader | 2 | `ScalaInterpreterServletTestSuite` | code removed by step 1.13; still failing on rerun |
 
 ## JDK 17 failures
 

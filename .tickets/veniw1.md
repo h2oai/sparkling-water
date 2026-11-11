@@ -16,3 +16,7 @@ PR budget: < 300 changed lines (whole-directory deletions and regenerated code e
 ## Note 2026-11-11T03:18:49Z
 
 JDK 11: build OK except R tasks; core 206/210, utils 12/12, ml 297/322. All 28 failures environment (XGBoost arm64 x7, DAI license x17, SPARK_HOME x2) or REPL code removed in 1.13 (x2). JDK 17: Spark suites abort without --add-opens -> new step 2.1a. Details: design/baseline-2026-11.md.
+
+## Note 2026-11-11T03:37:05Z
+
+Rerun 2026-11-11 on JDK 11 with SPARK_HOME=Spark 3.5.9 and DRIVERLESS_AI_LICENSE_FILE: config suites 2/2 pass, H2OMOJOPipelineModelTestSuite 19/19 pass, ScalaInterpreterServletTestSuite still 2 failures. JDK 11 now core 208/210, ml 314/322 (7 XGBoost failures, arm64 only).
