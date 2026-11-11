@@ -11,4 +11,4 @@ Step 0.4 of design/RENOVATION_PLAN.md (Phase 0 – Baseline, harness and decisio
 
 Keep only 3.5 on `master`; drop 2.3, 2.4, 3.0–3.4 (no Databricks runtime ships 3.4). A 4.x minor is added to `supportedSparkVersions` only when its build is green; default follows the Databricks LTS in use. Verify: `design/adr/ADR-002-*.md` merged and linked from this plan.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = ADR merged under design/adr and linked from the plan; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under vuzid9`) before continuing, then work them via `tk ready`. Done = ADR merged under design/adr and linked from the plan; then tk note + tk close.

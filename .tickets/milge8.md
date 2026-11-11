@@ -11,7 +11,7 @@ Step 4.5 of design/RENOVATION_PLAN.md (Phase 4 – Spark 4.1 / 4.2 → M3 (DBR 1
 
 Rewritten from the 0.7 decision. If OSS H2O-3: set `sys.ai.h2o.debug.allowJavaVersions` programmatically in `InternalH2OBackend.startH2OWorker` (and driver client start) gated by an `H2OConf` flag; H2O-dependent suites on JDK 21. Verify: `./gradlew test -Pspark=4.2` on JDK 21.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under milge8`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.
 
 ## Note 2026-11-10T23:07:48Z
 

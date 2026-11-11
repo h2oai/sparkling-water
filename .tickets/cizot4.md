@@ -11,4 +11,4 @@ Step 3.16 of design/RENOVATION_PLAN.md (Phase 3 – Spark 4.0 → M2 (DBR 17.3 L
 
 DBR 17.3 LTS dedicated cluster, `ci/databricksTests`, 1.3 fixtures; Spark UI tab renders. Flip `spark=4.0` default. **Milestone M2.**
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under cizot4`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.

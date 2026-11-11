@@ -11,4 +11,4 @@ Step 2.7 of design/RENOVATION_PLAN.md (Phase 2 – Toolchain and M1 (Scala 2.13 
 
 Verify: `./gradlew test -Pspark=3.5 -PscalaVersion=2.13.<dbr>`.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under sojit9`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.

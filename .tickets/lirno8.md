@@ -11,4 +11,4 @@ Step 4.4 of design/RENOVATION_PLAN.md (Phase 4 – Spark 4.1 / 4.2 → M3 (DBR 1
 
 Each artifact refuses the other minor (4.1 vs 4.2). Verify: new test in `core`.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under lirno8`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.

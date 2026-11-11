@@ -11,4 +11,4 @@ Step 2.1 of design/RENOVATION_PLAN.md (Phase 2 – Toolchain and M1 (Scala 2.13 
 
 Wrapper 8.10+, shadow 8.x, `gradle-use-python` 4.x, spotless 6.x, docker plugin 9.x, release 3.x. Verify: `./gradlew build -x check`, `distPython`, `spotlessCheck`.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under pelaw5`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.

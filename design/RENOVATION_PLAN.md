@@ -13,8 +13,9 @@ Milestones (each is a demo on a real Azure Databricks cluster, scoring (a) befor
 Rules for every step:
 - Tracking lives in `.tickets/` (`tk ready` gives the next step; `tk start` / `tk note` / `tk close`). This file is the
   narrative; the ticket tree is the order. Keep both in sync when a step is added or dropped.
-- One step = one PR of **< 300 changed lines** (whole-directory deletions and regenerated code excluded). Split before
-  starting if it will not fit.
+- One step = one PR of **< 300 changed lines** (whole-directory deletions and regenerated code excluded). A step
+  that will exceed it is split into ordered child tickets (`tk new ... --under <id>`), each within budget, as soon
+  as that is clear, before or during the work; the parent closes when its children do.
 - Each step names its verification command and is done only when it passes. Whenever a step touches the build graph,
   shared Gradle logic, source-set selection or generated code, the gate is additionally
   `./gradlew build -x check -Pspark=3.5` (Phase 1–2) or `-Pspark=4.0` (Phase 3+).

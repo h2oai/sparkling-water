@@ -43,6 +43,9 @@ Requirements: JDK 8–17 for H2O-3 open source, Scala 2.12 today (2.13 is a reno
 - Simple changes (docs, ticket updates, small config or one-file fixes) need no PR: commit them directly to
   `mm/refactoring` as a single commit.
 - Ticket work (one `tk` step) goes through a PR from a short-lived branch named `mm/<type>/<slug>`.
+- Every PR stays under 300 changed lines (whole-directory deletions and regenerated code excluded). If a ticket's
+  change will exceed that, split the ticket into ordered child tickets with `tk new "..." --under <id>`, each within
+  budget, as soon as it is clear (before or during the work); then continue with `tk ready`. One child = one PR.
 
 ## Gotchas
 - Internal backend starts H2O inside Spark executors; external backend talks to a separate H2O cluster via REST.

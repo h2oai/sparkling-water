@@ -11,4 +11,4 @@ Step 1.14 of design/RENOVATION_PLAN.md (Phase 1 – Shrink the surface (Spark 3.
 
 Delete `ProxyStarter`, `water/webserver/jetty9/*`, the rest of `backend/api/*`, proxy-only tests (`LdapProxyOnlyModeAuthTestSuite`, `LdapAuthTestSuite`, `LdapAesEncryptedBindPasswordLoginModuleSuite`, SSL-proxy suites), driver Jetty 9 dependencies in `core/build.gradle` (H2O's own `h2o-jetty-9` transitive stays). Node-forwarded `flow.*` options stay. Verify: `:sparkling-water-core:test`; `H2OContextTestSuite` asserts no driver Jetty server is started.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under yutud2`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.

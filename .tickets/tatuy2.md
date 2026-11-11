@@ -11,4 +11,4 @@ Step 2.5 of design/RENOVATION_PLAN.md (Phase 2 – Toolchain and M1 (Scala 2.13 
 
 2.4 jar + wheel on DBR 16.4 LTS (Scala 2.13) through the 0.2 runner with the 1.2 fixtures. **Milestone M1a.**
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under tatuy2`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.

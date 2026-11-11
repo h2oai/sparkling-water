@@ -11,4 +11,4 @@ Step 4.2 of design/RENOVATION_PLAN.md (Phase 4 – Spark 4.1 / 4.2 → M3 (DBR 1
 
 `scoring` + `py-scoring` need no H2O node. Verify: scoring tests on JDK 21; 0.2 runner with the 1.2 fixtures on DBR 18 LTS and 19. **Milestone M3a.**
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under figim5`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.

@@ -11,4 +11,4 @@ Step 3.8 of design/RENOVATION_PLAN.md (Phase 3 – Spark 4.0 → M2 (DBR 17.3 LT
 
 Move `SparklingWaterInfoPage`, `SparklingWaterUITab`, `CrossSparkUtils` implementations into `core/src/main/scala_spark_3.5` (javax) and `scala_spark_others` (jakarta); keep the `headerSparkPage` reflection shim; H2O-side `javax` contract untouched (`extensions` keeps `compileOnly servlet-api`, assembly keeps excluding it). Verify: `:sparkling-water-core:test -Pspark=3.5` green; the 4.0 run is 3.9.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under rajij9`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.

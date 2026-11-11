@@ -11,4 +11,4 @@ Step 1.2 of design/RENOVATION_PLAN.md (Phase 1 – Shrink the surface (Spark 3.5
 
 Models and `H2OMOJOModel`/`H2OMOJOPipelineModel` pipelines saved by the current 2.12 release under `scoring/src/test/resources/sw_scoring_scala_2.12_3.46/` (same convention as `ml/src/test/resources/sw_mojo_scala_2.12_df_java_serde`); `CrossVersionMOJOLoadTestSuite` loads, transforms and round-trips them. Captured **before** any serialization-affecting change. Verify: `./gradlew :sparkling-water-scoring:test`.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under dobos9`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.

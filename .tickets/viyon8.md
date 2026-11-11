@@ -11,4 +11,4 @@ Step 1.7 of design/RENOVATION_PLAN.md (Phase 1 – Shrink the surface (Spark 3.5
 
 `ExpressionEncoder(schema)`/`Encoders.row`; delete per-version `RowEncoder.scala`. After this `utils` has no version-specific `scala_spark_<X.Y>` dirs; `scala_spark_others` remains with the shared shims. Verify: core + ml tests + build gate.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under viyon8`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.

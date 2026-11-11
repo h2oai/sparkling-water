@@ -11,4 +11,4 @@ Step 3.6 of design/RENOVATION_PLAN.md (Phase 3 – Spark 4.0 → M2 (DBR 17.3 LT
 
 0.2 runner with the 1.2 fixtures on DBR 17.3 LTS dedicated cluster. **Milestone M2a.**
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). Done = the Verify condition holds; then tk note + tk close.
+PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under uliba5`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.
