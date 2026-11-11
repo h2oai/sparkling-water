@@ -31,12 +31,14 @@ Rules for every step:
   `./gradlew :sparkling-water-core:test :sparkling-water-utils:test :sparkling-water-ml:test` on JDK 11 (reference)
   and JDK 17 (target; the test JVMs get no Spark `--add-opens` flags, so failures there are expected and recorded).
   Record pass/fail per module in `design/baseline-2026-11.md`. No code changes.
-- **0.2 Databricks scoring test runner.** `∥` `ci/databricksTests/scoring/test.scala` and `test.py`: install the given
-  scoring jar + `h2o_pysparkling_scoring` wheel on a dedicated cluster, load a MOJO from the repo fixtures, transform a
-  DataFrame, save and reload a Spark ML pipeline containing it, assert no `H2OContext` was created, print Sparkling
-  Water / Spark / Scala / JDK / Python versions. New driver script using the current `databricks` CLI and workspace-file
-  or volume library installs (the existing `ci/Jenkinsfile-databricks` is AWS-specific and uses the legacy CLI, so only
-  its shape is reused). Verify: runs green against release 3.46.0.6 on DBR 16.4 LTS.
+- **0.2 Databricks scoring test runner.** `∥` Split into three steps:
+  - **0.2a Scoring test scripts, verified locally.** `ci/databricksTests/scoring/test.scala`, `test.py`, `run_local.sh`;
+    inputs via Spark conf; load `binom_model_prostate.mojo`, score `binom_model_prostate_prediction.csv` and compare with
+    its expected columns, save/reload a `PipelineModel`, assert no `H2OContext`, print versions, end with
+    `SCORING TEST PASSED`. Verify: `run_local.sh` green with released 3.46.0.6 scoring artifacts and Spark 3.5.x.
+  - **0.2b Databricks driver script.** `run_databricks.sh` on the current `databricks` CLI: upload, install libraries on a
+    dedicated cluster, run both scripts as job tasks. Workspace details are parameters. Verify: `--dry-run`, `shellcheck`.
+  - **0.2c Verify on Azure Databricks.** 3.46.0.6 on DBR 16.4 LTS; result starts `design/databricks-baseline-2026-11.md`.
 - **0.3 Azure Databricks baseline.** Run 0.2 and the existing `ci/databricksTests/test.scala`/`test.py` with release
   `3.46.0.6-1-3.5` on DBR 16.4 LTS (Scala 2.12). Record internal backend start time, autoscaling interaction, library
   install path. Output: `design/databricks-baseline-2026-11.md`. This is the behaviour M1–M3 must preserve.
