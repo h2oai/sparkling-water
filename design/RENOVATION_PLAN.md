@@ -28,7 +28,8 @@ Rules for every step:
 ## Phase 0 – Baseline, harness and decisions
 
 - **0.1 Baseline build on current tree.** `./gradlew build -x check` then
-  `./gradlew :sparkling-water-core:test :sparkling-water-utils:test :sparkling-water-ml:test` on the installed JDK 17.
+  `./gradlew :sparkling-water-core:test :sparkling-water-utils:test :sparkling-water-ml:test` on JDK 11 (reference)
+  and JDK 17 (target; the test JVMs get no Spark `--add-opens` flags, so failures there are expected and recorded).
   Record pass/fail per module in `design/baseline-2026-11.md`. No code changes.
 - **0.2 Databricks scoring test runner.** `∥` `ci/databricksTests/scoring/test.scala` and `test.py`: install the given
   scoring jar + `h2o_pysparkling_scoring` wheel on a dedicated cluster, load a MOJO from the repo fixtures, transform a
@@ -120,6 +121,10 @@ Scoring lane first (1.1–1.12), then training-only removals and ports (1.13–1
 
 - **2.1 Gradle 8.x.** Wrapper 8.10+, shadow 8.x, `gradle-use-python` 4.x, spotless 6.x, docker plugin 9.x, release 3.x.
   Verify: `./gradlew build -x check`, `distPython`, `spotlessCheck`.
+- **2.1a Spark Java 17 module flags for test JVMs.** Add Spark's `--add-opens` options (the list in Spark's
+  `JavaModuleOptions`) as `jvmArgs` of the `test`, `integTest` and `bench` tasks in `gradle/sparkTest.gradle` and
+  `gradle/scala.gradle`, only when the test JVM is 17 or newer (baseline 0.1: every Spark suite aborts on JDK 17 without
+  them). Verify: `:sparkling-water-utils:test :sparkling-water-core:test` on JDK 17 match the JDK 11 baseline.
 - **2.2 Separate JDK toolchain from bytecode target.** New properties `javaToolchainVersion=17` (global) and
   `bytecodeTargetVersion` (8 in `gradle-spark3.5.properties`, 17 for 4.x files) replacing the dual use of
   `minSupportedJavaVersion` in `gradle/scala.gradle`; scalac `-release`, javac `--release`; CI images `eclipse-temurin:17`.

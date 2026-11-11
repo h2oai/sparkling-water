@@ -5,6 +5,7 @@ type: feature
 effort: normal
 children:
   - pelaw5
+  - lizab7
   - vatig8
   - fopim6
   - wefuv8

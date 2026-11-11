@@ -24,6 +24,9 @@ per-Spark overrides in `gradle-spark<X.Y>.properties`.
 ./gradlew dist                            # distribution zip in dist/
 ```
 Requirements: JDK 8–17 for H2O-3 open source, Scala 2.12 today (2.13 is a renovation target), Python 3.9+.
+Local builds: pass `-PpythonBinary=python3.11` when `python` is not on PATH; the R tasks need R (use `--continue`);
+local-cluster tests need `SPARK_HOME` set to Spark 3.5.0 (hadoop3 build). Spark tests on JDK 17 need `--add-opens`
+flags (step 2.1a). Reference results: `design/baseline-2026-11.md`.
 
 ## Conventions
 - Spark-version-specific code goes in `scala_spark_<X.Y>` / `scala_spark_others` source dirs; keep shims in `utils`.
