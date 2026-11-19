@@ -52,7 +52,10 @@ class H2OContext(object):
         kwargs["cacert"] = conf.sslCACert()
         if conf.userName() and conf.password():
             kwargs["auth"] = (conf.userName(), conf.password())
-        url = "{}://{}:{}".format(schema, h2o_context._client_ip, h2o_context._client_port)
+        client_ip = h2o_context._client_ip
+        if ":" in client_ip and not client_ip.startswith("["):
+            client_ip = "[{}]".format(client_ip)  # IPv6 literals must be enclosed in brackets in URLs
+        url = "{}://{}:{}".format(schema, client_ip, h2o_context._client_port)
         if conf.contextPath() is not None:
             url = "{}/{}".format(url, conf.contextPath())
         return h2o.connect(url=url, **kwargs)

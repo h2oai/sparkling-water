@@ -19,7 +19,7 @@ package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.H2OConf.{BooleanOption, IntOption, OptionOption, StringOption}
-import ai.h2o.sparkling.backend.{BuildInfo, SharedBackendConf}
+import ai.h2o.sparkling.backend.{BuildInfo, NodeDesc, SharedBackendConf}
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.expose.Logging
@@ -37,10 +37,11 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
   /** Getters */
   def h2oCluster: Option[String] = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1)
 
-  def h2oClusterHost: Option[String] = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(0))
+  def h2oClusterHost: Option[String] =
+    sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(NodeDesc.parseIpPort(_)._1)
 
   def h2oClusterPort: Option[Int] =
-    sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(1).toInt)
+    sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(NodeDesc.parseIpPort(_)._2)
 
   def clusterSize: Option[String] = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_SIZE._1)
 
