@@ -1,6 +1,6 @@
 ---
 id: ebile8
-status: open
+status: closed
 type: task
 effort: hard
 children:
