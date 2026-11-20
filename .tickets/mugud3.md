@@ -1,6 +1,6 @@
 ---
 id: mugud3
-status: open
+status: closed
 type: task
 effort: normal
 created: 2026-11-11T03:51:25Z
@@ -10,3 +10,7 @@ created: 2026-11-11T03:51:25Z
 Child of 0.2. `ci/databricksTests/scoring/run_databricks.sh` using the current `databricks` CLI: upload the 0.2a scripts and fixtures to a Unity Catalog volume or workspace folder, install the scoring jar (Maven coordinate or uploaded file) and the scoring wheel as cluster libraries on a dedicated-access cluster (create DBR 16.4 LTS or reuse a given cluster id), run both scripts as job tasks with the 0.2a Spark conf, fail unless both report `SCORING TEST PASSED`. Workspace host, cluster and upload path are parameters, never committed. Verify: `--dry-run` prints the CLI calls; `shellcheck` clean.
 
 PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under mugud3`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.
+
+## Note 2026-11-20T02:51:21Z
+
+run_databricks.sh: notebook tasks (conf cell + script + dbutils.notebook.exit(summary)), per-task new_cluster because runs/submit rejects job_clusters; --dry-run and shellcheck clean; refactored shared defaults into common.sh; local runner still passes. Verified live in 0.2c (run 262225635605771).
