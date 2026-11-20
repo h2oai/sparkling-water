@@ -71,7 +71,8 @@ check(PipelineModel.load(pipelinePath), data, "Reloaded pipeline")
 
 if (h2oContextExists()) throw new AssertionError("An H2OContext was created; scoring must not need one")
 
-println(
+val summary =
   s"Sparkling Water ${scoringArtifact()}, Spark ${spark.version}, " +
-    s"Scala ${scala.util.Properties.versionNumberString}, JDK ${System.getProperty("java.version")}")
+    s"Scala ${scala.util.Properties.versionNumberString}, JDK ${System.getProperty("java.version")}"
+println(summary)
 println("SCORING TEST PASSED")

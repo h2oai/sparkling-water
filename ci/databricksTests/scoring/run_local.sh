@@ -20,20 +20,15 @@
 #   SCORING_JAR=<path to scoring jar>  PY_PACKAGE=<path to scoring wheel or sdist>
 set -euo pipefail
 
-here="$(cd "$(dirname "$0")" && pwd)"
-repo="$(cd "$here/../../.." && pwd)"
+source "$(dirname "$0")/common.sh"
 : "${SPARK_HOME:?SPARK_HOME must point to a Spark 3.5.x distribution}"
-SW_VERSION="${SW_VERSION:-3.46.0.6-1-3.5}"
-SCALA_BINARY="${SCALA_BINARY:-2.12}"
-PY_PACKAGE="${PY_PACKAGE:-h2o_pysparkling_scoring_3.5==3.46.0.6.post1}"
 PYTHON="${PYTHON:-python3.11}"
 work="$repo/build/scoring-runner"
 mkdir -p "$work"
 
-jar="${SCORING_JAR:-$work/sparkling-water-scoring-package_$SCALA_BINARY-$SW_VERSION.jar}"
+jar="${SCORING_JAR:-$work/$scoring_artifact-$SW_VERSION.jar}"
 if [[ ! -f "$jar" ]]; then
-  artifact="sparkling-water-scoring-package_$SCALA_BINARY"
-  curl -fsSL -o "$jar" "https://repo1.maven.org/maven2/ai/h2o/$artifact/$SW_VERSION/$artifact-$SW_VERSION.jar"
+  curl -fsSL -o "$jar" "https://repo1.maven.org/maven2/ai/h2o/$scoring_artifact/$SW_VERSION/$scoring_artifact-$SW_VERSION.jar"
 fi
 
 if [[ ! -x "$work/venv/bin/python" ]]; then
@@ -42,18 +37,17 @@ fi
 # PySparkling <= 3.46.0.6 imports pkg_resources, which recent setuptools releases removed.
 "$work/venv/bin/pip" install -q --upgrade "numpy<2" "setuptools<80" "$PY_PACKAGE"
 
-fixtures="file://$repo/ml/src/test/resources"
 # Loopback driver address: on some hosts the default address breaks Spark's local jar transfer ("Too large frame").
 conf() {
   echo --conf spark.driver.host=127.0.0.1 --conf spark.driver.bindAddress=127.0.0.1 \
-    --conf "spark.sw.scoring.test.mojo=$fixtures/binom_model_prostate.mojo" \
-    --conf "spark.sw.scoring.test.data=$fixtures/binom_model_prostate_prediction.csv" \
+    --conf "spark.sw.scoring.test.mojo=file://$fixtures/$mojo_file" \
+    --conf "spark.sw.scoring.test.data=file://$fixtures/$data_file" \
     --conf "spark.sw.scoring.test.out=file://$work/out-$1"
 }
 
 status=0
 check() {
-  if grep -q "SCORING TEST PASSED" "$work/$1.log"; then
+  if grep -q "$marker" "$work/$1.log"; then
     echo "$1: PASSED"
   else
     echo "$1: FAILED (log: $work/$1.log)"
