@@ -37,10 +37,12 @@ def test_conf(key):
 
 def check(model, data, label):
     scored = model.transform(data)
+    prob0, prob1 = F.col("detailed_prediction.probabilities.0"), F.col("detailed_prediction.probabilities.1")
+    # Null-safe: a null prediction or probability counts as a mismatch.
     mismatches = scored.where(
-        (F.col("prediction").cast("string") != F.col("expected_prediction").cast("string"))
-        | (F.abs(F.col("detailed_prediction.probabilities.0") - F.col("expected_prob0")) > TOLERANCE)
-        | (F.abs(F.col("detailed_prediction.probabilities.1") - F.col("expected_prob1")) > TOLERANCE))
+        ~F.col("prediction").cast("string").eqNullSafe(F.col("expected_prediction").cast("string"))
+        | prob0.isNull() | prob1.isNull()
+        | (F.abs(prob0 - F.col("expected_prob0")) > TOLERANCE) | (F.abs(prob1 - F.col("expected_prob1")) > TOLERANCE))
     rows, bad = scored.count(), mismatches.count()
     if rows != data.count() or bad != 0:
         raise AssertionError("{}: {} of {} rows differ from expected predictions".format(label, bad, rows))
@@ -67,8 +69,9 @@ check(PipelineModel.load(pipeline_path), data, "Reloaded pipeline")
 if h2o_context_exists():
     raise AssertionError("An H2OContext was created; scoring must not need one")
 
-print("Sparkling Water {}, Spark {}, Scala {}, JDK {}, Python {}".format(
+summary = "Sparkling Water {}, Spark {}, Scala {}, JDK {}, Python {}".format(
     pkgutil.get_data("ai.h2o.sparkling", "version.txt").decode().strip(), spark.version,
     jvm.scala.util.Properties.versionNumberString(), jvm.java.lang.System.getProperty("java.version"),
-    platform.python_version()))
+    platform.python_version())
+print(summary)
 print("SCORING TEST PASSED")

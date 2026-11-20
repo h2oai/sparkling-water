@@ -38,10 +38,12 @@ val data = spark.read
 
 def check(model: Transformer, input: DataFrame, label: String): Unit = {
   val scored = model.transform(input)
+  val (prob0, prob1) = (col("detailed_prediction.probabilities.0"), col("detailed_prediction.probabilities.1"))
+  // Null-safe: a null prediction or probability counts as a mismatch.
   val mismatches = scored.where(
-    col("prediction").cast("string") =!= col("expected_prediction").cast("string") ||
-      abs(col("detailed_prediction.probabilities.0") - col("expected_prob0")) > Tolerance ||
-      abs(col("detailed_prediction.probabilities.1") - col("expected_prob1")) > Tolerance)
+    !(col("prediction").cast("string") <=> col("expected_prediction").cast("string")) ||
+      prob0.isNull || prob1.isNull ||
+      abs(prob0 - col("expected_prob0")) > Tolerance || abs(prob1 - col("expected_prob1")) > Tolerance)
   val (rows, bad) = (scored.count(), mismatches.count())
   if (rows != input.count() || bad != 0) {
     throw new AssertionError(s"$label: $bad of $rows rows differ from expected predictions")
@@ -71,7 +73,8 @@ check(PipelineModel.load(pipelinePath), data, "Reloaded pipeline")
 
 if (h2oContextExists()) throw new AssertionError("An H2OContext was created; scoring must not need one")
 
-println(
+val summary =
   s"Sparkling Water ${scoringArtifact()}, Spark ${spark.version}, " +
-    s"Scala ${scala.util.Properties.versionNumberString}, JDK ${System.getProperty("java.version")}")
+    s"Scala ${scala.util.Properties.versionNumberString}, JDK ${System.getProperty("java.version")}"
+println(summary)
 println("SCORING TEST PASSED")
