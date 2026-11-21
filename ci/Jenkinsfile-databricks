@@ -137,7 +137,7 @@ def test(workspaceDir, clusterId, language) {
     if (language == "python") {
         extension = "py"
     }
-    shWithSWPyEnv "databricks workspace import --language ${language} ci/databricksTests/test.${extension} ${workspaceDir}/test.${extension}"
+    shWithSWPyEnv "databricks workspace import --language ${language} ci/databricksTests/training/test.${extension} ${workspaceDir}/test.${extension}"
 
     def rawJson = shWithSWPyEnv("""
         databricks runs submit --json '

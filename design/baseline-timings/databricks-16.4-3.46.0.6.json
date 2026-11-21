@@ -1,0 +1,268 @@
+{
+  "training": {
+    "suite": "training",
+    "sw_version": "3.46.0.6-1-3.5",
+    "spark_version": "16.4.x-scala2.12",
+    "node_type": "Standard_D4ds_v5",
+    "workers": 3,
+    "java_options": "--add-exports=java.base/sun.net.www.protocol.http=ALL-UNNAMED --add-exports=java.base/sun.net.www.protocol.https=ALL-UNNAMED",
+    "libraries": {
+      "python": [
+        {
+          "pypi": {
+            "package": "h2o_pysparkling_3.5==3.46.0.6.post1"
+          }
+        }
+      ],
+      "scala": [
+        {
+          "maven": {
+            "coordinates": "ai.h2o:sparkling-water-package_2.12:3.46.0.6-1-3.5"
+          }
+        }
+      ]
+    },
+    "runs": 3,
+    "tasks": {
+      "run": {
+        "total": {
+          "median": 627.084,
+          "min": 245.889,
+          "max": 662.419
+        }
+      },
+      "python": {
+        "queue": {
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "setup": {
+          "median": 112,
+          "min": 111,
+          "max": 532
+        },
+        "execution": {
+          "median": 129,
+          "min": 123,
+          "max": 134
+        },
+        "cleanup": {
+          "median": 0,
+          "min": 0,
+          "max": 1
+        },
+        "spark_session": {
+          "median": 0.019,
+          "min": 0.017,
+          "max": 0.022
+        },
+        "h2o_context": {
+          "median": 31.569,
+          "min": 30.611,
+          "max": 31.728
+        },
+        "data_import": {
+          "median": 2.0,
+          "min": 1.794,
+          "max": 2.102
+        },
+        "as_spark_frame": {
+          "median": 10.127,
+          "min": 9.593,
+          "max": 10.627
+        },
+        "train": {
+          "median": 19.835,
+          "min": 16.761,
+          "max": 21.366
+        },
+        "predict": {
+          "median": 1.136,
+          "min": 1.106,
+          "max": 1.221
+        }
+      },
+      "scala": {
+        "queue": {
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "setup": {
+          "median": 532,
+          "min": 111,
+          "max": 562
+        },
+        "execution": {
+          "median": 92,
+          "min": 89,
+          "max": 94
+        },
+        "cleanup": {
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "spark_session": {
+          "median": 0.002,
+          "min": 0.002,
+          "max": 0.003
+        },
+        "h2o_context": {
+          "median": 27.35,
+          "min": 27.16,
+          "max": 30.002
+        },
+        "data_import": {
+          "median": 1.647,
+          "min": 1.619,
+          "max": 2.288
+        },
+        "as_spark_frame": {
+          "median": 7.997,
+          "min": 7.773,
+          "max": 9.088
+        },
+        "train": {
+          "median": 11.27,
+          "min": 10.562,
+          "max": 13.329
+        },
+        "predict": {
+          "median": 1.235,
+          "min": 1.19,
+          "max": 1.452
+        }
+      }
+    }
+  },
+  "scoring": {
+    "suite": "scoring",
+    "sw_version": "3.46.0.6-1-3.5",
+    "spark_version": "16.4.x-scala2.12",
+    "node_type": "Standard_D4ds_v5",
+    "workers": 1,
+    "java_options": "",
+    "libraries": {
+      "python": [
+        {
+          "pypi": {
+            "package": "h2o_pysparkling_scoring_3.5==3.46.0.6.post1"
+          }
+        }
+      ],
+      "scala": [
+        {
+          "maven": {
+            "coordinates": "ai.h2o:sparkling-water-scoring-package_2.12:3.46.0.6-1-3.5"
+          }
+        }
+      ]
+    },
+    "runs": 3,
+    "tasks": {
+      "run": {
+        "total": {
+          "median": 184.271,
+          "min": 181.348,
+          "max": 615.45
+        }
+      },
+      "python": {
+        "queue": {
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "setup": {
+          "median": 82,
+          "min": 81,
+          "max": 112
+        },
+        "execution": {
+          "median": 90,
+          "min": 89,
+          "max": 102
+        },
+        "cleanup": {
+          "median": 0,
+          "min": 0,
+          "max": 1
+        },
+        "data_read": {
+          "median": 17.826,
+          "min": 17.736,
+          "max": 18.511
+        },
+        "mojo_load": {
+          "median": 0.915,
+          "min": 0.893,
+          "max": 0.954
+        },
+        "score": {
+          "median": 4.385,
+          "min": 4.217,
+          "max": 4.514
+        },
+        "pipeline_save": {
+          "median": 11.35,
+          "min": 11.024,
+          "max": 11.761
+        },
+        "pipeline_load_score": {
+          "median": 3.216,
+          "min": 3.212,
+          "max": 3.223
+        }
+      },
+      "scala": {
+        "queue": {
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "setup": {
+          "median": 112,
+          "min": 81,
+          "max": 532
+        },
+        "execution": {
+          "median": 75,
+          "min": 68,
+          "max": 82
+        },
+        "cleanup": {
+          "median": 1,
+          "min": 0,
+          "max": 1
+        },
+        "data_read": {
+          "median": 16.866,
+          "min": 13.576,
+          "max": 18.242
+        },
+        "mojo_load": {
+          "median": 0.736,
+          "min": 0.732,
+          "max": 1.115
+        },
+        "score": {
+          "median": 3.645,
+          "min": 3.596,
+          "max": 4.401
+        },
+        "pipeline_save": {
+          "median": 5.704,
+          "min": 5.547,
+          "max": 5.829
+        },
+        "pipeline_load_score": {
+          "median": 2.642,
+          "min": 2.582,
+          "max": 2.969
+        }
+      }
+    }
+  }
+}

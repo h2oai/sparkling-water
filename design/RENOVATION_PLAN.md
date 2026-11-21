@@ -133,6 +133,8 @@ Scoring lane first (1.1–1.12), then training-only removals and ports (1.13–1
   `JavaModuleOptions`) as `jvmArgs` of the `test`, `integTest` and `bench` tasks in `gradle/sparkTest.gradle` and
   `gradle/scala.gradle`, only when the test JVM is 17 or newer (baseline 0.1: every Spark suite aborts on JDK 17 without
   them). Verify: `:sparkling-water-utils:test :sparkling-water-core:test` on JDK 17 match the JDK 11 baseline.
+- **2.1b Remove JDK-internal URL handlers.** `RestCommunication.resolveUrl` uses `sun.net.www.protocol.http(s).Handler`;
+  on JDK 17 (DBR 16.4) the internal backend fails without `--add-exports` (found by 0.3a).
 - **2.2 Separate JDK toolchain from bytecode target.** New properties `javaToolchainVersion=17` (global) and
   `bytecodeTargetVersion` (8 in `gradle-spark3.5.properties`, 17 for 4.x files) replacing the dual use of
   `minSupportedJavaVersion` in `gradle/scala.gradle`; scalac `-release`, javac `--release`; CI images `eclipse-temurin:17`.
