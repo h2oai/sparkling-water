@@ -3,6 +3,9 @@ id: siyim9
 status: open
 type: chore
 effort: normal
+children:
+  - emuwo6
+  - kusah6
 created: 2026-11-10T23:07:35Z
 ---
 # 0.3 Azure Databricks baseline
