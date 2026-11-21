@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 # Scoring-only smoke test: MOJO load, scoring and pipeline persistence without an H2OContext.
+# Needs ../timing.py loaded first (the runners do this).
 # Inputs (Spark conf): spark.sw.scoring.test.mojo, spark.sw.scoring.test.data, spark.sw.scoring.test.out
 
 import pkgutil
@@ -54,17 +55,22 @@ def h2o_context_exists():
     return isinstance(h2o_context, JavaClass) and h2o_context.get().isDefined()
 
 
-data = (spark.read.option("header", "true").option("inferSchema", "true").csv(test_conf("data"))
-        .withColumnRenamed("prediction", "expected_prediction")
-        .withColumnRenamed("prob0", "expected_prob0")
-        .withColumnRenamed("prob1", "expected_prob1"))
+with timed("data_read"):
+    data = (spark.read.option("header", "true").option("inferSchema", "true").csv(test_conf("data"))
+            .withColumnRenamed("prediction", "expected_prediction")
+            .withColumnRenamed("prob0", "expected_prob0")
+            .withColumnRenamed("prob1", "expected_prob1"))
 
-model = H2OMOJOModel.createFromMojo(test_conf("mojo"))
-check(model, data, "MOJO model")
+with timed("mojo_load"):
+    model = H2OMOJOModel.createFromMojo(test_conf("mojo"))
+with timed("score"):
+    check(model, data, "MOJO model")
 
 pipeline_path = test_conf("out") + "/python-pipeline"
-Pipeline(stages=[model]).fit(data).write().overwrite().save(pipeline_path)
-check(PipelineModel.load(pipeline_path), data, "Reloaded pipeline")
+with timed("pipeline_save"):
+    Pipeline(stages=[model]).fit(data).write().overwrite().save(pipeline_path)
+with timed("pipeline_load_score"):
+    check(PipelineModel.load(pipeline_path), data, "Reloaded pipeline")
 
 if h2o_context_exists():
     raise AssertionError("An H2OContext was created; scoring must not need one")

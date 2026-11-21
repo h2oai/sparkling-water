@@ -15,13 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Runs the scoring-only test scripts (test.scala, test.py) as notebook tasks of one Databricks job run.
+# Runs the scoring-only test scripts (scoring/test.scala, scoring/test.py) as notebook tasks of one Databricks job run.
 # Usage: run_databricks.sh [--dry-run]   (--dry-run prints the CLI calls and the job spec, contacts nothing)
 # Uses the logged-in databricks CLI (select a workspace with DATABRICKS_CONFIG_PROFILE). Parameters, never committed:
 #   UPLOAD_PATH   Unity Catalog volume directory for fixtures and outputs, e.g. /Volumes/<catalog>/<schema>/<volume>/scoring
 #   CLUSTER_ID    existing dedicated-access cluster; unset = a new job cluster per task (SPARK_VERSION, NODE_TYPE)
 #   WORKSPACE_DIR workspace folder for the notebooks (default: the current user's home)
-#   SCORING_JAR / PY_PACKAGE  local scoring jar / wheel to test instead of the released 3.46.0.6 artifacts
+#   SW_JAR / PY_PACKAGE  local scoring jar / wheel to test instead of the released 3.46.0.6 artifacts
 set -euo pipefail
 
 source "$(dirname "$0")/common.sh"
@@ -50,11 +50,11 @@ upload() {
 dbx fs mkdirs "dbfs:$UPLOAD_PATH"
 upload "$fixtures/$mojo_file" >/dev/null
 upload "$fixtures/$data_file" >/dev/null
-if [[ -n "${SCORING_JAR:-}" ]]; then
-  jar_path="$(upload "$SCORING_JAR")"
+if [[ -n "${SW_JAR:-}" ]]; then
+  jar_path="$(upload "$SW_JAR")"
   jar_lib="$(jq -n --arg p "$jar_path" '{jar: $p}')"
 else
-  jar_lib="$(jq -n --arg c "$scoring_maven" '{maven: {coordinates: $c}}')"
+  jar_lib="$(jq -n --arg c "$sw_maven" '{maven: {coordinates: $c}}')"
 fi
 if [[ -f "$PY_PACKAGE" ]]; then
   py_path="$(upload "$PY_PACKAGE")"
@@ -63,8 +63,9 @@ else
   py_lib="$(jq -n --arg p "$PY_PACKAGE" '{pypi: {package: $p}}')"
 fi
 
-# Wraps a test script into a notebook: a cell setting the test inputs, the script, and a cell returning its summary.
-notebook() { # <task> <script> <comment prefix> <language>
+# Wraps a test script into a notebook: a cell setting the test inputs, the timing helper and script, and a cell
+# returning "<summary> | <marker> | <timings JSON>".
+notebook() { # <task> <script extension> <comment prefix> <language> <timings JSON expression>
   local cell="$3 COMMAND ----------" source="$work/test_$1"
   {
     echo "$3 Databricks notebook source"
@@ -74,15 +75,15 @@ notebook() { # <task> <script> <comment prefix> <language>
     done
     echo "spark.conf.set(\"spark.sw.scoring.test.out\", \"$UPLOAD_PATH/out-$1\")"
     printf '\n%s\n\n' "$cell"
-    cat "$2"
+    with_timing "$2" "$here/scoring/test.$2"
     printf '\n%s\n\n' "$cell"
-    echo "dbutils.notebook.exit(summary + \" | $marker\")"
+    echo "dbutils.notebook.exit(summary + \" | $marker | \" + $5)"
   } >"$source"
   dbx workspace import "$WORKSPACE_DIR/test_$1" --file "$source" --format SOURCE --language "$4" --overwrite
 }
 dbx workspace mkdirs "$WORKSPACE_DIR"
-notebook scala "$here/test.scala" "//" SCALA
-notebook python "$here/test.py" "#" PYTHON
+notebook scala scala "//" SCALA timingsJson
+notebook python py "#" PYTHON "timings_json()"
 
 jq -n --arg dir "$WORKSPACE_DIR" --arg cluster "${CLUSTER_ID:-}" --arg version "$SPARK_VERSION" \
   --arg node "$NODE_TYPE" --arg user "$user" --argjson jar "$jar_lib" --argjson py "$py_lib" '

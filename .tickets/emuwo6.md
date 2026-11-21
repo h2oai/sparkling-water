@@ -3,6 +3,10 @@ id: emuwo6
 status: open
 type: task
 effort: normal
+children:
+  - hurel4
+  - betoj9
+  - lufan7
 created: 2026-11-21T02:21:10Z
 ---
 # 0.3a Training baseline on a fixed-size cluster with phase timings

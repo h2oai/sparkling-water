@@ -15,17 +15,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Shared defaults for the scoring test runners; sourced by run_local.sh and run_databricks.sh.
+# Shared defaults for the test runners; sourced by run_local.sh and run_databricks.sh.
+# SUITE selects the test scripts and the released artifacts they run against: scoring (default) or training.
 # shellcheck disable=SC2034
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo="$(cd "$here/../../.." && pwd)"
+repo="$(cd "$here/../.." && pwd)"
 SW_VERSION="${SW_VERSION:-3.46.0.6-1-3.5}"
 SCALA_BINARY="${SCALA_BINARY:-2.12}"
-PY_PACKAGE="${PY_PACKAGE:-h2o_pysparkling_scoring_3.5==3.46.0.6.post1}"
-scoring_artifact="sparkling-water-scoring-package_$SCALA_BINARY"
-scoring_maven="ai.h2o:$scoring_artifact:$SW_VERSION"
+SUITE="${SUITE:-scoring}"
+case "$SUITE" in
+  scoring) sw_artifact="sparkling-water-scoring-package_$SCALA_BINARY" py_default="h2o_pysparkling_scoring_3.5" ;;
+  training) sw_artifact="sparkling-water-package_$SCALA_BINARY" py_default="h2o_pysparkling_3.5" ;;
+  *) echo "Unknown SUITE: $SUITE (scoring or training)" >&2 && exit 1 ;;
+esac
+PY_PACKAGE="${PY_PACKAGE:-$py_default==3.46.0.6.post1}"
+sw_maven="ai.h2o:$sw_artifact:$SW_VERSION"
 fixtures="$repo/ml/src/test/resources"
 mojo_file="binom_model_prostate.mojo"
 data_file="binom_model_prostate_prediction.csv"
-marker="SCORING TEST PASSED"
+marker="TEST PASSED"
+
+# Writes the timing helper for a language (scala or py) followed by a test script to stdout.
+with_timing() { # <extension> <script>
+  cat "$here/timing.$1" && echo && cat "$2"
+}
