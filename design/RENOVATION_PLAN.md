@@ -218,6 +218,8 @@ Scoring lane (3.1–3.7, blocking), then training lane (3.8–3.16, does not blo
 - **5.8 YARN external backend** launcher on 4.x.
 - **5.9 Docs.** `migration_guide.rst` 3.46→4.x incl. Flow/REPL removal and `flowURL` behaviour; Azure Databricks pages
   updated with dedicated-mode, MOJO deployment and autoscaling notes; README badges; `REPO_INDEX.md` refresh.
+- **5.9a CODEOWNERS.** Restore `.github/CODEOWNERS` (deleted on `mm/refactoring` to avoid review requests on every
+  PR) from `master`, review the owners and add path owners for the new layout; last PR before merging into `master`.
 - **5.10 Release.** Version suffixes `-4.0/-4.1/-4.2/-4.3`, Maven `_2.13`, PyPI `h2o_pysparkling_4.x` and
   `h2o_pysparkling_scoring_4.x`, S3 layout.
 
