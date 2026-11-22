@@ -137,7 +137,13 @@ def test(workspaceDir, clusterId, language) {
     if (language == "python") {
         extension = "py"
     }
-    shWithSWPyEnv "databricks workspace import --language ${language} ci/databricksTests/training/test.${extension} ${workspaceDir}/test.${extension}"
+    // R uses the notebook generated from test_template.r; Scala and Python get the timing helper in front of the script.
+    def source = "ci/databricksTests/test.${extension}"
+    if (language != "r") {
+        source = "build/databricks-test.${extension}"
+        sh "mkdir -p build && cat ci/databricksTests/timing.${extension} ci/databricksTests/training/test.${extension} > ${source}"
+    }
+    shWithSWPyEnv "databricks workspace import --language ${language} ${source} ${workspaceDir}/test.${extension}"
 
     def rawJson = shWithSWPyEnv("""
         databricks runs submit --json '

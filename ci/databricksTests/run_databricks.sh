@@ -126,6 +126,15 @@ if $dry_run; then
   exit 0
 fi
 
+# The measured environment: an existing cluster's own settings, otherwise the new clusters' settings.
+if [[ -n "${CLUSTER_ID:-}" ]]; then
+  environment="$(databricks clusters get "$CLUSTER_ID" -o json | jq '{spark_version, node_type: .node_type_id,
+    workers: (.autoscale // .num_workers), java_options: (.spark_conf["spark.driver.extraJavaOptions"] // "")}')"
+else
+  environment="$(jq -n --arg version "$SPARK_VERSION" --arg node "$NODE_TYPE" --argjson workers "$WORKERS" \
+    --arg java "${JAVA_OPTIONS:-}" '{spark_version: $version, node_type: $node, workers: $workers, java_options: $java}')"
+fi
+
 # Prints the run state, retrying transient CLI failures; says which run is left behind if it gives up.
 get_run() {
   for _ in 1 2 3 4 5; do
@@ -168,12 +177,10 @@ run_once() {
     return 1
   fi
   # Platform phases in seconds; a task's library install is part of its setup.
-  jq --arg suite "$SUITE" --arg sw "$SW_VERSION" --arg version "$SPARK_VERSION" --arg node "$NODE_TYPE" \
-    --argjson workers "$WORKERS" --argjson phases "$phases" --arg java "${JAVA_OPTIONS:-}" '
+  jq --arg suite "$SUITE" --arg sw "$SW_VERSION" --argjson env "$environment" --argjson phases "$phases" '
     def s: (. // 0) / 1000;
-    {suite: $suite, sw_version: $sw, spark_version: $version, node_type: $node, workers: $workers, java_options: $java,
-     run_id: .run_id,
-     tasks: ({run: {total: (.run_duration | s)}} + (reduce .tasks[] as $t ({}; .[$t.task_key] =
+    {suite: $suite, sw_version: $sw} + $env + {run_id: .run_id,
+     tasks: ({run: {queue: (.queue_duration | s), total: (.run_duration | s)}} + (reduce .tasks[] as $t ({}; .[$t.task_key] =
        {queue: ($t.queue_duration | s), setup: ($t.setup_duration | s), execution: ($t.execution_duration | s),
         cleanup: ($t.cleanup_duration | s)} + $phases[$t.task_key]))),
      libraries: [.tasks[] | {(.task_key): .libraries}] | add}' <<<"$run" >"$work/timings-$SUITE-$run_id.json"
