@@ -39,10 +39,13 @@ with timed("as_spark_frame"):
     sparkDF = hc.asSparkFrame(frame)
     sparkDF = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string")).cache()
     sparkDF.count()
-[trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
+# Fixed seed so every timing run trains and predicts on the same rows; its high bits (the fractional bits of
+# sqrt(2)) give the generators well-mixed state. XGBoost passes seed % Int.MaxValue to the native library.
+seed = 0x6A09E667F3BCC908
+[trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2], seed=seed)
 
 with timed("train"):
-    model = H2OXGBoost(labelCol="CAPSULE").fit(trainingDF)
+    model = H2OXGBoost(labelCol="CAPSULE", seed=seed).fit(trainingDF)
 with timed("predict"):
     predictions = model.transform(testingDF).collect()
 assert predictions, "No predictions"

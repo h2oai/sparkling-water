@@ -25,10 +25,15 @@
     "runs": 3,
     "tasks": {
       "run": {
+        "queue": {
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
         "total": {
-          "median": 627.084,
-          "min": 245.889,
-          "max": 662.419
+          "median": 239.649,
+          "min": 202.812,
+          "max": 750.714
         }
       },
       "python": {
@@ -39,48 +44,48 @@
         },
         "setup": {
           "median": 112,
-          "min": 111,
-          "max": 532
+          "min": 82,
+          "max": 623
         },
         "execution": {
-          "median": 129,
-          "min": 123,
-          "max": 134
+          "median": 126,
+          "min": 119,
+          "max": 127
         },
         "cleanup": {
-          "median": 0,
+          "median": 1,
           "min": 0,
           "max": 1
         },
         "spark_session": {
-          "median": 0.019,
-          "min": 0.017,
-          "max": 0.022
+          "median": 0.021,
+          "min": 0.016,
+          "max": 0.034
         },
         "h2o_context": {
-          "median": 31.569,
-          "min": 30.611,
-          "max": 31.728
+          "median": 30.374,
+          "min": 28.621,
+          "max": 32.032
         },
         "data_import": {
-          "median": 2.0,
-          "min": 1.794,
-          "max": 2.102
+          "median": 1.916,
+          "min": 1.915,
+          "max": 2.716
         },
         "as_spark_frame": {
-          "median": 10.127,
-          "min": 9.593,
-          "max": 10.627
+          "median": 9.465,
+          "min": 9.135,
+          "max": 9.626
         },
         "train": {
-          "median": 19.835,
-          "min": 16.761,
-          "max": 21.366
+          "median": 15.115,
+          "min": 13.508,
+          "max": 19.015
         },
         "predict": {
-          "median": 1.136,
-          "min": 1.106,
-          "max": 1.221
+          "median": 1.161,
+          "min": 1.075,
+          "max": 1.203
         }
       },
       "scala": {
@@ -90,49 +95,49 @@
           "max": 0
         },
         "setup": {
-          "median": 532,
-          "min": 111,
-          "max": 562
+          "median": 112,
+          "min": 112,
+          "max": 592
         },
         "execution": {
-          "median": 92,
-          "min": 89,
-          "max": 94
+          "median": 95,
+          "min": 87,
+          "max": 100
         },
         "cleanup": {
           "median": 0,
           "min": 0,
-          "max": 0
+          "max": 1
         },
         "spark_session": {
-          "median": 0.002,
+          "median": 0.003,
           "min": 0.002,
-          "max": 0.003
+          "max": 0.004
         },
         "h2o_context": {
-          "median": 27.35,
-          "min": 27.16,
-          "max": 30.002
+          "median": 28.101,
+          "min": 27.697,
+          "max": 29.432
         },
         "data_import": {
-          "median": 1.647,
-          "min": 1.619,
-          "max": 2.288
+          "median": 2.442,
+          "min": 1.911,
+          "max": 2.518
         },
         "as_spark_frame": {
-          "median": 7.997,
-          "min": 7.773,
-          "max": 9.088
+          "median": 8.872,
+          "min": 8.072,
+          "max": 9.858
         },
         "train": {
-          "median": 11.27,
-          "min": 10.562,
-          "max": 13.329
+          "median": 13.95,
+          "min": 8.62,
+          "max": 14.47
         },
         "predict": {
-          "median": 1.235,
-          "min": 1.19,
-          "max": 1.452
+          "median": 1.476,
+          "min": 1.168,
+          "max": 1.561
         }
       }
     }

@@ -44,9 +44,12 @@ val sparkDF = timed("as_spark_frame") {
   df.count()
   df
 }
-val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
+// Fixed seed so every timing run trains and predicts on the same rows; its high bits (the fractional bits of
+// sqrt(2)) give the generators well-mixed state. XGBoost passes seed % Int.MaxValue to the native library.
+val seed = 0x6A09E667F3BCC908L
+val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2), seed)
 
-val model = timed("train") { new H2OXGBoost().setLabelCol("CAPSULE").fit(trainingDF) }
+val model = timed("train") { new H2OXGBoost().setLabelCol("CAPSULE").setSeed(seed).fit(trainingDF) }
 val predictions = timed("predict") { model.transform(testingDF).collect() }
 if (predictions.isEmpty) throw new AssertionError("No predictions")
 
