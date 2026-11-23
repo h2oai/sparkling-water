@@ -1,6 +1,6 @@
 ---
 id: kusah6
-status: open
+status: closed
 type: task
 effort: normal
 created: 2026-11-21T02:21:10Z
@@ -14,3 +14,11 @@ Record: findings and recommended cluster settings (for example a minimum worker 
 Verify: at least one run with a scale-up and one with a scale-down event, each documented with the outcome and timings.
 
 PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under kusah6`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.
+
+## Note 2026-11-23T22:15:50Z
+
+Branch mm/test/databricks-autoscaling. Added SUITE=autoscale (ci/databricksTests/autoscale/test.scala, Scala tasks 'up' and 'down' on 1-4 worker autoscaling clusters), WORKERS=MIN-MAX in run_databricks.sh, H2O_NODES=executors for the training suite. Code reading: internal backend fixes the H2O cloud at start; InternalH2OBackend only logs a warning for new executors; no handling of lost executors (heartbeat thread acts on unhealthy only in external mode). First Databricks probe run started 2026-11-23.
+
+## Note 2026-11-23T23:03:20Z
+
+Verify holds: 2 probe runs, each with a scale-up and a scale-down (outcomes and timings in design/databricks-baseline-2026-11.md, design/baseline-timings/databricks-16.4-3.46.0.6-autoscaling.json); training suite passes on 1-4 autoscaling. Recommendation for ADR-005: fixed-size clusters for training.

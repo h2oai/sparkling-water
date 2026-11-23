@@ -15,14 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Runs the test scripts of one suite (SUITE=scoring|training, default scoring) as notebook tasks of a Databricks job run,
-# RUNS times in a row, and records phase timings: in-script phases from the notebook exit value, platform phases from
+# Runs the test scripts of one suite (SUITE=scoring|training|autoscale, default scoring) as notebook tasks of a Databricks
+# job run, RUNS times in a row, and records phase timings: in-script phases from the notebook exit value, platform phases from
 # the Jobs API. Writes one JSON per run and their aggregate (median, min, max) to build/databricks-runner/.
 # Usage: run_databricks.sh [--dry-run]   (--dry-run prints the CLI calls and the job spec, contacts nothing)
 # Uses the logged-in databricks CLI (select a workspace with DATABRICKS_CONFIG_PROFILE). Parameters, never committed:
 #   UPLOAD_PATH   Unity Catalog volume directory for fixtures and outputs, e.g. /Volumes/<catalog>/<schema>/<volume>/tests
 #   CLUSTER_ID    existing dedicated-access cluster; unset = a new job cluster per task (SPARK_VERSION, NODE_TYPE, WORKERS)
-#   WORKERS       workers per new cluster (scoring 1, training 3); H2O_NODES expected H2O nodes (default WORKERS)
+#   WORKERS       workers per new cluster (scoring 1, training 3), or MIN-MAX for an autoscaling one (autoscale 1-4)
+#   H2O_NODES     expected H2O nodes of the training suite (default WORKERS; "executors" for the executors present)
 #   JAVA_OPTIONS  driver and executor JVM flags of a new cluster; training default: the --add-exports that the internal
 #                 backend of 3.46.0.6 needs on JDK 17 (RestCommunication uses sun.net.www.protocol handlers)
 #   RUNS          sequential runs (default 1); TIMINGS_OUT file to store the aggregate in under the suite's key
@@ -34,9 +35,24 @@ source "$(dirname "$0")/common.sh"
 : "${UPLOAD_PATH:?UPLOAD_PATH must be a Unity Catalog volume directory, e.g. /Volumes/<catalog>/<schema>/<volume>/tests}"
 SPARK_VERSION="${SPARK_VERSION:-16.4.x-scala2.12}"
 NODE_TYPE="${NODE_TYPE:-Standard_D4ds_v5}"
-if [[ "$SUITE" == training ]]; then WORKERS="${WORKERS:-3}"; else WORKERS="${WORKERS:-1}"; fi
-H2O_NODES="${H2O_NODES:-$WORKERS}"
-if [[ "$SUITE" == training ]]; then
+case "$SUITE" in
+  scoring) WORKERS="${WORKERS:-1}" ;;
+  training) WORKERS="${WORKERS:-3}" ;;
+  autoscale) WORKERS="${WORKERS:-1-4}" ;;
+esac
+# A worker count as the Clusters API takes it: a number, or {min_workers, max_workers} for MIN-MAX.
+if [[ "$WORKERS" =~ ^([0-9]+)-([0-9]+)$ ]]; then
+  workers_json="{\"min_workers\": ${BASH_REMATCH[1]}, \"max_workers\": ${BASH_REMATCH[2]}}"
+  H2O_NODES="${H2O_NODES:-executors}"
+elif [[ "$WORKERS" =~ ^[0-9]+$ ]]; then
+  workers_json="$WORKERS"
+  H2O_NODES="${H2O_NODES:-$WORKERS}"
+else
+  echo "WORKERS must be a number or MIN-MAX: $WORKERS" >&2 && exit 1
+fi
+# Notebook tasks: the training and scoring suites run each language, the autoscale suite each scenario in Scala.
+if [[ "$SUITE" == autoscale ]]; then tasks=(up down); else tasks=(scala python); fi
+if [[ "$SUITE" != scoring ]]; then
   JAVA_OPTIONS="${JAVA_OPTIONS---add-exports=java.base/sun.net.www.protocol.http=ALL-UNNAMED \
 --add-exports=java.base/sun.net.www.protocol.https=ALL-UNNAMED}"
 fi
@@ -80,8 +96,10 @@ inputs() { # <task>
     echo "spark.conf.set(\"spark.sw.scoring.test.mojo\", \"$UPLOAD_PATH/$mojo_file\")"
     echo "spark.conf.set(\"spark.sw.scoring.test.data\", \"$UPLOAD_PATH/$data_file\")"
     echo "spark.conf.set(\"spark.sw.scoring.test.out\", \"$UPLOAD_PATH/out-$1\")"
-  else
+  elif [[ "$SUITE" == training ]]; then
     echo "spark.conf.set(\"spark.sw.training.test.nodes\", \"$H2O_NODES\")"
+  else
+    echo "spark.conf.set(\"spark.sw.autoscale.test.scenario\", \"$1\")"
   fi
 }
 if [[ "$SUITE" == scoring ]]; then
@@ -104,20 +122,27 @@ notebook() { # <task> <script extension> <comment prefix> <language> <timings JS
   dbx workspace import "$WORKSPACE_DIR/${SUITE}_$1" --file "$source" --format SOURCE --language "$4" --overwrite
 }
 dbx workspace mkdirs "$WORKSPACE_DIR"
-notebook scala scala "//" SCALA timingsJson
-notebook python py "#" PYTHON "timings_json()"
+for task in "${tasks[@]}"; do
+  if [[ "$task" == python ]]; then
+    notebook python py "#" PYTHON "timings_json()"
+  else
+    notebook "$task" scala "//" SCALA timingsJson
+  fi
+done
 
 jq -n --arg dir "$WORKSPACE_DIR/$SUITE" --arg cluster "${CLUSTER_ID:-}" --arg version "$SPARK_VERSION" \
-  --arg node "$NODE_TYPE" --argjson workers "$WORKERS" --arg user "$user" --argjson jar "$jar_lib" \
-  --argjson py "$py_lib" --arg java "${JAVA_OPTIONS:-}" '
+  --arg node "$NODE_TYPE" --argjson workers "$workers_json" --arg user "$user" --argjson jar "$jar_lib" \
+  --argjson py "$py_lib" --arg java "${JAVA_OPTIONS:-}" --args '
   (if $java == "" then {} else {spark_conf: {"spark.driver.extraJavaOptions": $java,
     "spark.executor.extraJavaOptions": $java}} end) as $conf
   | (if $cluster != "" then {existing_cluster_id: $cluster} else {new_cluster: ({spark_version: $version,
-    node_type_id: $node, num_workers: $workers, data_security_mode: "SINGLE_USER", single_user_name: $user} + $conf)}
+    node_type_id: $node, data_security_mode: "SINGLE_USER", single_user_name: $user} + (if ($workers | type) == "object" then {autoscale: $workers}
+    else {num_workers: $workers} end) + $conf)}
     end) as $compute
   | def task($key; $lib): {task_key: $key, notebook_task: {notebook_path: "\($dir)_\($key)", source: "WORKSPACE"},
       libraries: [$lib]} + $compute;
-  {timeout_seconds: 3600, tasks: [task("scala"; $jar), task("python"; $py)]}' >"$work/job-$SUITE.json"
+  {timeout_seconds: 3600, tasks: [$ARGS.positional[] | task(.; if . == "python" then $py else $jar end)]}' \
+  "${tasks[@]}" >"$work/job-$SUITE.json"
 
 run_name="sparkling-water $SUITE test"
 if $dry_run; then
@@ -131,7 +156,7 @@ if [[ -n "${CLUSTER_ID:-}" ]]; then
   environment="$(databricks clusters get "$CLUSTER_ID" -o json | jq '{spark_version, node_type: .node_type_id,
     workers: (.autoscale // .num_workers), java_options: (.spark_conf["spark.driver.extraJavaOptions"] // "")}')"
 else
-  environment="$(jq -n --arg version "$SPARK_VERSION" --arg node "$NODE_TYPE" --argjson workers "$WORKERS" \
+  environment="$(jq -n --arg version "$SPARK_VERSION" --arg node "$NODE_TYPE" --argjson workers "$workers_json" \
     --arg java "${JAVA_OPTIONS:-}" '{spark_version: $version, node_type: $node, workers: $workers, java_options: $java}')"
 fi
 
@@ -157,7 +182,7 @@ run_once() {
   done
 
   local failed=0 phases='{}'
-  for task in scala python; do
+  for task in "${tasks[@]}"; do
     task_run="$(jq -r --arg t "$task" '.tasks[]? | select(.task_key == $t) | .run_id // empty' <<<"$run")"
     output='{}' # a task that never ran has no output; the run state below says why
     if [[ -n "$task_run" ]]; then output="$(databricks jobs get-run-output "$task_run" -o json)" || output='{}'; fi

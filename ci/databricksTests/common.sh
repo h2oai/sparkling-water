@@ -16,7 +16,8 @@
 # limitations under the License.
 #
 # Shared defaults for the test runners; sourced by run_local.sh and run_databricks.sh.
-# SUITE selects the test scripts and the released artifacts they run against: scoring (default) or training.
+# SUITE selects the test scripts and the released artifacts they run against: scoring (default), training, or
+# autoscale (the autoscaling probe, which uses the training artifacts).
 # shellcheck disable=SC2034
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -26,8 +27,8 @@ SCALA_BINARY="${SCALA_BINARY:-2.12}"
 SUITE="${SUITE:-scoring}"
 case "$SUITE" in
   scoring) sw_artifact="sparkling-water-scoring-package_$SCALA_BINARY" py_default="h2o_pysparkling_scoring_3.5" ;;
-  training) sw_artifact="sparkling-water-package_$SCALA_BINARY" py_default="h2o_pysparkling_3.5" ;;
-  *) echo "Unknown SUITE: $SUITE (scoring or training)" >&2 && exit 1 ;;
+  training | autoscale) sw_artifact="sparkling-water-package_$SCALA_BINARY" py_default="h2o_pysparkling_3.5" ;;
+  *) echo "Unknown SUITE: $SUITE (scoring, training or autoscale)" >&2 && exit 1 ;;
 esac
 PY_PACKAGE="${PY_PACKAGE:-$py_default==3.46.0.6.post1}"
 sw_maven="ai.h2o:$sw_artifact:$SW_VERSION"
