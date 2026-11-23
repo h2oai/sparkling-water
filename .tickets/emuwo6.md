@@ -1,8 +1,12 @@
 ---
 id: emuwo6
-status: open
+status: closed
 type: task
 effort: normal
+children:
+  - hurel4
+  - betoj9
+  - lufan7
 created: 2026-11-21T02:21:10Z
 ---
 # 0.3a Training baseline on a fixed-size cluster with phase timings
@@ -17,3 +21,7 @@ Child of 0.3. Run the existing `ci/databricksTests/test.scala` / `test.py` (H2OC
 Verify: both training tasks SUCCESS on 3 runs; baseline JSON committed and reproducible with one documented command; `shellcheck` clean.
 
 PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under emuwo6`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.
+
+## Note 2026-11-21T03:13:06Z
+
+Split into 0.3a-1..3 (hurel4, betoj9, lufan7). Cluster setup time is bimodal (Azure VM provisioning), so regression checks should use in-script phases and execution.

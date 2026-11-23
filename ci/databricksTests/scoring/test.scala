@@ -16,6 +16,7 @@
  */
 
 // Scoring-only smoke test: MOJO load, scoring and pipeline persistence without an H2OContext.
+// Needs ../timing.scala loaded first (the runners do this).
 // Inputs (Spark conf): spark.sw.scoring.test.mojo, spark.sw.scoring.test.data, spark.sw.scoring.test.out
 
 import ai.h2o.sparkling.ml.models.H2OMOJOModel
@@ -28,13 +29,15 @@ val Tolerance = 1e-6
 
 def testConf(key: String): String = spark.conf.get(s"spark.sw.scoring.test.$key")
 
-val data = spark.read
-  .option("header", "true")
-  .option("inferSchema", "true")
-  .csv(testConf("data"))
-  .withColumnRenamed("prediction", "expected_prediction")
-  .withColumnRenamed("prob0", "expected_prob0")
-  .withColumnRenamed("prob1", "expected_prob1")
+val data = timed("data_read") {
+  spark.read
+    .option("header", "true")
+    .option("inferSchema", "true")
+    .csv(testConf("data"))
+    .withColumnRenamed("prediction", "expected_prediction")
+    .withColumnRenamed("prob0", "expected_prob0")
+    .withColumnRenamed("prob1", "expected_prob1")
+}
 
 def check(model: Transformer, input: DataFrame, label: String): Unit = {
   val scored = model.transform(input)
@@ -64,12 +67,14 @@ def scoringArtifact(): String =
     .map(source => new java.io.File(source.getLocation.getPath).getName)
     .getOrElse("unknown")
 
-val model = H2OMOJOModel.createFromMojo(testConf("mojo"))
-check(model, data, "MOJO model")
+val model = timed("mojo_load") { H2OMOJOModel.createFromMojo(testConf("mojo")) }
+timed("score") { check(model, data, "MOJO model") }
 
 val pipelinePath = testConf("out") + "/scala-pipeline"
-new Pipeline().setStages(Array[PipelineStage](model)).fit(data).write.overwrite().save(pipelinePath)
-check(PipelineModel.load(pipelinePath), data, "Reloaded pipeline")
+timed("pipeline_save") {
+  new Pipeline().setStages(Array[PipelineStage](model)).fit(data).write.overwrite().save(pipelinePath)
+}
+timed("pipeline_load_score") { check(PipelineModel.load(pipelinePath), data, "Reloaded pipeline") }
 
 if (h2oContextExists()) throw new AssertionError("An H2OContext was created; scoring must not need one")
 

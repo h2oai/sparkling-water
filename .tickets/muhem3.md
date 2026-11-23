@@ -6,6 +6,7 @@ effort: normal
 children:
   - pelaw5
   - lizab7
+  - fibik8
   - vatig8
   - fopim6
   - wefuv8
