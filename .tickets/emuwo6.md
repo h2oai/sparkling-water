@@ -20,7 +20,7 @@ Child of 0.3. Run the existing `ci/databricksTests/test.scala` / `test.py` (H2OC
 
 Verify: both training tasks SUCCESS on 3 runs; baseline JSON committed and reproducible with one documented command; `shellcheck` clean.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under emuwo6`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.
+Done = the Verify condition holds; then tk note + tk close.
 
 ## Note 2026-11-21T03:13:06Z
 

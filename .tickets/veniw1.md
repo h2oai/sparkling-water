@@ -11,7 +11,7 @@ Step 0.1 of design/RENOVATION_PLAN.md (Phase 0 – Baseline, harness and decisio
 
 `./gradlew build -x check` then `./gradlew :sparkling-water-core:test :sparkling-water-utils:test :sparkling-water-ml:test` on JDK 11 (reference: upstream CI target) and JDK 17 (renovation target; the test JVMs get no Spark `--add-opens` flags, so failures there are expected and recorded). Record pass/fail per module in `design/baseline-2026-11.md`. No code changes.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under veniw1`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.
+Done = the Verify condition holds; then tk note + tk close.
 
 ## Note 2026-11-11T03:18:49Z
 

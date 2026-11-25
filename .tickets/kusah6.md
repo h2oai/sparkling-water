@@ -13,7 +13,7 @@ Record: findings and recommended cluster settings (for example a minimum worker 
 
 Verify: at least one run with a scale-up and one with a scale-down event, each documented with the outcome and timings.
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under kusah6`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.
+Done = the Verify condition holds; then tk note + tk close.
 
 ## Note 2026-11-23T22:15:50Z
 

@@ -13,4 +13,4 @@ Step 2.1b of design/RENOVATION_PLAN.md (Phase 2). Found by 0.3a on DBR 16.4 LTS 
 
 Fix: find why the explicit handler was added (git blame/history), then reach the same behaviour without JDK internals (for example `HttpURLConnection` via the JDK's default handler obtained through a public API, or an HTTP client) — or, if no public route exists, add the exports to the documented cluster configuration and to the `spark-submit` defaults. Test: a unit test that builds a URL through `resolveUrl` on JDK 17 without the flags; then 0.3a's training suite passes on DBR 16.4 with `JAVA_OPTIONS=` (empty).
 
-PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under fibik8`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.
+Done = the Verify condition holds; then tk note + tk close.
