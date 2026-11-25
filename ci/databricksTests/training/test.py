@@ -15,7 +15,9 @@
 # limitations under the License.
 #
 # Training smoke test: internal backend start, H2O frame import and conversion, XGBoost training and prediction.
-# Needs ../timing.py loaded first (the runners do this). Spark conf spark.sw.training.test.nodes: expected H2O nodes.
+# Needs ../timing.py loaded first (the runners do this). Spark conf spark.sw.training.test.nodes: expected H2O nodes,
+# or "executors" on autoscaling clusters: at least 1 and at most the Spark executors present after the start (H2O counts
+# the executors registered when it starts, and a worker can still join while it does).
 
 import platform
 
@@ -28,9 +30,13 @@ with timed("spark_session"):
     spark = SparkSession.builder.appName("App name").getOrCreate()
 with timed("h2o_context"):
     hc = H2OContext.getOrCreate()
-expected = int(spark.conf.get("spark.sw.training.test.nodes", "3"))
+executors = len(spark.sparkContext._jsc.sc().statusTracker().getExecutorInfos()) - 1  # without the driver
+nodes = spark.conf.get("spark.sw.training.test.nodes", "3")
 actual = h2o.cluster().cloud_size
-assert actual == expected, "H2O cluster should be of size {} but is {}".format(expected, actual)
+if nodes == "executors":
+    assert 1 <= actual <= executors, "H2O cluster should have 1 to {} nodes but has {}".format(executors, actual)
+else:
+    assert actual == int(nodes), "H2O cluster should be of size {} but is {}".format(nodes, actual)
 
 with timed("data_import"):
     frame = h2o.import_file(
@@ -51,8 +57,8 @@ with timed("predict"):
 assert predictions, "No predictions"
 
 jvm = spark.sparkContext._jvm
-summary = "Sparkling Water {}, H2O {}, {} H2O nodes, Spark {}, Scala {}, JDK {}, Python {}".format(
-    jvm.ai.h2o.sparkling.backend.BuildInfo.SWVersion(), h2o.__version__, actual, spark.version,
+summary = "Sparkling Water {}, H2O {}, {} H2O nodes, {} executors, Spark {}, Scala {}, JDK {}, Python {}".format(
+    jvm.ai.h2o.sparkling.backend.BuildInfo.SWVersion(), h2o.__version__, actual, executors, spark.version,
     jvm.scala.util.Properties.versionNumberString(), jvm.java.lang.System.getProperty("java.version"),
     platform.python_version())
 print(summary)

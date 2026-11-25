@@ -46,6 +46,57 @@ Task execution: training 95 s (Scala) and 126 s (Python), scoring 75 s and 90 s.
 library install, is bimodal (about 80–110 s or 530 s) depending on Azure VM provisioning, so compare in-script phases
 and execution, not setup or run totals.
 
+## Autoscaling (0.3b, 2026-11-23)
+
+Timings: [`baseline-timings/databricks-16.4-3.46.0.6-autoscaling.json`](baseline-timings/databricks-16.4-3.46.0.6-autoscaling.json)
+(single runs: probe run 3, training suite). Reproduce:
+
+```bash
+export UPLOAD_PATH=/Volumes/<catalog>/<schema>/<volume>/tests TIMINGS_OUT=design/baseline-timings/databricks-16.4-3.46.0.6-autoscaling.json
+SUITE=autoscale ci/databricksTests/run_databricks.sh && SUITE=training WORKERS=1-4 ci/databricksTests/run_databricks.sh
+```
+
+The probe ([`ci/databricksTests/autoscale/test.scala`](../ci/databricksTests/autoscale/test.scala)) runs two Scala
+scenarios, each on its own job cluster with autoscaling 1–4 workers (`Standard_D4ds_v5`, dedicated access, the JDK 17
+`--add-exports`). It makes Databricks scale by queueing sleeping Spark tasks (scale-up) or by staying idle (scale-down),
+and trains and scores XGBoost before and after the event. The down event is the loss of a worker that hosts an H2O node.
+Results of three runs each (run 3 with the final probe, which also collects the predictions and waits for the load job to
+end):
+
+| Scenario | H2O cloud at start | Event | Training after the event |
+|---|---|---|---|
+| up: H2O starts first, then load | 1 node on 1 executor | 1 → 2–3 executors in 75–580 s | succeeds on the 1 original node; the new executors get no H2O node |
+| down: load first, then H2O, then idle | 2 nodes on 3 executors (run 1), 3 on 3 (runs 2, 3) | an H2O worker removed after 185–490 s idle | fails in 0.4–35 s with `RestApiNotReachableException` for the lost node: from the driver when it was the node the driver talks to (runs 1, 3; run 3 then finds the whole cloud unreachable), from Spark tasks writing to it otherwise (run 2) |
+
+The training suite on a 1–4 worker autoscaling cluster passes for Scala and Python: both start on the minimum, 1 worker,
+so H2O runs 1 node and no scaling happens during the 2-minute workload. In-script phases (seconds, one run) are close to
+or below the 3-worker baseline: `h2o_context` 17.8 / 20.8, `as_spark_frame` 7.7 / 10.0, `train` 7.5 / 13.1,
+`predict` 1.2 / 1.3 (Scala / Python); fewer H2O nodes mean less coordination for this small data set.
+
+Findings:
+
+- **The cloud is fixed at `H2OContext.getOrCreate`.** Workers that Databricks adds later only produce the warning
+  "New spark executor joined the cloud, however it won't be used" (`InternalH2OBackend`); H2O keeps its start size.
+- **The start size depends on timing.** It is the number of executors registered when the context starts, not the
+  autoscaling maximum and not always the executors present: run 1 of the down scenario started 2 H2O nodes with 3
+  executors registered right after a scale-up. The training suite's cloud-size check therefore takes
+  `H2O_NODES=executors` on autoscaling clusters (the default for `WORKERS=MIN-MAX`).
+- **Removing a worker that hosts an H2O node breaks the H2OContext for good.** Nothing in the internal backend reacts to
+  a lost executor (the heartbeat thread acts on an unhealthy cloud only in external mode). Run 2 shows the H2O REST API
+  still reporting 3 nodes and a healthy cloud after one was gone, so the failure surfaces only when work reaches the lost
+  node. Databricks picks the workers to remove; with H2O on every worker any removal hits a node.
+- Scaling is slow next to the workload: adding a worker took 1.3–10 min (Azure VM provisioning), removing an idle one
+  3–8 min, while training on the prostate data takes 10–20 s.
+
+Recommended cluster settings for the internal backend (input to ADR-005):
+
+- **Training: fixed-size clusters (autoscaling off)**, with the H2OContext started after all workers are up. Autoscaling
+  gives no benefit (new workers are never used) and can remove a worker that holds H2O data at any idle moment.
+- If a workspace policy enforces autoscaling, set the minimum to the wanted H2O size and start H2O at the minimum; a
+  removal is still possible above the minimum after a scale-up, so long-lived contexts stay at risk.
+- Scoring with `H2OMOJOModel` starts no H2O nodes (0.2c), so the node loss above does not apply to it; scoring on an
+  autoscaling cluster was not measured here.
+
 ## Observations
 
 - One-time runs (`jobs submit`) reject shared `job_clusters`, so each task starts its own cluster; a run with

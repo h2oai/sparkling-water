@@ -44,7 +44,9 @@ Rules for every step:
   install path. Output: `design/databricks-baseline-2026-11.md`. This is the behaviour M1–M3 must preserve.
   - **0.3a** Fixed 3-worker cluster: training tests plus machine-readable phase timings (platform and in-script) for
     scoring and training, 3 runs, baseline in `design/baseline-timings/` for future regression checks (5.1).
-  - **0.3b** Autoscaling cluster: internal backend on scale-up and scale-down, with timings; feeds ADR-005.
+  - **0.3b** Autoscaling cluster: internal backend on scale-up and scale-down, with timings; feeds ADR-005. Result:
+    new workers never join H2O and losing a worker with an H2O node breaks the context, so training needs fixed-size
+    clusters (`design/databricks-baseline-2026-11.md`).
 - **0.4 ADR-002 Support matrix.** Keep only 3.5 on `master`; drop 2.3, 2.4, 3.0–3.4 (no Databricks runtime ships 3.4).
   A 4.x minor is added to `supportedSparkVersions` only when its build is green; default follows the Databricks LTS in use.
   Verify: `design/adr/ADR-002-*.md` merged and linked from this plan.

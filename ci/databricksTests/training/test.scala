@@ -16,7 +16,9 @@
  */
 
 // Training smoke test: internal backend start, H2O frame import and conversion, XGBoost training and prediction.
-// Needs ../timing.scala loaded first (the runners do this). Spark conf spark.sw.training.test.nodes: expected H2O nodes.
+// Needs ../timing.scala loaded first (the runners do this). Spark conf spark.sw.training.test.nodes: expected H2O nodes,
+// or "executors" on autoscaling clusters: at least 1 and at most the Spark executors present after the start
+// (H2O counts the executors registered when it starts, and a worker can still join while it does).
 
 import java.net.URI
 import ai.h2o.sparkling._
@@ -28,10 +30,15 @@ val spark = timed("spark_session") { SparkSession.builder.appName("App name").ge
 import spark.implicits._
 
 val hc = timed("h2o_context") { H2OContext.getOrCreate() }
-val expected = spark.conf.get("spark.sw.training.test.nodes", "3").toInt
+val executors = spark.sparkContext.statusTracker.getExecutorInfos.length - 1 // without the driver
 val actual = hc.getH2ONodes().length
-if (actual != expected) {
-  throw new RuntimeException(s"H2O cluster should be of size $expected but is $actual")
+spark.conf.get("spark.sw.training.test.nodes", "3") match {
+  case "executors" =>
+    if (actual < 1 || actual > executors) {
+      throw new RuntimeException(s"H2O cluster should have 1 to $executors nodes but has $actual")
+    }
+  case nodes =>
+    if (actual != nodes.toInt) throw new RuntimeException(s"H2O cluster should be of size $nodes but is $actual")
 }
 
 val frame = timed("data_import") {
@@ -53,7 +60,7 @@ val model = timed("train") { new H2OXGBoost().setLabelCol("CAPSULE").setSeed(see
 val predictions = timed("predict") { model.transform(testingDF).collect() }
 if (predictions.isEmpty) throw new AssertionError("No predictions")
 
-val summary = s"Sparkling Water ${ai.h2o.sparkling.backend.BuildInfo.SWVersion}, H2O ${water.H2O.ABV.projectVersion()}, $actual H2O nodes, " +
+val summary = s"Sparkling Water ${ai.h2o.sparkling.backend.BuildInfo.SWVersion}, H2O ${water.H2O.ABV.projectVersion()}, $actual H2O nodes, $executors executors, " +
   s"Spark ${spark.version}, Scala ${scala.util.Properties.versionNumberString}, JDK ${System.getProperty("java.version")}"
 println(summary)
 println("TRAINING TEST PASSED")

@@ -1,6 +1,6 @@
 ---
 id: siyim9
-status: open
+status: closed
 type: chore
 effort: normal
 children:
@@ -15,3 +15,7 @@ Step 0.3 of design/RENOVATION_PLAN.md (Phase 0 – Baseline, harness and decisio
 Run 0.2 and the existing `ci/databricksTests/test.scala`/`test.py` with release `3.46.0.6-1-3.5` on DBR 16.4 LTS (Scala 2.12). Record internal backend start time, autoscaling interaction, library install path. Output: `design/databricks-baseline-2026-11.md`. This is the behaviour M1–M3 must preserve.
 
 PR budget: < 300 changed lines (whole-directory deletions and regenerated code excluded). If the change will exceed it, split this ticket into ordered child tickets that each fit the budget (`tk new "..." --under siyim9`) before continuing, then work them via `tk ready`. Done = the Verify condition holds; then tk note + tk close.
+
+## Note 2026-11-23T23:03:29Z
+
+Done: start time, phase timings and library install path (0.3a), autoscaling interaction (0.3b) in design/databricks-baseline-2026-11.md.
