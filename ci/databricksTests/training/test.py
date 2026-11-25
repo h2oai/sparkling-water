@@ -16,7 +16,8 @@
 #
 # Training smoke test: internal backend start, H2O frame import and conversion, XGBoost training and prediction.
 # Needs ../timing.py loaded first (the runners do this). Spark conf spark.sw.training.test.nodes: expected H2O nodes,
-# or "executors" for the Spark executors present after the start (autoscaling clusters).
+# or "executors" on autoscaling clusters: at least 1 and at most the Spark executors present after the start (H2O counts
+# the executors registered when it starts, and a worker can still join while it does).
 
 import platform
 
@@ -31,9 +32,11 @@ with timed("h2o_context"):
     hc = H2OContext.getOrCreate()
 executors = len(spark.sparkContext._jsc.sc().statusTracker().getExecutorInfos()) - 1  # without the driver
 nodes = spark.conf.get("spark.sw.training.test.nodes", "3")
-expected = executors if nodes == "executors" else int(nodes)
 actual = h2o.cluster().cloud_size
-assert actual == expected, "H2O cluster should be of size {} but is {}".format(expected, actual)
+if nodes == "executors":
+    assert 1 <= actual <= executors, "H2O cluster should have 1 to {} nodes but has {}".format(executors, actual)
+else:
+    assert actual == int(nodes), "H2O cluster should be of size {} but is {}".format(nodes, actual)
 
 with timed("data_import"):
     frame = h2o.import_file(

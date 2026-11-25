@@ -34,9 +34,9 @@
           "max": 0
         },
         "total": {
-          "median": 762.809,
-          "min": 762.809,
-          "max": 762.809
+          "median": 1534.658,
+          "min": 1534.658,
+          "max": 1534.658
         }
       },
       "up": {
@@ -46,14 +46,14 @@
           "max": 0
         },
         "setup": {
-          "median": 83,
-          "min": 83,
-          "max": 83
+          "median": 623,
+          "min": 623,
+          "max": 623
         },
         "execution": {
-          "median": 679,
-          "min": 679,
-          "max": 679
+          "median": 157,
+          "min": 157,
+          "max": 157
         },
         "cleanup": {
           "median": 0,
@@ -61,29 +61,29 @@
           "max": 0
         },
         "data_read": {
-          "median": 0.096,
-          "min": 0.096,
-          "max": 0.096
+          "median": 0.054,
+          "min": 0.054,
+          "max": 0.054
         },
         "h2o_context": {
-          "median": 10.508,
-          "min": 10.508,
-          "max": 10.508
+          "median": 10.97,
+          "min": 10.97,
+          "max": 10.97
         },
         "train": {
-          "median": 9.331,
-          "min": 9.331,
-          "max": 9.331
+          "median": 9.666,
+          "min": 9.666,
+          "max": 9.666
         },
         "scale_up": {
-          "median": 580.041,
-          "min": 580.041,
-          "max": 580.041
+          "median": 75.036,
+          "min": 75.036,
+          "max": 75.036
         },
         "train_after": {
-          "median": 7.926,
-          "min": 7.926,
-          "max": 7.926
+          "median": 8.469,
+          "min": 8.469,
+          "max": 8.469
         }
       },
       "down": {
@@ -93,49 +93,49 @@
           "max": 0
         },
         "setup": {
-          "median": 113,
-          "min": 113,
-          "max": 113
+          "median": 593,
+          "min": 593,
+          "max": 593
         },
         "execution": {
-          "median": 576,
-          "min": 576,
-          "max": 576
+          "median": 940,
+          "min": 940,
+          "max": 940
         },
         "cleanup": {
-          "median": 0,
-          "min": 0,
-          "max": 0
+          "median": 1,
+          "min": 1,
+          "max": 1
         },
         "data_read": {
-          "median": 0.095,
-          "min": 0.095,
-          "max": 0.095
+          "median": 0.124,
+          "min": 0.124,
+          "max": 0.124
         },
         "scale_up": {
-          "median": 275.036,
-          "min": 275.036,
-          "max": 275.036
+          "median": 545.065,
+          "min": 545.065,
+          "max": 545.065
         },
         "h2o_context": {
-          "median": 29.79,
-          "min": 29.79,
-          "max": 29.79
+          "median": 30.059,
+          "min": 30.059,
+          "max": 30.059
         },
         "train": {
-          "median": 17.422,
-          "min": 17.422,
-          "max": 17.422
+          "median": 16.576,
+          "min": 16.576,
+          "max": 16.576
         },
         "scale_down": {
-          "median": 185.015,
-          "min": 185.015,
-          "max": 185.015
+          "median": 295.022,
+          "min": 295.022,
+          "max": 295.022
         },
         "train_after": {
-          "median": 13.445,
-          "min": 13.445,
-          "max": 13.445
+          "median": 0.415,
+          "min": 0.415,
+          "max": 0.415
         }
       }
     }

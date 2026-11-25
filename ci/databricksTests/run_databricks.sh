@@ -50,7 +50,11 @@ elif [[ "$WORKERS" =~ ^[0-9]+$ ]]; then
 else
   echo "WORKERS must be a number or MIN-MAX: $WORKERS" >&2 && exit 1
 fi
-# Notebook tasks: the training and scoring suites run each language, the autoscale suite each scenario in Scala.
+# Notebook tasks: the training and scoring suites run each language, the autoscale suite each scenario in Scala. The
+# scenarios run at the same time and must scale their own fresh cluster, so the autoscale suite takes no CLUSTER_ID.
+if [[ "$SUITE" == autoscale && -n "${CLUSTER_ID:-}" ]]; then
+  echo "SUITE=autoscale needs a new job cluster per scenario; unset CLUSTER_ID" >&2 && exit 1
+fi
 if [[ "$SUITE" == autoscale ]]; then tasks=(up down); else tasks=(scala python); fi
 if [[ "$SUITE" != scoring ]]; then
   JAVA_OPTIONS="${JAVA_OPTIONS---add-exports=java.base/sun.net.www.protocol.http=ALL-UNNAMED \

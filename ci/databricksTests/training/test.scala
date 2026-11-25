@@ -17,7 +17,8 @@
 
 // Training smoke test: internal backend start, H2O frame import and conversion, XGBoost training and prediction.
 // Needs ../timing.scala loaded first (the runners do this). Spark conf spark.sw.training.test.nodes: expected H2O nodes,
-// or "executors" for the Spark executors present after the start (autoscaling clusters).
+// or "executors" on autoscaling clusters: at least 1 and at most the Spark executors present after the start
+// (H2O counts the executors registered when it starts, and a worker can still join while it does).
 
 import java.net.URI
 import ai.h2o.sparkling._
@@ -30,13 +31,14 @@ import spark.implicits._
 
 val hc = timed("h2o_context") { H2OContext.getOrCreate() }
 val executors = spark.sparkContext.statusTracker.getExecutorInfos.length - 1 // without the driver
-val expected = spark.conf.get("spark.sw.training.test.nodes", "3") match {
-  case "executors" => executors
-  case nodes => nodes.toInt
-}
 val actual = hc.getH2ONodes().length
-if (actual != expected) {
-  throw new RuntimeException(s"H2O cluster should be of size $expected but is $actual")
+spark.conf.get("spark.sw.training.test.nodes", "3") match {
+  case "executors" =>
+    if (actual < 1 || actual > executors) {
+      throw new RuntimeException(s"H2O cluster should have 1 to $executors nodes but has $actual")
+    }
+  case nodes =>
+    if (actual != nodes.toInt) throw new RuntimeException(s"H2O cluster should be of size $nodes but is $actual")
 }
 
 val frame = timed("data_import") {

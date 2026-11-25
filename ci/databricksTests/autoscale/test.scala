@@ -46,25 +46,39 @@ val seed = 0x6A09E667F3BCC908L // as in ../training/test.scala
 
 def executors(): Int = sc.statusTracker.getExecutorInfos.length - 1 // without the driver
 
-// Polls every 5 s until the executor count meets the condition; fails when it does not within the timeout.
-def awaitExecutors(event: String)(condition: Int => Boolean): Int = {
-  val deadline = timeout.fromNow
-  while (!condition(executors())) {
-    if (deadline.isOverdue()) throw new AssertionError(s"No $event within $timeout: ${executors()} executors")
+// Polls every 5 s until the condition holds; fails when it does not within the limit.
+def waitFor(event: String, limit: FiniteDuration = timeout)(condition: => Boolean): Unit = {
+  val deadline = limit.fromNow
+  while (!condition) {
+    if (deadline.isOverdue()) throw new AssertionError(s"No $event within $limit: ${executors()} executors")
     Thread.sleep(5000)
+  }
+}
+
+// Runs more sleeping Spark tasks than the cluster has cores until Databricks adds a worker, then cancels them and waits
+// until they are gone. The load job must be running before it is cancelled: cancelJobGroup only reaches active jobs.
+def scaleUp(): Int = {
+  val before = executors()
+  val group = "autoscale-load"
+  val load = Future {
+    sc.setJobGroup(group, "Load that makes Databricks add workers", interruptOnCancel = true)
+    sc.parallelize(1 to 1000, 1000).foreach(_ => Thread.sleep(60000))
+  }
+  try {
+    waitFor("load job", 60.seconds)(sc.statusTracker.getJobIdsForGroup(group).nonEmpty || load.isCompleted)
+    waitFor("scale-up")(executors() > before || load.isCompleted)
+  } finally sc.cancelJobGroup(group)
+  Try(Await.result(load, 120.seconds)) match {
+    case Failure(e) if String.valueOf(e.getMessage).contains("cancelled") =>
+    case other => throw new AssertionError(s"The load job did not end by cancellation: $other")
   }
   executors()
 }
 
-// Runs more sleeping Spark tasks than the cluster has cores until Databricks adds a worker, then cancels them.
-def scaleUp(): Int = {
-  val before = executors()
-  Future {
-    sc.setJobGroup("autoscale-load", "Load that makes Databricks add workers", interruptOnCancel = true)
-    sc.parallelize(1 to 1000, 1000).foreach(_ => Thread.sleep(60000))
-  }
-  try awaitExecutors("scale-up")(_ > before)
-  finally sc.cancelJobGroup("autoscale-load")
+// H2O nodes whose host has no Spark executor anymore (Databricks runs one executor per worker).
+def lostH2ONodes(hc: H2OContext): Int = {
+  val hosts = sc.statusTracker.getExecutorInfos.map(_.host).toSet
+  hc.getH2ONodes().count(node => !hosts(node.hostname))
 }
 
 val lines = timed("data_read") {
@@ -83,7 +97,10 @@ val Array(trainingDF, testingDF) = data.randomSplit(Array(0.8, 0.2), seed)
 // Trains and predicts within trainTimeout; describes the outcome instead of throwing.
 def train(): String = {
   val xgboost = new H2OXGBoost().setLabelCol("CAPSULE").setSeed(seed)
-  Try(Await.result(Future(xgboost.fit(trainingDF).transform(testingDF).count()), trainTimeout)) match {
+  // Collecting the prediction column makes Spark run the scoring; a count alone may prune it away.
+  def predictions(): Int = xgboost.fit(trainingDF).transform(testingDF).select("prediction").collect().length
+  Try(Await.result(Future(predictions()), trainTimeout)) match {
+    case Success(0) => "failed (no predictions)"
     case Success(rows) => s"succeeded ($rows predictions)"
     case Failure(_: TimeoutException) => s"gave no result within $trainTimeout"
     case Failure(e) => s"failed (${e.getClass.getName}: ${String.valueOf(e.getMessage).take(300)})"
@@ -91,15 +108,14 @@ def train(): String = {
 }
 
 // The H2O cloud as its leader reports it over REST (the driver is not an H2O node), and the H2O nodes whose host has no
-// Spark executor anymore.
+// Spark executor anymore. The REST call has no deadline of its own, so it gets 60 s.
 def cloud(hc: H2OContext): String = {
-  val state = Try(RestApiUtils.getPingInfo(hc.getConf)) match {
+  val state = Try(Await.result(Future(RestApiUtils.getPingInfo(hc.getConf)), 60.seconds)) match {
     case Success(ping) => s"${ping.nodes.length} nodes, healthy ${ping.cloud_healthy}"
+    case Failure(_: TimeoutException) => "gave no answer within 60 s"
     case Failure(e) => s"not reachable (${e.getClass.getSimpleName})"
   }
-  val hosts = sc.statusTracker.getExecutorInfos.map(_.host).toSet
-  val lost = hc.getH2ONodes().count(node => !hosts(node.hostname))
-  s"$state; $lost of ${hc.getH2ONodes().length} H2O nodes lost their executor"
+  s"$state; ${lostH2ONodes(hc)} of ${hc.getH2ONodes().length} H2O nodes lost their executor"
 }
 
 val startExecutors = executors()
@@ -110,11 +126,12 @@ val h2oExecutors = executors()
 val trainedBefore = timed("train")(train())
 if (!trainedBefore.startsWith("succeeded")) throw new AssertionError(s"Training before the event $trainedBefore")
 
+// The down event is the loss of a worker that hosts an H2O node; removals of other workers do not count.
 val (event, eventExecutors) = scenario match {
   case "up" => ("scale-up", timed("scale_up")(scaleUp()))
   case _ =>
-    val peak = executors()
-    ("scale-down", timed("scale_down")(awaitExecutors("scale-down")(_ < peak)))
+    timed("scale_down")(waitFor("scale-down of an H2O worker")(lostH2ONodes(hc) > 0))
+    (s"scale-down of ${lostH2ONodes(hc)} H2O worker(s)", executors())
 }
 val trainedAfter = timed("train_after")(train())
 

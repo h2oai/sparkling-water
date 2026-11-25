@@ -49,7 +49,7 @@ and execution, not setup or run totals.
 ## Autoscaling (0.3b, 2026-11-23)
 
 Timings: [`baseline-timings/databricks-16.4-3.46.0.6-autoscaling.json`](baseline-timings/databricks-16.4-3.46.0.6-autoscaling.json)
-(single runs). Reproduce:
+(single runs: probe run 3, training suite). Reproduce:
 
 ```bash
 export UPLOAD_PATH=/Volumes/<catalog>/<schema>/<volume>/tests TIMINGS_OUT=design/baseline-timings/databricks-16.4-3.46.0.6-autoscaling.json
@@ -59,12 +59,14 @@ SUITE=autoscale ci/databricksTests/run_databricks.sh && SUITE=training WORKERS=1
 The probe ([`ci/databricksTests/autoscale/test.scala`](../ci/databricksTests/autoscale/test.scala)) runs two Scala
 scenarios, each on its own job cluster with autoscaling 1–4 workers (`Standard_D4ds_v5`, dedicated access, the JDK 17
 `--add-exports`). It makes Databricks scale by queueing sleeping Spark tasks (scale-up) or by staying idle (scale-down),
-and trains XGBoost before and after the event. Results of two runs each:
+and trains and scores XGBoost before and after the event. The down event is the loss of a worker that hosts an H2O node.
+Results of three runs each (run 3 with the final probe, which also collects the predictions and waits for the load job to
+end):
 
 | Scenario | H2O cloud at start | Event | Training after the event |
 |---|---|---|---|
-| up: H2O starts first, then load | 1 node on 1 executor | 1 → 3 executors in 530–580 s | succeeds on the 1 original node; the new executors get no H2O node |
-| down: load first, then H2O, then idle | 2 nodes on 3 executors (run 1), 3 on 3 (run 2) | 3 → 2 → 1 executors, first removal after 185–490 s idle | fails in 13–35 s: `RestApiNotReachableException` for the lost node, from the driver (run 1, the node it talks to) or from Spark tasks writing to it (run 2) |
+| up: H2O starts first, then load | 1 node on 1 executor | 1 → 2–3 executors in 75–580 s | succeeds on the 1 original node; the new executors get no H2O node |
+| down: load first, then H2O, then idle | 2 nodes on 3 executors (run 1), 3 on 3 (runs 2, 3) | an H2O worker removed after 185–490 s idle | fails in 0.4–35 s with `RestApiNotReachableException` for the lost node: from the driver when it was the node the driver talks to (runs 1, 3; run 3 then finds the whole cloud unreachable), from Spark tasks writing to it otherwise (run 2) |
 
 The training suite on a 1–4 worker autoscaling cluster passes for Scala and Python: both start on the minimum, 1 worker,
 so H2O runs 1 node and no scaling happens during the 2-minute workload. In-script phases (seconds, one run) are close to
@@ -83,7 +85,7 @@ Findings:
   a lost executor (the heartbeat thread acts on an unhealthy cloud only in external mode). Run 2 shows the H2O REST API
   still reporting 3 nodes and a healthy cloud after one was gone, so the failure surfaces only when work reaches the lost
   node. Databricks picks the workers to remove; with H2O on every worker any removal hits a node.
-- Scaling is slow next to the workload: adding a worker took 4.5–10 min (Azure VM provisioning), removing an idle one
+- Scaling is slow next to the workload: adding a worker took 1.3–10 min (Azure VM provisioning), removing an idle one
   3–8 min, while training on the prostate data takes 10–20 s.
 
 Recommended cluster settings for the internal backend (input to ADR-005):
