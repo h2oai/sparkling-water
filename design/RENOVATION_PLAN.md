@@ -227,6 +227,9 @@ Scoring lane (3.1–3.7, blocking), then training lane (3.8–3.16, does not blo
   PR) from `master`, review the owners and add path owners for the new layout; last PR before merging into `master`.
 - **5.10 Release.** Version suffixes `-4.0/-4.1/-4.2/-4.3`, Maven `_2.13`, PyPI `h2o_pysparkling_4.x` and
   `h2o_pysparkling_scoring_4.x`, S3 layout.
+- **5.11 Research: elastic H2O (placeholder).** Whether newer Spark (decommissioning, dynamic allocation, stage-level
+  scheduling) or Databricks autoscaling controls let the internal backend follow a changing cluster, which 0.3b showed
+  it cannot; reuse the `SUITE=autoscale` probe. Outcome: keep fixed-size clusters, or follow-up tickets.
 
 ## Done when
 
