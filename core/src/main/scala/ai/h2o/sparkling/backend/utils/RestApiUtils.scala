@@ -60,9 +60,7 @@ trait RestApiUtils extends RestCommunication {
   def getNodes(cloudV3: CloudV3): Array[NodeDesc] = {
     cloudV3.nodes.zipWithIndex.map {
       case (node, idx) =>
-        val splits = node.ip_port.split(":")
-        val ip = splits(0)
-        val port = splits(1).toInt
+        val (ip, port) = NodeDesc.parseIpPort(node.ip_port)
         NodeDesc(idx.toString, ip, port)
     }
   }

@@ -56,9 +56,15 @@ public class UploadPlanV3 extends RequestSchemaV3<Iced, UploadPlanV3> {
     public ChunkAssigmentV3(int id, H2ONode node) {
       this.chunk_id = id;
       this.node_idx = node.index();
-      String[] ipPortArray = node.getIpPortString().split(":");
-      this.ip = ipPortArray[0];
-      this.port = new Integer(ipPortArray[1]);
+      // Split on the last ':' so that IPv6 addresses are parsed correctly.
+      String ipPort = node.getIpPortString();
+      int separatorIdx = ipPort.lastIndexOf(':');
+      String host = ipPort.substring(0, separatorIdx);
+      if (host.startsWith("[") && host.endsWith("]")) {
+        host = host.substring(1, host.length() - 1);
+      }
+      this.ip = host;
+      this.port = Integer.parseInt(ipPort.substring(separatorIdx + 1));
     }
   }
 }

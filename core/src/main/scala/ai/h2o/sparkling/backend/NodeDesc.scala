@@ -30,7 +30,7 @@ import water.nbhm.NonBlockingHashMap
 case class NodeDesc(nodeId: String, hostname: String, port: Int) {
   override def productPrefix = ""
 
-  def ipPort(): String = s"$hostname:$port"
+  def ipPort(): String = NodeDesc.formatIpPort(hostname, port)
 }
 
 object NodeDesc {
@@ -39,8 +39,25 @@ object NodeDesc {
   }
 
   private def fromH2ONode(node: H2ONode): NodeDesc = {
-    val ipPort = node.getIpPortString.split(":")
-    NodeDesc(node.index().toString, ipPort(0), Integer.parseInt(ipPort(1)))
+    val (ip, port) = parseIpPort(node.getIpPortString)
+    NodeDesc(node.index().toString, ip, port)
+  }
+
+  /**
+    * Parses an "ip:port" string. IPv6 addresses are supported both with and without
+    * square brackets ("[2001:db8::1]:54321" or "2001:db8::1:54321"); the returned host never contains brackets.
+    */
+  private[sparkling] def parseIpPort(ipPort: String): (String, Int) = {
+    val separatorIdx = ipPort.lastIndexOf(':')
+    require(separatorIdx > 0, s"Expected a string in the format 'ip:port', but got '$ipPort'")
+    val host = ipPort.substring(0, separatorIdx).stripPrefix("[").stripSuffix("]")
+    val port = Integer.parseInt(ipPort.substring(separatorIdx + 1))
+    (host, port)
+  }
+
+  /** Formats host and port as "host:port", wrapping IPv6 addresses in square brackets so the result is URL-safe. */
+  private[sparkling] def formatIpPort(host: String, port: Int): String = {
+    if (host.contains(":") && !host.startsWith("[")) s"[$host]:$port" else s"$host:$port"
   }
 
   private def intern(node: H2ONode): NodeDesc = {
