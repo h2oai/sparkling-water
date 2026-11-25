@@ -49,7 +49,8 @@ Rules for every step:
     clusters (`design/databricks-baseline-2026-11.md`).
 - **0.4 ADR-002 Support matrix.** Keep only 3.5 on `master`; drop 2.3, 2.4, 3.0–3.4 (no Databricks runtime ships 3.4).
   A 4.x minor is added to `supportedSparkVersions` only when its build is green; default follows the Databricks LTS in use.
-  Verify: `design/adr/ADR-002-*.md` merged and linked from this plan.
+  Verify: `design/adr/ADR-002-*.md` merged and linked from this plan. Done:
+  [ADR-002](adr/ADR-002-support-matrix.md).
 - **0.5 ADR-005 Supported Databricks mode.** Azure Databricks dedicated classic compute only; standard/serverless and
   Spark Connect out of scope; AWS/GCP best-effort. Verify: `design/adr/ADR-005-*.md` merged and linked from this plan.
 - **0.6 ADR-003 Flow UI + ADR-004 REPL removal contract.** Remove `ProxyStarter`, `water/webserver/jetty9/*`,

@@ -298,7 +298,7 @@ Grouped by module; file paths relative to repo root. Counts are from grep on 202
 - ADR-001: H2O-3 target line for Spark 4 (3.46.0.6 OSS frozen vs. H2O-3 Secure) and how JDK 21 (DBR 18/19) is
   handled: `sys.ai.h2o.debug.allowJavaVersions` set by Sparkling Water in the executor before `H2OStarter.start`,
   H2O-3 Secure, or external backend only.
-- ADR-002: Support matrix for `master`: keep only 3.5; drop 2.x and 3.0–3.4 (no Databricks runtime ships 3.4, decided
+- [ADR-002](adr/ADR-002-support-matrix.md): Support matrix for `master`: keep only 3.5; drop 2.x and 3.0–3.4 (no Databricks runtime ships 3.4, decided
   2026-11-10); 4.0, 4.1, 4.2, 4.3 as per-minor artifacts from one source tree, each added only when its build is green.
 - ADR-003: Flow UI: remove the driver-side proxy and extension servlets from the Spark 4 line (replacement out of scope).
 - ADR-004: Embedded Scala REPL: drop (only consumer is the Flow Scala cell).
