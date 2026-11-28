@@ -53,6 +53,7 @@ Rules for every step:
   [ADR-002](adr/ADR-002-support-matrix.md).
 - **0.5 ADR-005 Supported Databricks mode.** Azure Databricks dedicated classic compute only; standard/serverless and
   Spark Connect out of scope; AWS/GCP best-effort. Verify: `design/adr/ADR-005-*.md` merged and linked from this plan.
+  Done: [ADR-005](adr/ADR-005-supported-databricks-mode.md).
 - **0.6 ADR-003 Flow UI + ADR-004 REPL removal contract.** Remove `ProxyStarter`, `water/webserver/jetty9/*`,
   `backend/api/*`, the `repl` module and `core`'s driver-side Jetty 9 dependencies. API contract: `H2OContext.flowURL`
   and `openFlow` (Scala, Python, R) throw `UnsupportedOperationException` with a pointer to the migration guide;
