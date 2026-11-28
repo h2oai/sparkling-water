@@ -302,7 +302,7 @@ Grouped by module; file paths relative to repo root. Counts are from grep on 202
   2026-11-10); 4.0, 4.1, 4.2, 4.3 as per-minor artifacts from one source tree, each added only when its build is green.
 - ADR-003: Flow UI: remove the driver-side proxy and extension servlets from the Spark 4 line (replacement out of scope).
 - ADR-004: Embedded Scala REPL: drop (only consumer is the Flow Scala cell).
-- ADR-005: Azure Databricks dedicated (classic) compute is the supported mode; standard/serverless and Spark Connect are
+- [ADR-005](adr/ADR-005-supported-databricks-mode.md): Azure Databricks dedicated (classic) compute is the supported mode; standard/serverless and Spark Connect are
   out of scope; AWS/GCP Databricks are best-effort.
 
 **Phases 1–5** are maintained in `design/RENOVATION_PLAN.md` (narrative) and as `tk` tickets in `.tickets/`
